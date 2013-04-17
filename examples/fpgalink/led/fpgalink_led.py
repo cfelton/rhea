@@ -1,7 +1,7 @@
 
 from myhdl import *
-from kr.cores.usb_ext import fl_fx2
-from kr.cores.usb_ext import fpgalink_fx2
+from mn.cores.usb_ext import fl_fx2
+from mn.cores.usb_ext import fpgalink_fx2
 
 
 def fpgalink_led(    
