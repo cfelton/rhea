@@ -2,6 +2,7 @@
 
 import os
 import time
+import argparse
 
 from myhdl import *
 
@@ -81,7 +82,7 @@ def map_ext_int(clock, reset, fx2_ext, fx2_bus):
         
     
     
-def test_fpgalink():
+def test_fpgalink(args):
 
     # Get the FX2 emulations / host API and busses
     fl = FpgaLinkHost(Verbose=True)
@@ -98,11 +99,17 @@ def test_fpgalink():
     fx2_bus2.gotdata = fx2_bus1.gotdata
     fx2_bus2.gotroom = fx2_bus1.gotroom
 
-    # get the two HDL versions (MyHDL and Verilog)
+    # get the two HDL versions (MyHDL and Verilog)    
     tb_dut = traceSignals(fpgalink_fx2, clock, reset, fx2_bus1, fl_bus1)
-    tb_cosim = flcosim(clock, reset, fx2_bus2, fl_bus2)
     tb_fl1 = fpga_logic_ex1(clock, reset, fl_bus1)
-    tb_fl2 = fpga_logic_ex1(clock, reset, fl_bus2)
+    
+    if args.cosim:
+        tb_cosim = flcosim(clock, reset, fx2_bus2, fl_bus2)
+        tb_fl2 = fpga_logic_ex1(clock, reset, fl_bus2)
+    else:
+        tb_cosim = ()
+        tb_fl2 = ()
+        
     g = (tb_dut, tb_cosim, tb_fl1, tb_fl2, gm)
 
     # Start up the simulaiton using the FpgaLinkHost
@@ -133,5 +140,9 @@ def test_fpgalink():
     time.sleep(1)
 
 if __name__ == '__main__':
-    test_fpgalink()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cosim', action='store_true', default=False,
+                        help='Run cosimulation with verilog version of fpgalink requires icarus')
+    args = parser.parse_args()
+    test_fpgalink(args)
     
