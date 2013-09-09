@@ -5,6 +5,10 @@ A collection of HDL cores written in MyHDL.  The "mn" package is
 dependent on the myhdl package.  The myhdl package can be retrieved
 from http://www.myhdl.org.
 
+This repo is a mirror, more stable releases are sync'd on github.
+Feel free to pull-request to this repo.  The more active developed
+version can be accessed here: https://bitbucket.org/cfelton/minnesota
+
 The examples have an additional dependency, the myhdl_tools package.
 This package is used to manage different development boards and to 
 simplify the FPGA tool flow.  See the examples for directory for 
