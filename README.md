@@ -48,17 +48,6 @@ stimulated using the FX2 model and high-level access functions:
     fh.WriteAddress(0, [1,2,3,4])  # write 1,2,3,4 to address 0
     rb = fh.ReadAddress(1)         # read address 1
 
-fifo ramp
-----------
-This is a simple module that will create a ramp and interface to a FIFO,
-(fill the FIFO while not full).  This is used for system/lab testing.  A
-ramp is generated and a received ramp can be verified (e.g. generate a
-ramp in the FPGA and verify ramp recieved on host PC over usb).
-
-spi
----
-This is a simple SPI port that.  This SPI port parameters are configured at
-design time and not run time.
 
 
 
