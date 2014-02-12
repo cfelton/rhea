@@ -5,9 +5,9 @@ A collection of HDL cores written in MyHDL.  The "mn" package is
 dependent on the myhdl package.  The myhdl package can be retrieved
 from http://www.myhdl.org.
 
-This repo is a mirror, more stable releases are sync'd on github.
-Feel free to pull-request to this repo.  The more active developed
-version can be accessed here: https://bitbucket.org/cfelton/minnesota
+This repo is a mirror (stable snapshots are sync'd on github).
+Feel free to pull-request to this repo.  The version actively 
+being developed can be accessed here: https://bitbucket.org/cfelton/minnesota
 
 The examples have an additional dependency, the myhdl_tools package.
 This package is used to manage different development boards and to 
@@ -22,32 +22,33 @@ This is a MyHDL implementation of the HDL for the *fpgalink*
 project.  The fpgalink HDL core can be instantiated into 
 a design:
 
-
-    from mn.cores.usb_ext import fpgalink_fx2
-    from mn.cores.usb_ext import fl_fx2
+```python
+from mn.cores.usb_ext import fpgalink_fx2
+from mn.cores.usb_ext import fl_fx2
  
-    # ...
-    # fpgalink interface 
-    g_fli = fpgalink_fx2(clock,reset,fx2_bus,fl_bus) 
+# ...
+# fpgalink interface 
+g_fli = fpgalink_fx2(clock,reset,fx2_bus,fl_bus) 
 
-    # ...
+# ...
+```
 
 For simulation and verification the *fpgalink* interface can
 stimulated using the FX2 model and high-level access functions:
 
-
-    from mn.cores.usb.ext import fpgalink_fx2
-    from mn.cores.usb_ext import fpgalink_host
-    from mn.cores.usb_ext import fl_fx2 
+```python
+from mn.cores.usb.ext import fpgalink_fx2
+from mn.cores.usb_ext import fpgalink_host
+from mn.cores.usb_ext import fl_fx2 
  
-    # instantiate the components, etc. (see examples in example dir)
-    # ...
+# instantiate the components, etc. (see examples in example dir)
+# ...
     
-    # high-level access to the digital (FPGA) design
-    fh.WriteAddress(1, [0xC3])     # write 0xCE to address 1
-    fh.WriteAddress(0, [1,2,3,4])  # write 1,2,3,4 to address 0
-    rb = fh.ReadAddress(1)         # read address 1
-
+# high-level access to the digital (FPGA) design
+fh.WriteAddress(1, [0xC3])     # write 0xCE to address 1
+fh.WriteAddress(0, [1,2,3,4])  # write 1,2,3,4 to address 0
+rb = fh.ReadAddress(1)         # read address 1
+```
 
 
 
