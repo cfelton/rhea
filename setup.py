@@ -14,21 +14,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from distutils.core import setup
+from setuptools import setup,find_packages
 
 setup(name        = "minnesota",
       version     = "0.1pre",
       description = "collection of HDL cores ",
-      packages    = ["mn",
-                     "mn.cores",
-                     "mn.cores.usb_ext",
-                     "mn.cores.usb_ext.fpgalink",
-                     "mn.cores.usb_ext.fx2_model",
-                     "mn.cores.usb_ext.usbp",
-                     "mn.cores.fifo"],
-      license     = "LGPL", 
+      license     = "LGPL",
       platforms   = ["Any"],
-      keywords    = "DSP HDL MyHDL"
+      keywords    = "DSP HDL MyHDL FPGA FX2 USB",
+
+      packages    = find_packages(),
       # @todo need to add the examples and test directories,
       # copy it over ...
       )
