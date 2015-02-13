@@ -6,17 +6,19 @@ import argparse
 
 from myhdl import *
 
-from mn.cores.usb_ext import FpgaLinkHost
-from mn.cores.usb_ext import fl_fx2
-from mn.cores.usb_ext import fpgalink_fx2
+from mn.models.usbext import FpgaLinkHost
+from mn.cores.usbext import fpgalink
+from mn.cores.usbext import m_fpgalink_fx2
 
 # Example FPGA logic which interfaces with fpgalink
-from fpgalink_logic_ex1 import fpga_logic_ex1
+from _fpgalink_logic_ex1 import m_fpga_logic_ex1
+
+from _test_utils import *
 
 def flcosim(clock, reset, fx2_bus, fl_bus):
-    f1 = '../mn/cores/usb_ext/fpgalink/comm_fpga_fx2_v1.v'
-    f2 = '../mn/cores/usb_ext/fpgalink/comm_fpga_fx2_v2.v'
-    f3 = '../mn/cores/usb_ext/fpgalink/tb_comm_fpga_fx2_m.v'
+    f1 = '../mn/cores/usbext/fpgalink/comm_fpga_fx2_v1.v'
+    f2 = '../mn/cores/usbext/fpgalink/comm_fpga_fx2_v2.v'
+    f3 = '../mn/cores/usbext/fpgalink/tb_comm_fpga_fx2_m.v'
     assert os.path.isfile(f1)
     assert os.path.isfile(f2)    
     assert os.path.isfile(f3)
@@ -80,32 +82,35 @@ def map_ext_int(clock, reset, fx2_ext, fx2_bus):
             
     return tb_assign, tb_monitor
         
-    
-    
+        
 def test_fpgalink(args):
-
+    """
+        flbus1 - MyHDL model
+        flbus2 - original fpgalink Verilog
+        flbus3 - MyHDL converted Verilog
+    """
     # Get the FX2 emulations / host API and busses
     fl = FpgaLinkHost(Verbose=True)
-    clock,reset,fx2_bus1,fl_bus1 = fl_fx2.get_interfaces()
-    c,r,fx2_bus2,fl_bus2 = fl_fx2.get_interfaces()
+    clock,reset,fx2bus1,flbus1 = fpgalink.get_interfaces()
+    c,r,fx2bus2,flbus2 = fpgalink.get_interfaces()
 
-    fx2_ext = fl.GetFx2Bus()           # get the FX2 bus
-    clock = fx2_ext.IFCLK
-    reset = fx2_ext.RST
+    fx2ext = fl.GetFx2Bus()           # get the FX2 bus
+    clock = fx2ext.IFCLK
+    reset = fx2ext.RST
     # connect the busses
-    gm = map_ext_int(clock, reset, fx2_ext, fx2_bus1) 
+    gm = map_ext_int(clock, reset, fx2ext, fx2bus1) 
     # only one model driving the bus, connect the busses
-    fx2_bus2.data_i = fx2_bus1.data_i
-    fx2_bus2.gotdata = fx2_bus1.gotdata
-    fx2_bus2.gotroom = fx2_bus1.gotroom
+    fx2bus2.data_i = fx2bus1.data_i
+    fx2bus2.gotdata = fx2bus1.gotdata
+    fx2bus2.gotroom = fx2bus1.gotroom
 
     # get the two HDL versions (MyHDL and Verilog)    
-    tb_dut = traceSignals(fpgalink_fx2, clock, reset, fx2_bus1, fl_bus1)
-    tb_fl1 = fpga_logic_ex1(clock, reset, fl_bus1)
+    tb_dut = traceSignals(m_fpgalink_fx2, clock, reset, fx2bus1, flbus1)
+    tb_fl1 = m_fpga_logic_ex1(clock, reset, flbus1)
     
     if args.cosim:
-        tb_cosim = flcosim(clock, reset, fx2_bus2, fl_bus2)
-        tb_fl2 = fpga_logic_ex1(clock, reset, fl_bus2)
+        tb_cosim = flcosim(clock, reset, fx2bus2, flbus2)
+        tb_fl2 = m_fpga_logic_ex1(clock, reset, flbus2)
     else:
         tb_cosim = ()
         tb_fl2 = ()
@@ -113,15 +118,15 @@ def test_fpgalink(args):
     g = (tb_dut, tb_cosim, tb_fl1, tb_fl2, gm)
 
     # Start up the simulaiton using the FpgaLinkHost
-    fl.setup(fx2_ext, g=g)          # setup the simulation
+    fl.setup(fx2ext, g=g)          # setup the simulation
     fl.start()                      # start the simulation
 
-    assert fx2_bus1.data_i is fx2_ext.FDO
+    assert fx2bus1.data_i is fx2ext.FDO
     
     # ~~~~~~~~~~~~~~~
     # Test stimulus
     fl.Reset()
-    assert fx2_bus1.data_i is fx2_ext.FDO
+    assert fx2bus1.data_i is fx2ext.FDO
     
     fl.WriteChannel(1, [9])
     fl.WriteChannel(2, [8])
@@ -144,5 +149,6 @@ if __name__ == '__main__':
     parser.add_argument('--cosim', action='store_true', default=False,
                         help='Run cosimulation with verilog version of fpgalink requires icarus')
     args = parser.parse_args()
+    tb_clean_vcd('m_fpgalink_fx2')
     test_fpgalink(args)
     

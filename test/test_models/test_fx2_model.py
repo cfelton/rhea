@@ -4,8 +4,8 @@ import shutil
 
 from myhdl import *
 
-from mn.cores.usb_ext import Fx2Model
-from mn.cores.usb_ext.fx2_model._fx2_model import SlaveFifo
+from mn.models.usbext import Fx2Model
+from mn.models.usbext.fx2._fx2_model import SlaveFifo
 
 # The Fx2Model has two config modes.  The actual FX2 controller has
 # numerous programmable modes.  The "configs" emulate configurations
