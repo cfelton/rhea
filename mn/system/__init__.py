@@ -1,7 +1,7 @@
 
-
 from _clock import Clock
 from _reset import Reset
+from _glbl import Global
 
 from regfile._regfile import RegisterBits
 from regfile._regfile import Register
