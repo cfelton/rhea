@@ -15,6 +15,8 @@ cbars = [
     [0, 0, 0,],  # black
 ]
 
+cbarvals = [None for _ in range(len(cbars))]
+
 def _update_cbars_with_max(P, width):
     global cbars
     for cc in range(len(cbars)):
@@ -27,19 +29,19 @@ def _update_cbars_with_max(P, width):
               (cbars[cc][1] << width) +   \
               cbars[cc][2]
 
-        cbars[cc] = val
+        cbarvals[cc] = val
 
-    cbars = tuple(cbars)
-    for ii in range(len(cbars)):
-        print("%3d:  %08X" % (ii, cbars[ii]))
+    cbarvals = tuple(cbars)
+    for ii in range(len(cbarvals)):
+        print("%3d:  %08X" % (ii, cbarvals[ii]))
     
 
-def m_color_bars(dsys, vmem, resolution=(640,480), width=10):
+def m_color_bars(glbl, vmem, resolution=(640,480), width=10):
     """ generate a color bar pattern
     """
-    global cbars
+    global cbarvals
 
-    NUM_COLORS, PMAX, res = len(cbars), (2**width)-1, resolution
+    NUM_COLORS, PMAX, res = len(cbarvals), (2**width)-1, resolution
     # for a design there is only one VGA driver it is ok to
     # globally update cbars!
     _update_cbars_with_max(PMAX, width)
@@ -47,7 +49,7 @@ def m_color_bars(dsys, vmem, resolution=(640,480), width=10):
     # the width of each boundrary
     pw = res[0] / NUM_COLORS
     
-    clock,reset = dsys.clock,dsys.reset
+    clock,reset = glbl.clock, glbl.reset
     pval = Signal(intbv(0)[3*width:])
     # DEBUG
     ssel = Signal(intbv(0)[32:0])
@@ -59,7 +61,7 @@ def m_color_bars(dsys, vmem, resolution=(640,480), width=10):
             if vmem.hpxl > (ii*pw):
                 sel = ii
         ssel.next = sel
-        pval.next = cbars[sel]
+        pval.next = cbarvals[sel]
 
 
     W2,W,MASK = 2*width, width, PMAX
