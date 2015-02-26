@@ -61,31 +61,34 @@ code from bitbucket and run setup in *develop* mode.
 ```
   # get the required python packages, myhdl, myhdl_tools,
   # and the latest minnesota package.
-  >> hg clone https://bitbucket.org/jandecaluwe/myhdl
+  >> git clone https://github.com/jandecaluwe/myhdl
   >> cd myhdl
   >> hg up -C 0.9-dev
   >> sudo python setup.py install
   >> ..
   # see www.myhdl.org for information on myhdl, the *mn* package 
-  # requires a 0.9 feature-interfaces-.  After 0.9 is release the
-  # official myhdl releases should be used.  Refer to the myhdl-mailing
-  # list for more information.
+  # requires a 0.9 feature -interfaces-.  After 0.9 is release the
+  # official myhdl releases should be used.  Refer to the myhdl
+  # mailing-list for more information.
 
   # FPGA build and misc HDL tools
-  >> hg clone https://bitbucket.org/cfelton/myhdl_tools
-  >> cd myhdl_tools
+  >> hg clone https://githumb.com/cfelton/gizflo
+  >> cd gizflo
   >> sudo python setup.py install 
   >> cd ..
 
-  >> hg clone https://bitbucket.org/cfelton/minnesota
+  >> git clone https://github.com/cfelton/minnesota
   >> cd minnesota
+  # requires setuptools
   >> python setup.py develop
+
   # verify the tests run (if not, post a comment)
   >> cd test
   >> py.test
+
   # try to compile one of the examples 
-  # (requires FPGA tools installed)
-  >> cd ../examples/nexys/fpgalink
+  # (requires FPGA tools installed and gizflo)
+  >> cd ../examples/boards/nexys/fpgalink
   >> python test_fpgalink.py
   >> python compile_fpgalink.py
 ```
@@ -120,7 +123,6 @@ The memory-map type buses
    * Wishbone
    * Avalon
    * simple
-
 
 
 models
@@ -177,6 +179,7 @@ general design information see [makestuff]().
 
 
 
+<!--
 ### usbp
 
 USB Peripheral, this is another Cypress FX2 controller interface, 
@@ -195,12 +198,13 @@ via pip.
 
 One of the tricky items with USB devices is setting the permissions
 correctly.  On a linux system to set the …
-
+-->
 
 ### fifo ramp
 
 
 ### spi
+
 
 test
 ----
@@ -220,16 +224,28 @@ dependency, `myhdl_tools`_ to create the actual bitstreams.
 ### Xess Xula(2)
 Examples
 
-   * binary hello
+   * binary hello (blinky)
+   * VGA
 
 
 ### Digilent Nexys
 Examples 
 
-   * binary hello
+   * binary hello (blinky)
    * fpgalink
    * usbp
 
+<!--
+### Digilent Atlys
+   * binary hello (blinky)
+   * fpgalink
+   * usbp
+
+
+### Digilent Zybo
+   * binary hello (blinky)
+   
+-->
 
 ### Open-Source UFO-400
 Examples
