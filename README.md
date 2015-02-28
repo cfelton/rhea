@@ -1,6 +1,6 @@
 **NOTE** the following is a work-in-progress (WIP) and has not reached
 a minor release point.  If you happen to come across this public repository
-feel free to try it out and contribute if you want.  This repository will
+feel free to try it out and contribute.  This repository will
 be unstable until the first minor release 0.1. 
  
 minnesota
@@ -10,8 +10,8 @@ The minnesota python package is a collection of HDL cores written
 in MyHDL.  The "mn" package is dependent on the myhdl package (obviously).  
 The myhdl package can be retrieved from http://www.myhdl.org
 
-The examples have an additional dependency, the myhdl_tools package.
-This package is used to manage different development boards and to 
+The examples have an additional dependency, the [gizflow](https://github.com/cfelton/gizflo) package.
+The gizflo package is used to manage different development boards and to 
 simplify the FPGA tool flow.  See the examples directory for FPGA 
 compile templates for various boards.  
 
@@ -20,17 +20,15 @@ features from a development version of MyHDL (0.9dev).  An older version
 with a usable *fpgalink* core can be found on 
 [github](https://github.com/cfelton/minnesota) .  If you 
 wish to try out this package get a 
-[the development myhdl](http://bitbucket.org/jandecaluwe/myhdl)  
+[the development myhdl](https://github.com/jandecaluwe/myhdl)  
 (will need to clone it and install the source).  The first 
 *mn* release will not occur until myhdl 0.9 is released.
-
 
 This code/package is licensed user the LGPL license.  This allows 
 anyone to use the package in their projects with no limitations but
 if the code in the mn package is modified those modifications need to
 be made available to the public.  Questions and other license options
 email me.
-
 
 The following are the definition of some terms used in this README :
 
@@ -55,11 +53,11 @@ The following are the definition of some terms used in this README :
 getting started
 -------------------
 To get started with the latest version (repo version) checkout out the
-code from bitbucket and run setup in *develop* mode.
+code and run setup in *develop* mode.
  
 
 ```
-  # get the required python packages, myhdl, myhdl_tools,
+  # get the required python packages, myhdl, gizflo,
   # and the latest minnesota package.
   >> git clone https://github.com/jandecaluwe/myhdl
   >> cd myhdl
@@ -97,8 +95,8 @@ code from bitbucket and run setup in *develop* mode.
 system (Infrastructure)
 -----------------------
 
-In the "mn" package there sub-packages that are not cores or example
-systems but tools to build systems.
+In the "mn" package, the sub-packages that are not cores or example
+systems are tools to build systems.
 
 
 ### regfile
@@ -110,12 +108,24 @@ bus (e.g. wishbone, avalon, etc).
 
 #### Defining a Register File
 
+A register file definition is a Python `dictionary` that contains 
+`Register` objects and the keys are the register names.
 
+```python
+regdef = {
+regdef = OrderedDict()
+    # --register 0--
+    'reg0': Register('reg0', 0x0018, 8, 'rw', 0),
+    'reg1': Register('reg1', 0x0032, 8, 'rw', 0)
+}
+```
+
+<!--
 #### Adding a Register File to a Peripheral
 
 
 #### Adding a Memory-Mapped Bus to a System
-
+-->
 
 ### memmap
 The memory-map type buses
