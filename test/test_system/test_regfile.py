@@ -26,7 +26,8 @@ from mn.system import Register
 from mn.system import Wishbone
 from mn.system import RWData
 
-from _test_utils import *
+from mn.utils.test import *
+
 
 regdef = None
 regfile = None
@@ -57,7 +58,7 @@ def _create_test_regfile():
     reg = Register('regro', 0x100, 8, 'ro', 0xAA)
     regdef[reg.name] = reg
 
-    # anouther read only register, with named bits
+    # another read only register, with named bits
     reg = Register('status', 0x200, 8, 'ro', 0)
     reg.add_named_bits('error', slice(1,0))  # bit 0
     reg.add_named_bits('ok', slice(2,1))     # bit 1

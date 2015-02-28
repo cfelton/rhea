@@ -1,6 +1,6 @@
 
 from myhdl import *
-
+from ...utils import extract_freq
 
 class SDRAM(object):
     # timing fields, all in ns
@@ -13,6 +13,7 @@ class SDRAM(object):
         'rfc'  : 65.0,       # refresh operaiton duration
         'rp'   : 20.0,       # min precharge command duration
         'xsr'  : 75.0,       # exit self-refresh time
+        'wr'   : 55,         # @todo ...
     }
 
     addr_width = 12   # SDRAM address width
@@ -23,7 +24,7 @@ class SDRAM(object):
         self.Nrows = Nrows   # number of rows in the SDRAM array
         self.Ncols = Ncols   # number of columns in the SDRAM array
         self.Hw = Hwidth     # host-side address width
-        self.Sw = addr_width # SDRAM-side address width
+        self.Sw = self.addr_width # SDRAM-side address width
 
         # internal signals
         self.lock = Signal(bool(0))
@@ -49,7 +50,7 @@ class SDRAM(object):
         self.sd_dqml = Signal(bool(0))  # enable lower-byte of SDRAM
 
         cycles = {}
-        for k,v in timing.iteritems():
+        for k,v in self.timing.iteritems():
             cycles[k] = v * (self.freq / 1e9)
  
         # need to add these to the namespace, currently the 
@@ -57,3 +58,5 @@ class SDRAM(object):
         # a data-structure (e.g. dict).
         for k,v in cycles.iteritems():
             self.__dict__['cyc_'+k] = v
+
+        self.cycles = 5  # @todo: incorrect, needs to be fixed

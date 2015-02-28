@@ -1,4 +1,6 @@
 
+from _intf import SDRAM
+
 class Winboad_W9812G6JH_75(SDRAM):
     
     freq = 10e6  # clock frequency in Hz
