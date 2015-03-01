@@ -190,7 +190,12 @@ def test_register_file_bits():
 
         @instance
         def tb_stim():
-            print(regfile.enable,regfile.loop)
+            print(vars(regfile))
+            print(regfile.enable, regfile.loop)
+            print('-'*44)
+            print(type(regfile.ok))
+            print(regfile.ok)
+            print('-'*44)
             regfile.ok.next = True
             try:
                 yield reset.pulse(111)
