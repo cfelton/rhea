@@ -40,7 +40,7 @@ class Register(_Signal):
     register file.  There are two types are registers: read-write
     'rw' and read-only 'ro'.  The 'rw' registers can only be modified
     by the memory-map (memmap) interface and can have read named bits.
-    The 'ro' registers can only be modified by the 
+    The 'ro' registers can only be modified by the peripheral.
     """
 
     def __init__(self, name, addr, width, access='rw', default=0, comment=""):
@@ -49,15 +49,17 @@ class Register(_Signal):
 
         self._nmb = [None for ii in range(width)]  # hold the named-bits
 
-        self.name = name
-        self.addr = addr
-        self.width = width
-        self.access = access
-        self.default = default
-        self.comment = comment
-        self.bits = {}
+        self.name = name            # the name of the register
+        self.addr = addr            # address of the register
+        self.width = width          # width of the register 
+        self.access = access        # access type, 'rw' or 'ro'
+        self.default = default      # default value for this register
+        self.comment = comment      # a comment for this register
+        self.bits = {}              # dict with namedbits Signals
+        self.rfidx = -1             # index in the regfile list
+        self.has_namedbits = False  # this register has named bits
 
-        # @todo: are these used
+        # @todo: are these used ?
         # the register read and write strobes to the peripheral        
         self.wr = Signal(bool(0))
         self.rd = Signal(bool(0))
@@ -70,11 +72,13 @@ class Register(_Signal):
     def add_named_bits(self, name, slc, comment=""):
         bits = RegisterBits(name, slc, comment)
         self.bits[bits.name] = bits
+
         if self.access == 'rw':
             self.__dict__[bits.name] = self(slc)
         elif self.access == 'ro':
             w = slc.start-slc.stop
-            nmb = Signal(intbv(0)[w:]) 
+            ival = self[slc.start:slc.stop]
+            nmb = Signal(intbv(ival)[w:]) 
             self.__dict__[bits.name] = nmb
             
             # _nmb (named-bits) is a one for one list of Signals,
@@ -94,8 +98,8 @@ class Register(_Signal):
         #    will be dangling ?
         for ii,namedbits in enumerate(self._nmb):
             # if a namedbit does not exist stub it out
-            if not isinstance(namedbits, SignalType):
-                self._nmb[ii] = Signal(bool(0))
+            if not isinstance(namedbits, SignalType):                
+                self._nmb[ii] = Signal(bool(self[ii]))
                 
         wbits = self._nmb
         nbits = self.width

@@ -17,6 +17,7 @@
 from pprint import pprint
 from collections import OrderedDict
 from random import randint
+import traceback
 
 from myhdl import *
 
@@ -142,7 +143,8 @@ def test_register_file():
                 yield reset.pulse(111)
 
                 for k,reg in regdef.iteritems():
-                    #pprint(vars(reg))
+                    print(k)
+                    pprint(vars(reg), indent=3)
                     if reg.access == 'ro':
                         yield regbus.read(reg.addr)
                         rval = regbus.readval()
@@ -158,6 +160,8 @@ def test_register_file():
                 
                 yield delay(100)
             except AssertionError,err:
+                print("@E: %s" % (err,))
+                traceback.print_exc()
                 asserr.next = True
                 for _ in xrange(10):
                     yield clock.posedge
@@ -201,7 +205,7 @@ def test_register_file_bits():
                 yield reset.pulse(111)
                 yield clock.posedge
                 yield clock.posedge          
-                print("  * %O2X " %(regfile.status))
+                print("  * %02X " %(regfile.status))
                 truefalse = True
                 #for _ in xrange(100):
                 #    print((regfile.enable, regfile.loop),(truefalse, not truefalse))
