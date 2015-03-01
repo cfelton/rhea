@@ -14,10 +14,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from argparse import Namespace
 
 from myhdl import *
 from myhdl._Signal import _Signal
+from myhdl import SignalType
 
 _width = None
 
@@ -46,6 +46,7 @@ class Register(_Signal):
     def __init__(self, name, addr, width, access='rw', default=0, comment=""):
         global _width
         _Signal.__init__(self,intbv(default)[width:])
+
         self._nmb = [None for ii in range(width)]  # hold the named-bits
 
         self.name = name
@@ -75,12 +76,37 @@ class Register(_Signal):
             w = slc.start-slc.stop
             nmb = Signal(intbv(0)[w:]) 
             self.__dict__[bits.name] = nmb
-            for idx in range(slc.stop, slc.start):                
+            
+            # _nmb (named-bits) is a one for one list of Signals,
+            # each signal in the _nmb will be assigned to the register.
+            for idx in range(slc.stop, slc.start):   
+                if self._nmb[idx] is not None:
+                    print("@W: overwritting namedbit %d" % (idx,))
                 self._nmb[idx] = nmb(idx-slc.stop)
         else:
             raise TypeError
 
-            
+    def m_assign(self):
+        """ assign the named 'ro' bits to the register """
+
+        # check for any missing bits and add a stub
+        # @todo: ? create warning for missing bits, these 
+        #    will be dangling ?
+        for ii,namedbits in enumerate(self._nmb):
+            # if a namedbit does not exist stub it out
+            if not isinstance(namedbits, SignalType):
+                self._nmb[ii] = Signal(bool(0))
+                
+        wbits = self._nmb
+        nbits = self.width
+        @always_comb
+        def rtl_assign():
+            for ii in range(nbits):
+                self.next[ii] = wbits[ii]
+
+        return rtl_assign
+
+
 class RegisterFile(object):
 
     def __init__(self, regdef, args=None):
@@ -122,7 +148,7 @@ class RegisterFile(object):
             for kb,vb in v.bits.iteritems():
                 if self.__dict__.has_key(kb):
                     raise StandardError("bit(s) name, %s, already exists"%(kb))
-                self.__dict__[kb] = v._nmb[vb.b]
+                self.__dict__[kb] = v.__dict__[kb]
 
     def get_reglist(self):
         """ return a list of addresses and a list of registers.        
@@ -161,46 +187,23 @@ class RegisterFile(object):
     def m_per_interface(self, clock, reset, regbus,
                         args = None,
                         base_address = 0x00):
-        """
+        """ Memory-mapped peripheral interface
         The register bus access to the register file, external
         to the module reads and writes.
+
         """
-        busi = regbus.m_per_interface(clock, reset, self, args=args,
+
+        # @todo: use *glbl* and figure out *args*
+        # get the memmap bus specific read/write 
+        busi = regbus.m_per_interface(clock, reset, 
+                                      regfile=self, 
+                                      args=args,
                                       base_address=base_address)
 
-        # @todo: assign the named-bits to the register, need to 
-        #    walk through each register and assigned the named-bits
-        def _ro_regs(roreg, nmb):
-            @always_comb
-            def rtl_assign():
-                roreg.next = nmb
-            return rtl_assign
-
-        print(self._roregs)
-        mappings = []
+        # get the generators that assign the named-bits
+        gas = []
         for aa,rr in self._roregs:
-            print(rr._nmb)
-            if None in rr._nmb:
-                continue
-            else:
-                mappings.append(_ro_regs(rr, ConcatSignal(*rr._nmb)))
+            gas += [rr.m_assign()]
 
-            #for idx,nb in enumerate(rr._nmb):
-            #    if nb is None:
-            #        raise StandardError("Incomplete Named Bits")
-            #        mappings.append(_ro_regs(rr, nb, idx))
-
-        #if isinstance(regbus,wishbone.Wishbone):
-        #    busmod = wishbone.m_regbus_interface
-        #elif isinstance(regbus.avalon.Avalon):
-        #    busmod = avalon.m_regbus_interface
-        #else:
-        #    raise StandardError("unsupport memory-map bus type %s"%(type(regbus)))
-        #    
-        #busi = busmod(clock, reset, regbus,
-        #              self, args,
-        #              base_address=base_address,
-        #              )
-
-        return busi, mappings
+        return busi, gas
         
