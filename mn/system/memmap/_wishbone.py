@@ -110,6 +110,7 @@ class Wishbone(object):
             
         return rtl_or_combine
 
+    # @todo: use *glbl* and figure out *args*
     def m_per_interface(self, clock, reset, regfile,
                         args=None, base_address=0x00):
         """ memory-mapped wishbone peripheral interface
