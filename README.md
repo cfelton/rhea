@@ -7,19 +7,19 @@ minnesota
 =========
 
 The minnesota python package is a collection of HDL cores written 
-in MyHDL.  The "mn" package is dependent on the myhdl package (obviously).  
-The myhdl package can be retrieved from http://www.myhdl.org
+in MyHDL.  The "mn" package is dependent on the myhdl package 
+(obviously).  The myhdl package can be retrieved from 
+http://www.myhdl.org
 
 The examples have an additional dependency, the [gizflow](https://github.com/cfelton/gizflo) package.
 The gizflo package is used to manage different development boards and to 
-simplify the FPGA tool flow.  See the examples directory for FPGA 
-compile templates for various boards.  
+simplify the FPGA tool flow.  See the FPGA compile templates 
+in the examples directory for varioius boards.
+
 
 **IMPORTANT NOTE** this repository is under development and is using
-features from a development version of MyHDL (0.9dev).  An older version 
-with a usable *fpgalink* core can be found on 
-[github](https://github.com/cfelton/minnesota) .  If you 
-wish to try out this package get a 
+features from a development version of MyHDL (0.9dev).  If you 
+wish to try out this package get 
 [the development myhdl](https://github.com/jandecaluwe/myhdl)  
 (will need to clone it and install the source).  The first 
 *mn* release will not occur until myhdl 0.9 is released.
@@ -27,8 +27,8 @@ wish to try out this package get a
 This code/package is licensed user the LGPL license.  This allows 
 anyone to use the package in their projects with no limitations but
 if the code in the mn package is modified those modifications need to
-be made available to the public.  Questions and other license options
-email me.
+be made available to the public (not the code the cores are used 
+in).  Questions and other license options email me.
 
 The following are the definition of some terms used in this README :
 
