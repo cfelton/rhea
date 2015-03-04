@@ -113,12 +113,25 @@ A register file definition is a Python `dictionary` that contains
 
 ```python
 regdef = {
-regdef = OrderedDict()
     # --register 0--
     'reg0': Register('reg0', 0x0018, 8, 'rw', 0),
     'reg1': Register('reg1', 0x0032, 8, 'rw', 0)
 }
 ```
+
+or
+
+```python
+regfile = RegisterFile(width=32)
+regfile.add_register(Register('reg0', 0x0018, 32, 'rw', 0))
+```
+
+<!-- 
+somethings missing from refile
+   1. mixed widths, the registers need to be packet, sparse
+      definitions will not be optimal.  Future enhancement 
+      that can occur under the hood
+-->
 
 <!--
 #### Adding a Register File to a Peripheral
