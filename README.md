@@ -3,8 +3,8 @@ a minor release point.  If you happen to come across this public repository
 feel free to try it out and contribute.  This repository will
 be unstable until the first minor release 0.1. 
  
-minnesota
-=========
+minnesota (`mn`)
+================
 
 The minnesota python package is a collection of HDL cores written 
 in MyHDL.  The "mn" package is dependent on the myhdl package 
