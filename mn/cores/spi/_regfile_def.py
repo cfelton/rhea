@@ -1,7 +1,6 @@
 
-from collections import OrderedDict
 from myhdl import *
-from ...system import RegisterFile,Register,RegisterBits
+from ...system import RegisterFile, Register, RegisterBits
 
 """
       Registers are on 32bit boundaries and are big-edian.  Meaning
@@ -37,10 +36,10 @@ from ...system import RegisterFile,Register,RegisterBits
             0  -- 2 divisor 24 MHz (usbp == 48MHz system clock)
 """
 
-regdef = OrderedDict()
+regfile = RegisterFile()
 
 # -- SPI Control Register (Control Register 0) --
-spcr = Register('spcr',0x60,8,'rw',0x98)
+spcr = Register('spcr', 0x60, 8, 'rw', 0x98)
 spcr.comment = "SPI control register"
 spcr.add_named_bits('loop', slice(1,0), "internal loopback")
 spcr.add_named_bits('spe', slice(2,1), "system enable")
@@ -49,40 +48,41 @@ spcr.add_named_bits('cpha', slice(5,4), "clock phase")
 spcr.add_named_bits('msse', slice(6,5), "manual slace select enable")
 spcr.add_named_bits('freeze', slice(7,6), "freeze the core")
 spcr.add_named_bits('rdata', slice(8,7), "1 : register file (memmap) feeds TX/RX FIFO")
-regdef[spcr.name] = spcr
+regfile.add_register(spcr)
 
 # -- SPI status register --
-spsr = Register('spsr',0x64,8,'ro',0)
+spsr = Register('spsr', 0x64, 8, 'ro', 0)
 spsr.add_named_bits('rxe', slice(1,0), "RX FIFO empty")
 spsr.add_named_bits('rxf', slice(2,1), "RX FIFO full")
 spsr.add_named_bits('txe', slice(3,2), "TX FIFO empty")
 spsr.add_named_bits('txf', slice(4,3), "TX FIFO full")
 spsr.add_named_bits('modf', slice(5,4), "SS line driven external fault")
+regfile.add_register(spsr)
 
 # -- The rest of the registers --
-sptx = Register('sptx',0x68,8,'rw',0)
+sptx = Register('sptx', 0x68, 8, 'rw', 0)
 sptx.comment = "SPI transmit"
-regdef[sptx.name] = sptx
+regfile.add_register(sptx)
 
-sprx = Register('sprx',0x6C,8,'rw',0)
+sprx = Register('sprx', 0x6C,8, 'rw', 0)
 sprx.comment = "SPI receive"
-regdef[sprx.name] = sprx
+regfile.add_register(sprx)
 
-spss = Register('spss',0x70,8,'rw',0)
+spss = Register('spss', 0x70,8, 'rw', 0)
 spss.comment = "SPI slave select register, manually select external devices"
-regdef[spss.name] = spss
+regfile.add_register(spss)
 
-sptc = Register('sptc',0x74,8,'rw',0)
+sptc = Register('sptc', 0x74,8, 'rw', 0)
 sptc.comment = "transmit FIFO count"
-regdef[sptc.name] = sptc
+regfile.add_register(sptc)
 
-sprc = Register('sprc',0x78,8,'rw',0)
+sprc = Register('sprc', 0x78,8, 'rw', 0)
 sprc.comment = "receive FIFO count"
-regdef[sprc.name] = sprc
+regfile.add_register(sprc)
 
-spxx = Register('spxx',0x78,8,'rw',0)
+spxx = Register('spxx', 0x78, 8, 'rw', 0)
 spxx.comment = "clock divisor register, sets sck period"
-regdef[spxx.name] = spxx
+regfile.add_register(spxx)
 
 # @todo need a home for the following control signals they should go in the control register
 #RegDef["SPC1"
@@ -91,4 +91,3 @@ regdef[spxx.name] = spxx
 #  "rx_rst" : {"b" : 9,  "width" : 1, "comment" : "RX FIFO reset"} ,
 #  "lsbf"   : {"b" : 10, "width" : 1, "comment" : "lsb first in time (first out).  msb first in time is default"},
 
-regfile = RegisterFile(regdef)

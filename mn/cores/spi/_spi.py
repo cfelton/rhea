@@ -36,6 +36,7 @@ from _regfile_def import regfile
 
 def m_spi(
     # ---[ Module Ports]---
+    # @todo: use glbl (glbl.clock, glbl.reset)
     clock,
     reset,   
     regbus,  # memory-mapped register bus
@@ -68,23 +69,23 @@ def m_spi(
     x_mosi  = Signal(False)
     x_miso  = Signal(False)    
 
-    xfb = FIFOBus(args=txfb.args)
-    fb = FIFOBus(args=rxfb.args)
+    xfb = FIFOBus(size=txfb.size, width=txfb.width)
+    fb = FIFOBus(size=rxfb.size, width=rxfb.width)
     
-    States = enum('IDLE','WAIT_HCLK','DATA_IN','DATA_CHANGE',
-                  'WRITE_FIFO','END')
+    States = enum('IDLE', 'WAIT_HCLK', 'DATA_IN', 'DATA_CHANGE',
+                  'WRITE_FIFO', 'END')
     state  = Signal(States.IDLE)
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # memory- mapped registers
     # get the register file for this core/peripheral
-    g_regbus = regfile.m_per_interface(clock,reset,regbus,
+    g_regbus = regfile.m_per_interface(clock, reset, regbus,
                                        base_address=base_address)
-        
+    regbus.append(regfile)
+
     # FIFO for the wishbone data transfer
     if include_fifo:
-        g_rx_fifo = m_fifo_fast(clock, reset, rxfb)
-        
+        g_rx_fifo = m_fifo_fast(clock, reset, rxfb)        
         g_tx_fifo = m_fifo_fast(clock, reset, txfb)
 
     @always_comb

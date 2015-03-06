@@ -19,6 +19,7 @@ from argparse import Namespace
 from myhdl import *
 from .._clock import Clock
 from .._reset import Reset
+from _memmap import MemMap
 
 # a count of the number of wishbone peripherals
 _wb_per = 0
@@ -31,9 +32,8 @@ def _add_bus(wb,args=None):
     _wb_per += 1
     _wb_list[args.name] = wb
 
-# @todo: base-class MemMapBus, all the memory-mapped busses
-#        should have a common base definition
-class Wishbone(object):
+
+class Wishbone(MemMap):
     name = 'wishbone'
     
     def __init__(self, clock=None, reset=None, 
@@ -43,6 +43,7 @@ class Wishbone(object):
         # @todo: ?? not sure if this how the arguments should
         #        should be handled.  Passing args is simple but a
         #        little obscure ??
+        super(Wishbone, self).__init__() 
         if args is None:
             if name is None:
                 name = 'wb_per%d'%(_wb_per)
@@ -246,5 +247,6 @@ class Wishbone(object):
         self.stb_i.next = False
         self.rval = self.dat_o
 
+    @property
     def readval(self):
         return self.rval

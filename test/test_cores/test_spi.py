@@ -15,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from pprint import pprint
+
 from myhdl import *
 
 from mn.cores.spi import m_spi
@@ -24,13 +26,9 @@ from mn.models.spi import SPIEEPROM
 
 from mn.system import Clock,Reset
 from mn.system import Wishbone
-from mn.system import FIFOBus
-from mn.system import RWData
+from mn.system import FIFOBus 
 
-# @todo: move utils to mn.utils, most of these functions
-#        will be used by the *examples*.  Or move these
-#        to myhdl_tools
-#from _test_utils import *
+from mn.utils.test import *
 
 def m_test_top(clock,reset,sck,mosi,miso,ss):
     # @todo:
@@ -50,29 +48,31 @@ def convert(to='ver'):
 def test_spi():
     
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0,active=1,async=False)
-    regbus = Wishbone(clock,reset)    
-    fiforx,fifotx = FIFOBus(),FIFOBus()
+    reset = Reset(0, active=1, async=False)
+    regbus = Wishbone(clock, reset)    
+    fiforx,fifotx = FIFOBus(size=16), FIFOBus(size=16)
     spiee = SPIEEPROM()
     spibus = SPIBus()
-    rwd = RWData()
     asserr = Signal(bool(0))
     
     def _test_spi():
-        tb_dut = m_spi(clock,reset,regbus,fiforx,fifotx,spibus)
-        tb_ee = spiee.gen(clock,reset,spibus)
-        tb_clk = clock.gen(hticks=5)
+        tbdut = m_spi(clock, reset, regbus, fiforx, fifotx, spibus)
+        rf = regbus.regfiles[0]
+        tbeep = spiee.gen(clock, reset, spibus)
+        tbclk = clock.gen(hticks=5)
 
+        pprint(vars(rf))
         @instance
-        def tb_stim():
+        def tbstim():
             yield reset.pulse(33)
-            yield regbus.read(0x400, rwd)
-            print(rwd)
+            yield regbus.read(0x68)
+            print(regbus.readval)
 
             raise StopSimulation
         
-        return tb_stim, tb_dut, tb_ee, tb_clk
+        return tbstim, tbdut, tbeep, tbclk
 
+    tb_clean_vcd('_test_spi')
     Simulation(traceSignals(_test_spi)).run()
     
         

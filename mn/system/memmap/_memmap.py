@@ -1,4 +1,10 @@
 
+class MemMap(object):
+    def __init__(self):
+        self.regfiles = []
+
+    def append(self, rf):
+        self.regfiles.append(rf)
 
 class RWData(object):
     def __init__(self):

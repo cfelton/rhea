@@ -39,6 +39,7 @@ def _create_mask(n):
         m = (m << 1) | 1
     return m
 
+
 def _create_test_regfile():
     global regdef
     regdef = OrderedDict()
@@ -69,11 +70,13 @@ def _create_test_regfile():
     regfile = RegisterFile(regdef)
     return regfile
 
+
 def m_per_top(clock, reset, mon):
     wb = Wishbone(clock, reset)
     #gpm = wb.m_controller(wb)
     gp1 = m_per(clock, reset, wb, mon)
     return gp1
+
 
 def m_per(clock,reset, regbus, mon):
     global regfile
@@ -87,6 +90,7 @@ def m_per(clock,reset, regbus, mon):
             regfile.regro.next = mon
         
     return g_regfile #, rtl_roregs
+
 
 def m_per_bits(clock, reset, regbus, mon):
     global regfile
@@ -115,11 +119,13 @@ def m_per_bits(clock, reset, regbus, mon):
         
     return g_regfile, rtl_roregs
 
+
 def test_register_def():
     regfile = _create_test_regfile()
     #pprint(vars(regfile))
     assert len(regfile._rwregs) == 4
     assert len(regfile._roregs) == 2
+
 
 def test_register_file():
 
@@ -143,11 +149,9 @@ def test_register_file():
                 yield reset.pulse(111)
 
                 for k,reg in regdef.iteritems():
-                    print(k)
-                    pprint(vars(reg), indent=3)
                     if reg.access == 'ro':
                         yield regbus.read(reg.addr)
-                        rval = regbus.readval()
+                        rval = regbus.readval
                         assert rval == reg.default, "ro: %02x != %02x"%(rwd.rval,reg.default)
                     else:
                         wval = randint(0,(2**reg.width)-1)
@@ -155,7 +159,7 @@ def test_register_file():
                         for _ in xrange(4):
                             yield clock.posedge
                         yield regbus.read(reg.addr)
-                        rval = regbus.readval()
+                        rval = regbus.readval
                         assert rval == wval, "rw: %02x != %02x"%(rwd.rval,rwd.wval)
                 
                 yield delay(100)
@@ -175,14 +179,13 @@ def test_register_file():
     g = traceSignals(_test_rf)
     Simulation(g).run()
 
+
 def test_register_file_bits():
     global regfile
     # top-level signals and interfaces
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
     regbus = Wishbone(clock, reset) 
-
-    pprint(regfile)
 
     def _test():
         tb_dut = m_per_bits(clock, reset, regbus, 0xAA)
@@ -194,12 +197,12 @@ def test_register_file_bits():
 
         @instance
         def tb_stim():
-            print(vars(regfile))
-            print(regfile.enable, regfile.loop)
-            print('-'*44)
-            print(type(regfile.ok))
-            print(regfile.ok)
-            print('-'*44)
+            #print(vars(regfile))
+            #print(regfile.enable, regfile.loop)
+            #print('-'*44)
+            #print(type(regfile.ok))
+            #print(regfile.ok)
+            #print('-'*44)
             regfile.ok.next = True
             try:
                 yield reset.pulse(111)
@@ -220,7 +223,7 @@ def test_register_file_bits():
             
             raise StopSimulation
 
-        return tb_mclk,tb_stim,tb_dut,tb_or,tb_rclk
+        return tb_mclk, tb_stim, tb_dut, tb_or, tb_rclk
 
 
     tb_clean_vcd('_test')
@@ -231,8 +234,8 @@ def test_convert():
     clock = Clock(0,frequency=50e6)
     reset = Reset(0,active=1,async=False)
     mon = Signal(intbv(0)[8:])
-    toVerilog(m_per_top,clock,reset,mon)
-    toVHDL(m_per_top,clock,reset,mon)
+    toVerilog(m_per_top, clock, reset, mon)
+    toVHDL(m_per_top, clock, reset, mon)
     
 if __name__ == '__main__':
     #parser = tb_arparser()

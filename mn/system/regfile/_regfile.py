@@ -113,15 +113,15 @@ class Register(_Signal):
 
 class RegisterFile(object):
 
-    def __init__(self, regdef, args=None):
+    def __init__(self, regdef=None, args=None):
         """
+        Arguments
+        ---------
         regdef : register file dictionary definition
         args : arguments for the register file and register
                bus interface
-
-        The register file is 
-
-        @todo: make 'regdef' a list of 'Registers'
+        
+        
         """
         self._rwregs = []
         self._roregs = []
@@ -133,26 +133,38 @@ class RegisterFile(object):
         # The registers can be defined in two methods, a dict defintion
         # that conforms to a particular structure or using the Register
         # object (the dict method is not implemented yet).
-        for k,v in regdef.iteritems():
-            if isinstance(v,dict):
-                # @todo: _check_register_def
-                # v = Register(v['name'],...)
-                raise NotImplementedError("dict description TBC");
-            if not isinstance(v,Register):
-                raise ValueError("Invalid type in regdef %s"%(type(v)))
-                                 
-            self.__dict__[k] = v
-            if v.access == 'rw':  # @todo: remove or v['access'] == 'wt':
-                self._rwregs.append((v.addr, v,))
-            elif v.access == 'ro':
-                self._roregs.append((v.addr, v,))
+        if regdef is not None:
+            for k,v in regdef.iteritems():
+                self._append_register(k, v)
 
-            # create a reference to the named bits, all named bits 
-            # will be accessible from the regfile
-            for kb,vb in v.bits.iteritems():
-                if self.__dict__.has_key(kb):
-                    raise StandardError("bit(s) name, %s, already exists"%(kb))
-                self.__dict__[kb] = v.__dict__[kb]
+    def _append_register(self, name, reg):
+        """ append a register to the list 
+        """
+        if isinstance(reg, dict):
+            # @todo: _check_register_def
+            # reg = Register(reg['name'],...)
+            raise NotImplementedError("dict description TBC");
+        if not isinstance(reg, Register):
+            raise ValueError("Invalid type in regdef %s"%(type(reg)))
+                             
+        self.__dict__[name] = reg
+        if reg.access == 'rw':  # @todo: remove or reg['access'] == 'wt':
+            self._rwregs.append((reg.addr, reg,))
+        elif reg.access == 'ro':
+            self._roregs.append((reg.addr, reg,))
+
+        # create a reference to the named bits, all named bits 
+        # will be accessible from the regfile
+        for kb,vb in reg.bits.iteritems():
+            if self.__dict__.has_key(kb):
+                raise StandardError("bit(s) name, %s, already exists"%(kb))
+            self.__dict__[kb] = reg.__dict__[kb]
+
+
+    def add_register(self, reg):
+        """ add a register to the register file """
+        self._append_register(reg.name, reg)
+
 
     def get_reglist(self):
         """ return a list of addresses and a list of registers.        
@@ -169,16 +181,22 @@ class RegisterFile(object):
         #@todo: set flag if addresses are contiguous
         return (tuple(rwa+roa),rwr+ror,tuple(_rrw+_rro),tuple(dl))
 
+
     def get_strobelist(self):
         assert self._allregs is not None
         wr = [rr.wr for rr in self._allregs]
         rd = [rr.rd for rr in self._allregs]
         return wr,rd
 
-    def get_readonly(self,name=None,addr=None):
+
+    def get_readonly(self, name=None, addr=None):
         roreg = None
         if name is not None:
-            addr = self._regdef[name].addr
+            if self._regdef is None:
+                # @todo: need to search for the name
+                raise NotImplemented
+            else:
+                addr = self._regdef[name].addr
         assert addr is not None
         for aa,rr in self._roregs:
             print(aa,rr)
@@ -188,6 +206,7 @@ class RegisterFile(object):
         assert roreg is not None, "Invalid register %s %x"%(name,addr)
         return roreg
     
+
     def m_per_interface(self, clock, reset, regbus,
                         args = None,
                         base_address = 0x00):

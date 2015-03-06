@@ -23,29 +23,16 @@ from ...cores.fifo._fifo_async import m_fifo_async
 _fb_num = 0
 _fb_list = {}
 
-def _add_bus(fb,args=None):
+def _add_bus(fb, name=''):
     """ globally keep track of all the busses added.
     """
     global _fb_num, _fb_list
     _fb_num += 1
-    _fb_list[args.name] = fb
+    _fb_list[name] = fb
 
 class FIFOBus(object):
-    def __init__(self,args=None):
-        # @todo: ?? not sure if this how the arguments should
-        #        should be handled.  Passing args is simple but a
-        #        little obscure ??
-        #        The current use does not require "args" but simply
-        #        width and size, in the future width and size might 
-        #        might be a small subset, additional args might 
-        #        include type (async, sync), number of delays, 
-        #        what control signals to include, etc.
-        if args is None:
-            args = Namespace(name='fifobus%d'%(_fb_num),
-                             width=8,  # fifobus data width
-                             size=128  # depth of the fifo
-                             )
-        width,size = args.width,args.size
+    def __init__(self, size=16, width=8):
+        self.name = "fifobus{0}".format(_fb_num)
         
         # all the data signals are from the perspective
         # of the FIFO being interfaced to.        
@@ -62,11 +49,10 @@ class FIFOBus(object):
         self.full = Signal(bool(0))            # fifo full
         self.count = Signal(intbv(0, min=0, max=size))
 
-        self.args = args
-        self.width = args.width
-        self.size = args.size
+        self.width = width
+        self.size = size
 
-        _add_bus(self,args)
+        _add_bus(self, self.name)
 
 
     def m_fifo(self, reset, wclk, rclk):
