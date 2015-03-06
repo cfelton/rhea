@@ -81,6 +81,7 @@ def m_spi(
     # get the register file for this core/peripheral
     g_regbus = regfile.m_per_interface(clock, reset, regbus,
                                        base_address=base_address)
+    # add the peripheral's regfile to the bus (informational only)
     regbus.append(regfile)
 
     # FIFO for the wishbone data transfer
@@ -251,9 +252,9 @@ def m_spi(
             txfb.wr.next = regfile.sptx.wr
             rxfb.rd.next = regfile.sprx.rd      
             
-            fb.rd.next    = False
-            fb.wr.next    = False
-            fb.wdata.next    = 0  # or'd bus must be 0
+            fb.rd.next = False
+            fb.wr.next = False
+            fb.wdata.next = 0  # or'd bus must be 0
         else:
             xfb.empty.next = fb.empty
             xfb.full.next  = fb.full
@@ -265,9 +266,9 @@ def m_spi(
             txfb.wr.next = False
             rxfb.rd.next = False
 
-            fb.rd.next    = xfb.rd
-            fb.wr.next    = xfb.wr
-            fb.wdata.next    = treg
+            fb.rd.next = xfb.rd
+            fb.wr.next = xfb.wr
+            fb.wdata.next = treg
 
 
     @always_comb

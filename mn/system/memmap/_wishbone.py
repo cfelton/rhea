@@ -25,7 +25,7 @@ from _memmap import MemMap
 _wb_per = 0
 _wb_list = {}
 
-def _add_bus(wb,args=None):
+def _add_bus(wb, args=None):
     """ globally keep track of all the busses added.
     """
     global _wb_per, _wb_list
@@ -56,8 +56,9 @@ class Wishbone(MemMap):
             self.clk_i = Clock(0)
         else:
             self.clk_i = clock
+
         if reset is None:
-            self.rst_i = Reset(0,active=1,async=False)
+            self.rst_i = Reset(0, active=1, async=False)
         else:
             self.rst_i = reset
         
@@ -142,8 +143,8 @@ class Wishbone(MemMap):
         
         @always_comb
         def rtl_assign():
-            lwb_acc.next = wb.cyc_i & wb.stb_i
-            lwb_wr.next = wb.cyc_i & wb.stb_i & wb.we_i
+            lwb_acc.next = wb.cyc_i and wb.stb_i
+            lwb_wr.next = wb.cyc_i and wb.stb_i and wb.we_i
                 
         @always_seq(wb.clk_i.posedge, reset=wb.rst_i)
         def rtl_selected():
@@ -154,10 +155,12 @@ class Wishbone(MemMap):
                         newcyc.next = True
             else:
                 ackcnt.next = ACNT
+
             if wb.cyc_i and wb.adr_i >= base_address and wb.adr_i <= max_address:
                 lwb_sel.next = True
             else:
                 lwb_sel.next = False
+
             if wb.cyc_i and newcyc:
                 lwb_ack.next = True
                 newcyc.next = False
@@ -177,9 +180,9 @@ class Wishbone(MemMap):
                 for ii in range(nregs):
                     prd[ii].next = False
             else:
-                if lwb_sel and not lwb_wr:
+                if lwb_sel and not lwb_wr:                    
                     for ii in range(nregs):
-                        aa = addr_list[ii]
+                        aa = addr_list[ii] + base_address
                         if wb.adr_i == aa:
                             lwb_do.next = regs_list[ii]
                             prd[ii].next = True
@@ -198,12 +201,13 @@ class Wishbone(MemMap):
                         regs_list[ii].next = dd
                     pwr[ii].next = False
             else:
-                if lwb_wr and lwb_sel:                
+                if lwb_wr and lwb_sel and not lwb_ack:                
                     for ii in range(nregs):
-                        aa = addr_list[ii]
+                        aa = addr_list[ii] + base_address
                         ro = rol[ii]
                         if not ro and wb.adr_i == aa:
                             regs_list[ii].next = wb.dat_i
+                            pwr[ii].next = True
                 else:
                     for ii in range(nregs):
                         pwr[ii].next = False
@@ -224,8 +228,9 @@ class Wishbone(MemMap):
         self.cyc_i.next = True
         self.stb_i.next = True
         to = 0
+        # wait for ack
         while not self.ack_o and to < self.TIMEOUT:
-            yield self.clk_i.posedge
+            yield delay(1) #self.clk_i.posedge
             to += 1
         self.we_i.next = False
         self.cyc_i.next = False

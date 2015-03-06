@@ -45,7 +45,7 @@ spcr.add_named_bits('loop', slice(1,0), "internal loopback")
 spcr.add_named_bits('spe', slice(2,1), "system enable")
 spcr.add_named_bits('cpol', slice(4,3), "clock polarity")
 spcr.add_named_bits('cpha', slice(5,4), "clock phase")
-spcr.add_named_bits('msse', slice(6,5), "manual slace select enable")
+spcr.add_named_bits('msse', slice(6,5), "manual slave select enable")
 spcr.add_named_bits('freeze', slice(7,6), "freeze the core")
 spcr.add_named_bits('rdata', slice(8,7), "1 : register file (memmap) feeds TX/RX FIFO")
 regfile.add_register(spcr)
@@ -64,30 +64,22 @@ sptx = Register('sptx', 0x68, 8, 'rw', 0)
 sptx.comment = "SPI transmit"
 regfile.add_register(sptx)
 
-sprx = Register('sprx', 0x6C,8, 'rw', 0)
+sprx = Register('sprx', 0x6C, 8, 'rw', 0)
 sprx.comment = "SPI receive"
 regfile.add_register(sprx)
 
-spss = Register('spss', 0x70,8, 'rw', 0)
+spss = Register('spss', 0x70, 8, 'rw', 0)
 spss.comment = "SPI slave select register, manually select external devices"
 regfile.add_register(spss)
 
-sptc = Register('sptc', 0x74,8, 'rw', 0)
+sptc = Register('sptc', 0x74, 8, 'rw', 0)
 sptc.comment = "transmit FIFO count"
 regfile.add_register(sptc)
 
-sprc = Register('sprc', 0x78,8, 'rw', 0)
+sprc = Register('sprc', 0x78, 8, 'rw', 0)
 sprc.comment = "receive FIFO count"
 regfile.add_register(sprc)
 
 spxx = Register('spxx', 0x78, 8, 'rw', 0)
 spxx.comment = "clock divisor register, sets sck period"
 regfile.add_register(spxx)
-
-# @todo need a home for the following control signals they should go in the control register
-#RegDef["SPC1"
-#       but see the @todo comment top of this file.
-#  "tx_rst" : {"b" : 8,  "width" : 1, "comment" : "TX FIFO reset"} ,
-#  "rx_rst" : {"b" : 9,  "width" : 1, "comment" : "RX FIFO reset"} ,
-#  "lsbf"   : {"b" : 10, "width" : 1, "comment" : "lsb first in time (first out).  msb first in time is default"},
-
