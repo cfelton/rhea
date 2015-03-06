@@ -3,26 +3,29 @@ a minor release point.  If you happen to come across this public repository
 feel free to try it out and contribute.  This repository will
 be unstable until the first minor release 0.1. 
  
-minnesota
-=========
+minnesota (`mn`)
+================
 
 The minnesota python package is a collection of HDL cores written 
 in MyHDL.  The "mn" package is dependent on the myhdl package 
 (obviously).  The myhdl package can be retrieved from 
 http://www.myhdl.org
 
-The examples have an additional dependency, the [gizflow](https://github.com/cfelton/gizflo) package.
+Some of the [examples](https://github.com/cfelton/minnesota/tree/master/examples) 
+have an additional dependency, the [gizflow](https://github.com/cfelton/gizflo) package.
 The gizflo package is used to manage different development boards and to 
 simplify the FPGA tool flow.  See the FPGA compile templates 
-in the examples directory for varioius boards.
+in the [examples directory](https://github.com/cfelton/minnesota/tree/master/examples) for 
+varioius boards.
 
 
 **IMPORTANT NOTE** this repository is under development and is using
 features from a development version of MyHDL (0.9dev).  If you 
 wish to try out this package get 
-[the development myhdl](https://github.com/jandecaluwe/myhdl)  
-(will need to clone it and install the source).  The first 
-*mn* release will not occur until myhdl 0.9 is released.
+[the development myhdl](https://github.com/jandecaluwe/myhdl)  (will 
+need to clone it and install the source).  The first 
+*mn* release will not occur until myhdl 0.9 is released (probably much
+later).
 
 This code/package is licensed user the LGPL license.  This allows 
 anyone to use the package in their projects with no limitations but
@@ -40,9 +43,9 @@ The following are the definition of some terms used in this README :
      system-on-a-chip, not using the term system-on-a-chip (SoC) 
      because SoC it is typically reserved for systems that contains 
      a CPU.  In this document and the example the **system** can be
-     a SoC or other complex digital design
+     a SoC or other complex digital design.
 
-   * register : collection of bits that retain state 
+   * register : collection of bits that retain state. 
 
    * register file : collection of same-sized registers, a register
      file is organized into read-write entities and read-only entities.
@@ -113,12 +116,25 @@ A register file definition is a Python `dictionary` that contains
 
 ```python
 regdef = {
-regdef = OrderedDict()
     # --register 0--
     'reg0': Register('reg0', 0x0018, 8, 'rw', 0),
     'reg1': Register('reg1', 0x0032, 8, 'rw', 0)
 }
 ```
+
+or
+
+```python
+regfile = RegisterFile(width=32)
+regfile.add_register(Register('reg0', 0x0018, 32, 'rw', 0))
+```
+
+<!-- 
+somethings missing from refile
+   1. mixed widths, the registers need to be packet, sparse
+      definitions will not be optimal.  Future enhancement 
+      that can occur under the hood
+-->
 
 <!--
 #### Adding a Register File to a Peripheral
