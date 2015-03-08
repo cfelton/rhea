@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from pprint import pprint
 from collections import OrderedDict
 from random import randint
 import traceback
@@ -122,7 +121,6 @@ def m_per_bits(clock, reset, regbus, mon):
 
 def test_register_def():
     regfile = _create_test_regfile()
-    #pprint(vars(regfile))
     assert len(regfile._rwregs) == 4
     assert len(regfile._roregs) == 2
 
@@ -139,7 +137,6 @@ def test_register_file():
         tb_or = regbus.m_per_outputs()
         tb_mclk = clock.gen()
         tb_rclk = regbus.clk_i.gen()
-        rwd = RWData()
         asserr = Signal(bool(0))
         
         @instance
@@ -192,17 +189,10 @@ def test_register_file_bits():
         tb_or = regbus.m_per_outputs()
         tb_mclk = clock.gen()
         tb_rclk = regbus.clk_i.gen()
-        rwd = RWData()
         asserr = Signal(bool(0))
 
         @instance
         def tb_stim():
-            #print(vars(regfile))
-            #print(regfile.enable, regfile.loop)
-            #print('-'*44)
-            #print(type(regfile.ok))
-            #print(regfile.ok)
-            #print('-'*44)
             regfile.ok.next = True
             try:
                 yield reset.pulse(111)
@@ -210,11 +200,12 @@ def test_register_file_bits():
                 yield clock.posedge          
                 print("  * %02X " %(regfile.status))
                 truefalse = True
-                #for _ in xrange(100):
-                #    print((regfile.enable, regfile.loop),(truefalse, not truefalse))
-                #    assert (regfile.enable, regfile.loop) == (truefalse, not truefalse)
-                #    truefalse = not truefalse
-                #    yield clock.posedge
+                for _ in xrange(100):
+                    print((regfile.enable, regfile.loop),(truefalse, not truefalse))
+                    assert (regfile.enable, regfile.loop) == (truefalse, not truefalse)
+                    yield regbus.read(regfile.status.addr)
+                    truefalse = not truefalse
+                    yield clock.posedge
             except AssertionError,err:
                 asserr.next = True
                 for _ in xrange(10):
@@ -230,12 +221,14 @@ def test_register_file_bits():
     g = traceSignals(_test)
     Simulation(g).run()
 
+
 def test_convert():
     clock = Clock(0,frequency=50e6)
     reset = Reset(0,active=1,async=False)
     mon = Signal(intbv(0)[8:])
     toVerilog(m_per_top, clock, reset, mon)
     toVHDL(m_per_top, clock, reset, mon)
+
     
 if __name__ == '__main__':
     #parser = tb_arparser()
