@@ -182,7 +182,8 @@ class Wishbone(MemMap):
             else:
                 if lwb_sel and not lwb_wr:                    
                     for ii in range(nregs):
-                        aa = addr_list[ii] + base_address
+                        aa = addr_list[ii]
+                        aa = aa + base_address
                         if wb.adr_i == aa:
                             lwb_do.next = regs_list[ii]
                             prd[ii].next = True
@@ -203,7 +204,8 @@ class Wishbone(MemMap):
             else:
                 if lwb_wr and lwb_sel and not lwb_ack:                
                     for ii in range(nregs):
-                        aa = addr_list[ii] + base_address
+                        aa = addr_list[ii]
+                        aa = aa + base_address
                         ro = rol[ii]
                         if not ro and wb.adr_i == aa:
                             regs_list[ii].next = wb.dat_i
