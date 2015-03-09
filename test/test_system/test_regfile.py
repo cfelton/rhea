@@ -43,7 +43,7 @@ def _create_test_regfile():
     global regdef
     regdef = OrderedDict()
     # --register 0--
-    reg = Register('reg0', 0x0018, 8, 'rw', 0)
+    reg = Register('control', 0x0018, 8, 'rw', 0)
     reg.comment = "register 0"
     reg.add_named_bits('enable', slice(1,0))
     reg.add_named_bits('loop', slice(2,1))
@@ -197,13 +197,14 @@ def test_register_file_bits():
             try:
                 yield reset.pulse(111)
                 yield clock.posedge
-                yield clock.posedge          
-                print("  * %02X " %(regfile.status))
+                yield clock.posedge           
                 truefalse = True
+                yield regbus.write(regfile.control.addr, 0x01)
                 for _ in xrange(100):
-                    print((regfile.enable, regfile.loop),(truefalse, not truefalse))
                     assert (regfile.enable, regfile.loop) == (truefalse, not truefalse)
-                    yield regbus.read(regfile.status.addr)
+                    yield regbus.read(regfile.control.addr)
+                    yield regbus.write(regfile.control.addr,
+                                       ~regbus.readval)
                     truefalse = not truefalse
                     yield clock.posedge
             except AssertionError,err:
