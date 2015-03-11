@@ -31,6 +31,8 @@ from myhdl import *
 from mn.system import FIFOBus
 from mn.cores.fifo import m_fifo_fast
 
+from mn.utils.test import *
+
 def test_ffifo(args=None):
     """ verify the synchronous FIFO
     """
@@ -43,7 +45,7 @@ def test_ffifo(args=None):
 
     reset = ResetSignal(0, active=1, async=True)
     clock = Signal(bool(0))
-    fbus = FIFOBus(args=args)
+    fbus = FIFOBus(width=args.width, size=args.size)
 
     def _test():
         
@@ -103,9 +105,7 @@ def test_ffifo(args=None):
         
         return tbdut, tbclk, tbstim
 
-    traceSignals.name = 'vcd/test_fifo_fast_%d' % (args.size)
-    if os.path.isfile(traceSignals.name+'.vcd'):
-        os.remove(traceSignals.name+'.vcd')        
+    tb_clean_vcd('test_fifo_fast_%d' % (args.size))
     g = traceSignals(_test)
     Simulation(g).run()
 

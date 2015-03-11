@@ -31,6 +31,8 @@ from myhdl import *
 from mn.system import FIFOBus
 from mn.cores.fifo import m_fifo_async
 
+from mn.utils.test import *
+
 def test_afifo(args=None):
     """ verify the asynchronous FIFO    
     """
@@ -39,7 +41,7 @@ def test_afifo(args=None):
     
     reset   = ResetSignal(0, active=1, async=True)
     wclk,rclk = [Signal(bool(0)), Signal(bool(0))]
-    fbus    = FIFOBus(args=args)
+    fbus    = FIFOBus(width=args.width, size=args.size)
     start = Signal(bool(0))
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,18 +195,11 @@ def test_afifo(args=None):
         return (tbdut, tbwclk, tbrclk, tb_always_wr, tb_always_wr_gate, 
                 tb_always_rd, tbstim)
 
+
     for tt in (_test1, _test2,): 
-        traceSignals.name = 'vcd/test_afifo_%s' % (tt.func_name)
-        if os.path.isfile(traceSignals.name+'.vcd'):
-            os.remove(traceSignals.name+'.vcd')
+        tb_clean_vcd('test_afifo_%s' % (tt.func_name))
         g = traceSignals(tt)
         Simulation(g).run()
-
-    #traceSignals.name = 'vcd/test_afifo'
-    #if os.path.isfile(traceSignals.name+'.vcd'):
-    #    os.remove(traceSignals.name+'.vcd')
-    #g = traceSignals(_test1)
-    #Simulation(g).run()
 
 if __name__ == '__main__':
     test_afifo()

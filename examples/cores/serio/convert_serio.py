@@ -1,7 +1,7 @@
 
 from myhdl import *
 
-from mn.cores import m_serio
+from mn.cores.misc import m_serio
 
 def m_serio_ex(clock, reset, sdi, sdo, Np=8):
     
