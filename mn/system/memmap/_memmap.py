@@ -1,10 +1,35 @@
 
+from __future__ import absolute_import
+from __future__ import print_function
+
+from copy import deepcopy
+from ..regfile import Register
+
 class MemMap(object):
     def __init__(self):
-        self.regfiles = []
+        self.names = {}
+        self.regfiles = {}
 
-    def append(self, rf):
-        self.regfiles.append(rf)
+    def add(self, name, rf, base_address=0):
+        """ add a peripheral register-file to the bus
+        """
+        # want a copy of the register-file so that the
+        # address can be adjusted.
+        arf = deepcopy(rf)
+
+        for k,v in arf.__dict__.iteritems():
+            if isinstance(v, Register):
+                v.addr += base_address
+
+        if self.regfiles.has_key(name):
+            self.names[name] +=1
+            name = name + "{:03d}".format(self.names[name])
+        else:
+            self.names = {name : 0}
+            name = name + "000"
+
+        self.regfiles[name] = arf            
+
 
 class RWData(object):
     def __init__(self):

@@ -27,6 +27,7 @@ from mn.models.spi import SPIEEPROM
 from mn.system import Clock,Reset
 from mn.system import Wishbone
 from mn.system import FIFOBus 
+from mn.system.regfile import Register
 
 from mn.utils.test import *
 
@@ -60,24 +61,32 @@ def test_spi():
         tbdut = m_spi(clock, reset, regbus, 
                       fiforx, fifotx, spibus,
                       base_address=base_address)
-        rf = regbus.regfiles[0]
+        rf = regbus.regfiles['spi000']
         tbeep = spiee.gen(clock, reset, spibus)
         tbclk = clock.gen(hticks=5)
         # grab all the register file outputs
         tbmap = regbus.m_per_outputs()
 
+        for name,reg in rf.registers.iteritems():
+            print("{0} {1:04X} {2:04X}".format(name, reg.addr, int(reg)))
+        print("---")
+        for k,v in rf.__dict__.iteritems():
+            if isinstance(v, Register):
+                print("{0} {1:04X} {2:04X}".format(k, v.addr, int(v)))
+
         @instance
-        def tbstim():
+        def tbstim():            
             yield reset.pulse(33)
 
             try:
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # loop through the registers and check the default 
-                # values.
-                for addr,sig in rf._roregs:
+                # values, these are the offset values.
+                for addr,sig in rf.roregs:
                     yield regbus.read(addr+ba)
                     assert regbus.readval == int(sig)
 
-                for addr,sig in rf._rwregs:
+                for addr,sig in rf.rwregs:
                     # need to skip the FIFO read / write
                     if addr in (0x68, 0x6C,):
                         pass
@@ -85,31 +94,33 @@ def test_spi():
                         yield regbus.read(addr+ba)
                         assert regbus.readval == int(sig)
 
-                # enable the system
-                yield regbus.write(0x60+ba, 0x82)
 
-                yield regbus.write(0x68+ba, 0x02)
-                yield regbus.write(0x68+ba, 0x00)
-                yield regbus.write(0x68+ba, 0x00)
-                yield regbus.write(0x68+ba, 0x00)
-                yield regbus.write(0x68+ba, 0x55)
+                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                # enable the system                
+                yield regbus.write(rf.spcr.addr, 0x82)
 
-                yield regbus.read(0x74+ba)
+                yield regbus.write(rf.sptx.addr, 0x02)
+                yield regbus.write(rf.sptx.addr, 0x00)
+                yield regbus.write(rf.sptx.addr, 0x00)
+                yield regbus.write(rf.sptx.addr, 0x00)
+                yield regbus.write(rf.sptx.addr, 0x55)
+
+                yield regbus.read(rf.sptc.addr)
                 print(regbus.readval)
 
-                yield regbus.read(0x78+ba)
+                yield regbus.read(rf.sprc.addr)
                 print(regbus.readval)
 
                 yield delay(1000)
 
                 for ii in range(1000):
-                    yield regbus.read(0x78+ba)
+                    yield regbus.read(rf.sprc.addr)
                     if regbus.readval == 5:
                         break
                     yield delay(1000)
                 
                 for ii in range(5):
-                    yield regbus.read(0x6C+ba)
+                    yield regbus.read(rf.sprx.addr)
                     print("spi readback {0}".format(regbus.readval))
                 
 

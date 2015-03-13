@@ -69,8 +69,8 @@ def m_spi(
     x_mosi  = Signal(False)
     x_miso  = Signal(False)    
 
-    xfb = FIFOBus(size=txfb.size, width=txfb.width)
-    fb = FIFOBus(size=rxfb.size, width=rxfb.width)
+    xfb = FIFOBus(size=txfb.size, width=txfb.width)  # internal read side
+    fb = FIFOBus(size=rxfb.size, width=rxfb.width)   # internal write side
     
     States = enum('IDLE', 'WAIT_HCLK', 'DATA_IN', 'DATA_CHANGE',
                   'WRITE_FIFO', 'END')
@@ -82,7 +82,7 @@ def m_spi(
     g_regbus = regfile.m_per_interface(clock, reset, regbus,
                                        base_address=base_address)
     # add the peripheral's regfile to the bus (informational only)
-    regbus.append(regfile)
+    regbus.add('spi', regfile, base_address)
 
     # FIFO for the wishbone data transfer
     if include_fifo:
@@ -277,7 +277,6 @@ def m_spi(
         x_mosi.next  = treg[7]
 
 
-    #@always_comb
     @always(regbus.clock.posedge)
     def rtl_spi_sigs():
         spibus.sck.next   = x_sck

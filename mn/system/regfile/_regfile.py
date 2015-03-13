@@ -69,6 +69,16 @@ class Register(_Signal):
         else:
             assert width == _width, "All registers must be the same width"
 
+    def __copy__(self):
+        reg = Register(self.name, self.addr, self.width, self.access,
+                       self.default, self.comment)
+        for k,v in self.bits.iteritems():
+            reg.add_named_bits(k, v.b, v.comment)
+        return reg
+
+    def __deepcopy__(self, memo):
+        return self.__copy__()
+
     def add_named_bits(self, name, slc, comment=""):
         bits = RegisterBits(name, slc, comment)
         self.bits[bits.name] = bits
@@ -123,9 +133,17 @@ class RegisterFile(object):
         
         
         """
-        self._rwregs = []
-        self._roregs = []
-        self._regdef = regdef
+        self._rwregs = []  # read-write registers
+        self._roregs = []  # read-only registers
+        self.registers = {}
+
+        # @todo: if the regdef is dict-of-dict definiton, first
+        #    build the registers
+        if regdef is not None:
+            for k,v in regdef.iteritems():
+                if isinstance(v, Register):
+                    self.registers[k] = v
+            
         self._allregs = None
         
         #@todo: sort the regdef by lowest address to highest address.
@@ -136,6 +154,14 @@ class RegisterFile(object):
         if regdef is not None:
             for k,v in regdef.iteritems():
                 self._append_register(k, v)
+
+    @property
+    def roregs(self):
+        return self._roregs
+
+    @property
+    def rwregs(self):
+        return self._rwregs
 
     def _append_register(self, name, reg):
         """ append a register to the list 
@@ -163,6 +189,8 @@ class RegisterFile(object):
 
     def add_register(self, reg):
         """ add a register to the register file """
+        assert not self.registers.has_key(reg.name)
+        self.registers[reg.name] = reg
         self._append_register(reg.name, reg)
 
 
@@ -189,22 +217,22 @@ class RegisterFile(object):
         return wr,rd
 
 
-    def get_readonly(self, name=None, addr=None):
-        roreg = None
-        if name is not None:
-            if self._regdef is None:
-                # @todo: need to search for the name
-                raise NotImplemented
-            else:
-                addr = self._regdef[name].addr
-        assert addr is not None
-        for aa,rr in self._roregs:
-            print(aa,rr)
-            if addr == aa:
-                roreg = rr
-                break
-        assert roreg is not None, "Invalid register %s %x"%(name,addr)
-        return roreg
+    #def get_readonly(self, name=None, addr=None):
+    #    roreg = None
+    #    if name is not None:
+    #        if self._regdef is None:
+    #            # @todo: need to search for the name
+    #            raise NotImplemented
+    #        else:
+    #            addr = self._regdef[name].addr
+    #    assert addr is not None
+    #    for aa,rr in self._roregs:
+    #        print(aa,rr)
+    #        if addr == aa:
+    #            roreg = rr
+    #            break
+    #    assert roreg is not None, "Invalid register %s %x"%(name,addr)
+    #    return roreg
     
 
     def m_per_interface(self, clock, reset, regbus,

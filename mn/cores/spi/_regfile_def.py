@@ -17,11 +17,11 @@ from ...system import RegisterFile, Register, RegisterBits
              SPE System Enable ---------------------------------+ |
              CPOL Clock Polarity ---------------------------+   | |
              CPHA Clock Phase ----------------------------+ |   | | 
-??             Tx FIFO Reset -----------------------------+ | |   | |
-??             Rx FIFO Reset ---------------------------+ | | |   | |
+??           Tx FIFO Reset -----------------------------+ | |   | |
+??           Rx FIFO Reset ---------------------------+ | | |   | |
              Manual Slave Select Enable ------------+ | | | |   | |             
              Freeze ------------------------------+ | | | | |   | |
-             Select streaming (1) or wb --------+ | | | | | |   | |
+             Select streaming (1) or mm --------+ | | | | | |   | |
                                                 | | | | | | |   | |
                                                 9 8 7 6 5 4 3 2 1 0
         0x64: SPSR status register
@@ -29,6 +29,7 @@ from ...system import RegisterFile, Register, RegisterBits
         0x68: SPTX transmit register
                                                   8 7 6 5 4 3 2 1 0
         0x6C: SPRX receive register
+
         0x70: SPSS slave select register
         0x74: SPTC transmit fifo count
         0x78: SPRC receive fifo count
