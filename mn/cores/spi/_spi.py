@@ -38,7 +38,8 @@ def m_spi(
     # ---[ Module Ports]---
     # @todo: use glbl (glbl.clock, glbl.reset)
     clock,
-    reset,   
+    reset,
+   
     regbus,  # memory-mapped register bus
     rxfb,    # streaming interface, receive fifo bus
     txfb,    # streaming inteface, transmit fifo bus
