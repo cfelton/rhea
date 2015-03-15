@@ -23,10 +23,10 @@ class MemMap(object):
 
         if self.regfiles.has_key(name):
             self.names[name] +=1
-            name = name + "{:03d}".format(self.names[name])
+            name = name.upper() + "_{:03d}".format(self.names[name])
         else:
             self.names = {name : 0}
-            name = name + "000"
+            name = name.upper() + "_000"
 
         self.regfiles[name] = arf            
 

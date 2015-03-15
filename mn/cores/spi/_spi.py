@@ -52,11 +52,10 @@ def m_spi(
     ):
     """ SPI (Serial Peripheral Interface) module
 
-      This is an implementation of an SPI controller that is wishbone
-      enabled.  The control registers have common SPI names and are
-      similar to the registers in the Xilinx OCB SPI controller.
-
+    This is a generic SPI implementation, the register layout
+    is similar to outher SPI controller.
     """
+
     # -- local signals --
     ena    = Signal(False)
     clkcnt = Signal(modbv(0, min=0, max=2**12))
@@ -69,8 +68,9 @@ def m_spi(
     x_mosi  = Signal(False)
     x_miso  = Signal(False)    
 
-    xfb = FIFOBus(size=txfb.size, width=txfb.width)  # internal read side
-    fb = FIFOBus(size=rxfb.size, width=rxfb.width)   # internal write side
+    # internal FIFO bus
+    xfb = FIFOBus(size=txfb.size, width=txfb.width)  
+    fb = FIFOBus(size=rxfb.size, width=rxfb.width)  
     
     States = enum('IDLE', 'WAIT_HCLK', 'DATA_IN', 'DATA_CHANGE',
                   'WRITE_FIFO', 'END')
@@ -226,7 +226,6 @@ def m_spi(
                     else:
                         xfb.rd.next = False
                         xfb.wr.next = False
-
                 
                 # Shouldn't happen, error in logic
                 else:
@@ -241,7 +240,8 @@ def m_spi(
         
     @always_comb
     def rtl_fifo_sel():
-        if regfile.spcr.rdata:
+        # data comes from the register file
+        if regfile.spst.rdata:
             xfb.empty.next = txfb.empty
             xfb.full.next  = rxfb.full
             xfb.rdata.next = txfb.rdata
@@ -255,6 +255,7 @@ def m_spi(
             fb.rd.next = False
             fb.wr.next = False
             fb.wdata.next = 0  # or'd bus must be 0
+        # data comes from external FIFO bus interface
         else:
             xfb.empty.next = fb.empty
             xfb.full.next  = fb.full

@@ -61,7 +61,7 @@ def test_spi():
         tbdut = m_spi(clock, reset, regbus, 
                       fiforx, fifotx, spibus,
                       base_address=base_address)
-        rf = regbus.regfiles['spi000']
+        rf = regbus.regfiles['SPI_000']
         tbeep = spiee.gen(clock, reset, spibus)
         tbclk = clock.gen(hticks=5)
         # grab all the register file outputs
@@ -97,7 +97,8 @@ def test_spi():
 
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # enable the system                
-                yield regbus.write(rf.spcr.addr, 0x82)
+                yield regbus.write(rf.spst.addr, 0x02)  # register data drives fifo
+                yield regbus.write(rf.spcr.addr, 0x9A)  # default plus enable (98 + 02)
 
                 yield regbus.write(rf.sptx.addr, 0x02)
                 yield regbus.write(rf.sptx.addr, 0x00)

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2014 Christopher L. Felton
+# Copyright (c) 2013-2015 Christopher L. Felton
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -31,6 +31,8 @@ def _add_bus(fb, name=''):
     _fb_list[name] = fb
 
 class FIFOBus(object):
+    """
+    """
     def __init__(self, size=16, width=8):
         self.name = "fifobus{0}".format(_fb_num)
         

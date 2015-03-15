@@ -11,23 +11,30 @@ from ...system import RegisterFile, Register, RegisterBits
             1 byte == address 0x61
         MSB 0 byte == address 0x60
 
+
       Registers: (Base address +)
+        0x58: ???? setup register
+             Freeze ----------------------------------------------+ 
+             Select streaming (1) or mm ------------------------+ | 
+                                                    | | | | | | | |
+                                                    7 6 5 4 3 2 1 0
+
         0x60: SPCR control register
              Loop ------------------------------------------------+
              SPE System Enable ---------------------------------+ |
-             CPOL Clock Polarity ---------------------------+   | |
-             CPHA Clock Phase ----------------------------+ |   | | 
-??           Tx FIFO Reset -----------------------------+ | |   | |
-??           Rx FIFO Reset ---------------------------+ | | |   | |
-             Manual Slave Select Enable ------------+ | | | |   | |             
-             Freeze ------------------------------+ | | | | |   | |
-             Select streaming (1) or mm --------+ | | | | | |   | |
-                                                | | | | | | |   | |
-                                                9 8 7 6 5 4 3 2 1 0
+                ----------------------------------------------+ | |
+             CPOL Clock Polarity ---------------------------+ | | |
+             CPHA Clock Phase ----------------------------+ | | | | 
+??           Tx FIFO Reset -----------------------------+ | | | | |
+??           Rx FIFO Reset ---------------------------+ | | | | | |
+             Manual Slave Select Enable ------------+ | | | | | | |             
+                                                    | | | | | | | |
+                                                    7 6 5 4 3 2 1 0
+                                           
         0x64: SPSR status register
-                                                  8 7 6 5 4 3 2 1 0
+                                                    7 6 5 4 3 2 1 0
         0x68: SPTX transmit register
-                                                  8 7 6 5 4 3 2 1 0
+                                                    7 6 5 4 3 2 1 0
         0x6C: SPRX receive register
 
         0x70: SPSS slave select register
@@ -38,6 +45,13 @@ from ...system import RegisterFile, Register, RegisterBits
 """
 
 regfile = RegisterFile()
+# -- SPI Setup Register 
+spst = Register('spst', 0x58, 8, 'rw', 0x00)
+spst.add_named_bits('freeze', slice(1,0), 
+                    "freeze the core")
+spst.add_named_bits('rdata', slice(2,1), 
+                    "1 : register file (memmap) feeds TX/RX FIFO")
+regfile.add_register(spst)
 
 # -- SPI Control Register (Control Register 0) --
 spcr = Register('spcr', 0x60, 8, 'rw', 0x98)
@@ -46,9 +60,7 @@ spcr.add_named_bits('loop', slice(1,0), "internal loopback")
 spcr.add_named_bits('spe', slice(2,1), "system enable")
 spcr.add_named_bits('cpol', slice(4,3), "clock polarity")
 spcr.add_named_bits('cpha', slice(5,4), "clock phase")
-spcr.add_named_bits('msse', slice(6,5), "manual slave select enable")
-spcr.add_named_bits('freeze', slice(7,6), "freeze the core")
-spcr.add_named_bits('rdata', slice(8,7), "1 : register file (memmap) feeds TX/RX FIFO")
+spcr.add_named_bits('msse', slice(8,7), "manual slave select enable")
 regfile.add_register(spcr)
 
 # -- SPI status register --
