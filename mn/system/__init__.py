@@ -1,17 +1,20 @@
 
-from _clock import Clock
-from _reset import Reset
-from _glbl import Global
+from __future__ import absolute_import
 
-from regfile._regfile import RegisterBits
-from regfile._regfile import Register
-from regfile._regfile import RegisterFile
+from mn.system._clock import Clock
+from mn.system._reset import Reset
+from mn.system._glbl import Global
+
+from mn.system.regfile._regfile import RegisterBits
+from mn.system.regfile._regfile import Register
+from mn.system.regfile._regfile import RegisterFile
 
 # different busses supported by the register file interface
-import memmap._wishbone as wishbone    # module
-from memmap._wishbone import Wishbone  # object
+from mn.system.memmap._barebone import Barebone  
+from mn.system.memmap._wishbone import Wishbone  
+from mn.system.memmap._avalonmm import AvalonMM  
+from mn.system.memmap._axi4 import AXI4          
 
-from memmap._memmap import RWData
 
 # various other busses
-from fifobus._fifobus import FIFOBus
+from mn.system.fifobus._fifobus import FIFOBus

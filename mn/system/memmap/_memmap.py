@@ -6,9 +6,12 @@ from copy import deepcopy
 from ..regfile import Register
 
 class MemMap(object):
-    def __init__(self):
+    def __init__(self, data_width, address_width):
+        self.data_width = data_width
+        self.address_width = address_width
         self.names = {}
         self.regfiles = {}
+        
 
     def add(self, name, rf, base_address=0):
         """ add a peripheral register-file to the bus
@@ -29,15 +32,3 @@ class MemMap(object):
             name = name.upper() + "_000"
 
         self.regfiles[name] = arf            
-
-
-class RWData(object):
-    def __init__(self):
-        self.wval = 0
-        self.rval = 0
-
-    def set(self, val):
-        self.wval = val
-
-    def get(self):
-        return self.rval

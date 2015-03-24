@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2014 Christopher L. Felton
+# Copyright (c) 2014-2015 Christopher L. Felton
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -14,63 +14,79 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from argparse import Namespace
+from __future__ import absolute_import
 
 from myhdl import *
-from .._clock import Clock
-from .._reset import Reset
-from _memmap import MemMap
+from mn.system import Clock
+from mn.system import Reset
+from mn.system.memmap._memmap import MemMap
 
 # a count of the number of wishbone peripherals
 _wb_per = 0
 _wb_list = {}
 
-def _add_bus(wb, args=None):
+def _add_bus(wb, name=None):
     """ globally keep track of all the busses added.
     """
     global _wb_per, _wb_list
+    nkey = "{:04d}".format(_wb_per) if name is None else name
+    _wb_list[name] = wb
     _wb_per += 1
-    _wb_list[args.name] = wb
+
+
+class WishboneController(object):
+    def __init__(self, data_width=8, address_width=16):
+        self.addr = Signal(intbv(0)[address_width:])
+        self.wdata = Signal(intbv(0)[data_width:])
+        self.rdata = Signal(intbv(0)[data_width:])
+        self.read = Signal(bool(0))
+        self.write = Signal(bool(0))
+        self.done = Signal(bool(0))
 
 
 class Wishbone(MemMap):
     name = 'wishbone'
     
-    def __init__(self, clock=None, reset=None, 
-                 dwidth=8, awidth=16, name=None, args=None):
+    def __init__(self, glbl=None, data_width=8, address_width=16, 
+                 name=None):
         """
+        Parameters (kwargs):
+        --------------------
+          glbl: system clock and reset
+          data_width: data bus width
+          address_width: address bus width
+          name: name for the bus
         """
         # @todo: ?? not sure if this how the arguments should
         #        should be handled.  Passing args is simple but a
         #        little obscure ??
-        super(Wishbone, self).__init__() 
-        if args is None:
-            if name is None:
-                name = 'wb_per%d'%(_wb_per)
-            args = Namespace(name=name, dwidth=dwidth, awidth=awidth)
-        else:
-            pass #@todo verify args has required parameters
+        super(Wishbone, self).__init__(data_width=data_width,
+                                       address_width=address_width) 
 
-        self.args = args
-        if clock is None:
+        # note on Wishbone signal names, since the signals
+        # are not passed to the controller and peripherals
+        # (the interface is passed) there isn't a need for 
+        # _o and _i on many of the signals.  Preserved the
+        # peripheral (slave) point of view names.
+        if glbl is None:
             self.clk_i = Clock(0)
         else:
-            self.clk_i = clock
+            self.clk_i = glbl.clock
 
-        if reset is None:
+        if glbl.reset is None:
             self.rst_i = Reset(0, active=1, async=False)
         else:
-            self.rst_i = reset
+            self.rst_i = glbl.reset
         
         self.cyc_i = Signal(bool(0))
         self.stb_i = Signal(bool(0))
-        self.adr_i = Signal(intbv(0)[args.awidth:])
+        self.adr_i = Signal(intbv(0)[address_width:])
         self.we_i = Signal(bool(0))
         self.sel_i = Signal(bool(0))
-        self.dat_i = Signal(intbv(0)[args.dwidth:])
+        self.dat_i = Signal(intbv(0)[data_width:])
 
         # outputs from the peripherals
-        self.dat_o = Signal(intbv(0)[args.dwidth:])
+        self.dat_o = Signal(intbv(0)[data_width:])
         self.ack_o = Signal(bool(0))
 
         # peripheral outputs
@@ -87,7 +103,7 @@ class Wishbone(MemMap):
         self.wval = 0
         self.rval = 0
 
-        _add_bus(self,args)
+        _add_bus(self, name)
         
     def add_output_bus(self, name, dat, ack):
         self._pdat_o.append(dat)
@@ -114,11 +130,9 @@ class Wishbone(MemMap):
 
     # @todo: use *glbl* and figure out *args*
     def m_per_interface(self, clock, reset, regfile,
-                        args=None, base_address=0x00):
+                        name='', base_address=0x00):
         """ memory-mapped wishbone peripheral interface
         """
-        if args is None:
-            args = self.args
             
         # local alias
         wb = self    # register bus
@@ -132,10 +146,10 @@ class Wishbone(MemMap):
         max_address = base_address + max(addr_list)
 
         # @todo: VHDL conversion can't handle a leading "_"
-        lwb_do = Signal(intbv(0)[args.dwidth:])
+        lwb_do = Signal(intbv(0)[self.data_width:])
         (lwb_sel,lwb_acc,lwb_wr,
          lwb_wrd,lwb_ack,) = [Signal(bool(0)) for ii in range(5)]
-        wb.add_output_bus(args.name, lwb_do, lwb_ack)
+        wb.add_output_bus(name, lwb_do, lwb_ack)
         
         ACNT = 1
         ackcnt = Signal(intbv(ACNT,min=0,max=ACNT+1))
@@ -215,6 +229,71 @@ class Wishbone(MemMap):
                         pwr[ii].next = False
         
         return instances()
+
+    def get_controller_intf(self):
+        return WishboneController(self.data_width, self.address_width)
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def m_controller_basic(self, ctl):
+        """
+        Bus controllers (masters) are typically custom and 
+        built into whatever the controller is (e.g a processor).
+        This is a simple example with a simple interface to 
+        invoke bus cycles.
+        """
+        wb = self
+        States = enum('Idle', 'Write', 'WriteAck', 'ReadAck', 'Done')
+        state = Signal(States.Idle)
+        TOMAX = 33
+        tocnt = Signal(intbv(0, min=0, max=TOMAX))
+
+        @always(wb.clock.posedge)
+        def assign():
+            wb.adr_i.next = ctl.addr
+            wb.dat_i.next = ctl.wdata
+            ctl.rdata.next = wb.dat_o
+
+
+        @always_seq(wb.clock.posedge, reset=wb.reset)
+        def rtl():
+            # ~~~[Idle]~~~ 
+            if state == States.Idle:
+                if ctl.write:
+                    state.next = States.Write
+                    ctl.done.next = False
+                elif ctl.read:
+                    state.next = States.Read
+                    ctl.done.next = False
+                else:
+                    ctl.done.next = True
+                    
+            # ~~~[Write]~~~
+            elif state == States.Write:
+                if not wb.ack_o:
+                    wb.we_i.next = True
+                    wb.cyc_i.next = True
+                    wb.stb_i.next = True
+                    state.next = States.WriteAck
+                    tocnt.next = 0
+
+            # ~~~[WriteAck]~~~
+            elif state == States.WriteAck:
+                if wb.ack_o:
+                    wb.we_i.next = False
+                    wb.cyc_i.next = False
+                    wb.stb_i.next = False
+                    state.next = States.Done
+
+            # ~~~[Done]~~~
+            elif state == States.Done:
+                ctl.done.next = True
+                if not (ctl.write or ctl.read):
+                    state.next = States.Idle
+
+            else:
+                assert False, "Invalid state {}".format(state)
+
+        return assign, rtl
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     

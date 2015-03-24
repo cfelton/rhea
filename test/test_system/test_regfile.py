@@ -20,11 +20,12 @@ import traceback
 
 from myhdl import *
 
-from mn.system import Clock,Reset
+from mn.system import Clock 
+from mn.system import Reset
+from mn.system import Global
 from mn.system import RegisterFile
 from mn.system import Register
 from mn.system import Wishbone
-from mn.system import RWData
 
 from mn.utils.test import *
 
@@ -71,7 +72,8 @@ def _create_test_regfile():
 
 
 def m_per_top(clock, reset, mon):
-    wb = Wishbone(clock, reset)
+    glbl = Global(clock, reset)
+    wb = Wishbone(glbl)
     #gpm = wb.m_controller(wb)
     gp1 = m_per(clock, reset, wb, mon)
     return gp1
@@ -130,7 +132,8 @@ def test_register_file():
     # top-level signals and interfaces
     clock = Clock(0, frequency=50e6)
     reset = Reset(0,active=1,async=False)
-    regbus = Wishbone(clock,reset) 
+    glbl = Global(clock, reset)
+    regbus = Wishbone(glbl) 
 
     def _test_rf():
         tb_dut = m_per(clock,reset,regbus,0xAA)
@@ -182,7 +185,8 @@ def test_register_file_bits():
     # top-level signals and interfaces
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
-    regbus = Wishbone(clock, reset) 
+    glbl = Global(clock, reset)
+    regbus = Wishbone(glbl) 
 
     def _test():
         tb_dut = m_per_bits(clock, reset, regbus, 0xAA)

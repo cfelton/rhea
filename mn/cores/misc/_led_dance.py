@@ -2,11 +2,11 @@
 from myhdl import *
 from _assign import m_assign
 
-def m_led_count(
+def m_led_dance(
   # ~~~[Ports]~~~
   clock,             # input : system sync clock
   reset,             # input : reset (level determined by RST_LEVEL)
-  led,               # output : to IO ports drive LEDs
+  leds,              # output : to IO ports drive LEDs
 
   # ~~~[Parameters]~~~
   led_rate = 33e-3, # strobe change rate of 333ms

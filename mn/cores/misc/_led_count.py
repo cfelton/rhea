@@ -7,7 +7,7 @@ def m_led_count(
   # ~~~[Ports]~~~
   clock,             # input : system sync clock
   reset,             # input : reset (level determined by RST_LEVEL)
-  led,               # output : to IO ports drive LEDs
+  leds,              # output : to IO ports drive LEDs
 
   # ~~~[Parameters]~~~
   led_rate = 333e-3, # strobe change rate of 333ms

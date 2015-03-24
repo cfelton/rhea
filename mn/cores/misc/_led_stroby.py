@@ -37,7 +37,7 @@ def m_led_stroby(
     """
 
     # Number of LEDs
-    led_bank = len(led)
+    led_bank = len(leds)
     
     # Need to calculate some constants.  Want the value to
     # be an integer (non-fractional value only whole number)
@@ -46,7 +46,7 @@ def m_led_stroby(
     # Some useful definitions (constants)
     mb = led_bank + 2*num_dumb
     lsb,msb = (0,mb-1,)
-    msb_reverse_val = (1 << MB-2)
+    msb_reverse_val = (1 << mb-2)
     lsb_reverse_val = 2
     
     # Declare the internal Signals in our design
