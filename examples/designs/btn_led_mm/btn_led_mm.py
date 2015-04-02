@@ -48,6 +48,8 @@ def m_btn_led_mm(clock, reset, leds, btns, bus_type='W'):
     gled = m_led_mm_per(glbl, regbus, leds)  # memmap peripheral
     gmap = regbus.m_per_outputs()            # bus combiner
 
+    print(vars(regbus.regfiles['LED_000']))
+
     return gbtn, gled, gmap
 
 

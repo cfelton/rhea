@@ -60,8 +60,10 @@ def test_btn_led():
     tb_clean_vcd(_test.func_name)
     Simulation(traceSignals(_test)).run()
     #Simulation(_test()).run()
+    # currently an error when converting to both at once,
+    # only convert to one at a time.
     toVerilog(m_btn_led_mm, clock, reset, leds, btns)
-    toVHDL(m_btn_led_mm, clock, reset, leds, btns)
+    #toVHDL(m_btn_led_mm, clock, reset, leds, btns)
 
 
 if __name__ == '__main__':

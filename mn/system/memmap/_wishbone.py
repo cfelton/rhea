@@ -242,7 +242,7 @@ class Wishbone(MemMap):
         invoke bus cycles.
         """
         wb = self
-        States = enum('Idle', 'Write', 'WriteAck', 'ReadAck', 'Done')
+        States = enum('Idle', 'Write', 'WriteAck', 'Read', 'ReadAck', 'Done')
         state = Signal(States.Idle)
         TOMAX = 33
         tocnt = Signal(intbv(0, min=0, max=TOMAX))
@@ -291,7 +291,7 @@ class Wishbone(MemMap):
                     state.next = States.Idle
 
             else:
-                assert False, "Invalid state {}".format(state)
+                assert False, "Invalid state %s" % (state,)
 
         return assign, rtl
 

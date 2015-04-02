@@ -31,4 +31,6 @@ class MemMap(object):
             self.names = {name : 0}
             name = name.upper() + "_000"
 
-        self.regfiles[name] = arf            
+        self.regfiles[name] = arf       
+
+        # @todo: return the peripheral generator

@@ -18,9 +18,9 @@ regfile.add_register(select)
 
 
 def m_led_mm_per(glbl, regbus, leds, base_address=0x8240):
-    """
+    """ LED memory-map peripheral
     This (rather silly) core will select different LED
-    displays based on the memory-mapped select register
+    displays based on the memory-mapped select register.
     """
     Ndrv = 3 # the number of different drivers
 
@@ -32,6 +32,7 @@ def m_led_mm_per(glbl, regbus, leds, base_address=0x8240):
     # memory-mapped registers
     greg = regfile.m_per_interface(clock, reset, regbus,
                                    base_address=base_address)
+    regbus.add('led', regfile, base_address)
 
     # led bus from each driver
     dled = [Signal(intbv(0)[len(leds):]) 

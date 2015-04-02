@@ -194,11 +194,11 @@ class RegisterFile(object):
     def get_reglist(self):
         """ return a list of addresses and a list of registers.        
         """
-        rwa = [aa for aa,rr in self._rwregs]
-        rwr = [rr for aa,rr in self._rwregs]
+        rwa = [aa for aa,rr in self._rwregs]       # rw address
+        rwr = [rr for aa,rr in self._rwregs]       # rw register
         _rrw = [False for aa,rr in self._rwregs]
-        roa = [aa for aa,rr in self._roregs]
-        ror = [rr for aa,rr in self._roregs]
+        roa = [aa for aa,rr in self._roregs]       # ro address
+        ror = [rr for aa,rr in self._roregs]       # ro register
         _rro = [True for aa,rr in self._rwregs]
         self._allregs = rwr+ror
         dl = [rr.default for aa,rr in self._rwregs+self._roregs]
