@@ -25,9 +25,16 @@ def tb_move_v():
         shutil.move(vf, 'ver/')
 
 def tb_clean_vcd(name):
-    for vv in glob('*.vcd.*'):
+    if not os.path.isdir('vcd'):
+        os.path.mkdir('vcd')
+
+    for vv in glob('vcd/*.vcd.*'):
         os.remove(vv)
 
-    if os.path.isfile('%s.vcd'%(name)):
-        os.remove('%s.vcd'%(name))
+    nmpth = 'vcd/{}.vcd'.format(name)
+    if os.path.isfile(nmpth):
+        os.remove(nmpth)
+
+    # return the VCD path+name minus extension
+    return nmpth[:-4]
 

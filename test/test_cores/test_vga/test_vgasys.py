@@ -22,12 +22,14 @@ from mn.cores.video import m_vga_sync
 # a video display model to check the timings
 from mn.models.video import VideoDisplay
 
+from mn.utils.test import *
+
 # local wrapper to build a VGA system
 from mm_vgasys import mm_vgasys
 from mm_vgasys import convert
 
 def test_vgasys(args):
-    # @todo: retrieve these from 
+    # @todo: retrieve these from ...
     res = (640, 480,)  # (80,60,),  (640,480,)
     line_rate = int(31250)
 
@@ -76,11 +78,9 @@ def test_vgasys(args):
         return tbclk, tbvd, tbstim, tbdut
 
 
-    if os.path.isfile('vcd/_test.vcd'):
-        os.remove('vcd/_test.vcd')
-
+    vcd = tb_clean_vcd('_test')
     traceSignals.timescale = '1ns'
-    traceSignals.name = 'vcd/_test'
+    traceSignals.name = vcd
     Simulation(traceSignals(_test)).run()
     convert()
 
