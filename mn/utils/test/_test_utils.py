@@ -26,7 +26,7 @@ def tb_move_v():
 
 def tb_clean_vcd(name):
     if not os.path.isdir('vcd'):
-        os.path.mkdir('vcd')
+        os.mkdir('vcd')
 
     for vv in glob('vcd/*.vcd.*'):
         os.remove(vv)
