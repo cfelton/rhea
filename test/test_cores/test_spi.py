@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2013 Christopher L. Felton
+# Copyright (c) 2013-2015 Christopher L. Felton
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -31,10 +31,12 @@ from mn.system.regfile import Register
 
 from mn.utils.test import *
 
-def m_test_top(clock,reset,sck,mosi,miso,ss):
-    # @todo:
+def m_test_top(clock, reset, sck, mosi, miso, ss):
+    # @todo: map top-level ports to interfaces
+    #    for conversion.
     g_spi = m_spi()
     
+
 def convert(to='ver'):
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
@@ -45,6 +47,7 @@ def convert(to='ver'):
        
     toVerilog(m_test_top, clock, reset, sck, mosi, miso, ss)
     toVHDL(m_test_top, clock, reset, sck, mosi, miso, ss)
+
 
 def test_spi():
     
@@ -61,18 +64,16 @@ def test_spi():
         tbdut = m_spi(clock, reset, regbus, 
                       fiforx, fifotx, spibus,
                       base_address=base_address)
-        rf = regbus.regfiles['spi000']
         tbeep = spiee.gen(clock, reset, spibus)
         tbclk = clock.gen(hticks=5)
         # grab all the register file outputs
         tbmap = regbus.m_per_outputs()
 
+        # get a reference to the SPI register file
+        rf = regbus.regfiles['spi000']
+        # dumpy the registers for the SPI peripheral
         for name,reg in rf.registers.iteritems():
             print("{0} {1:04X} {2:04X}".format(name, reg.addr, int(reg)))
-        print("---")
-        for k,v in rf.__dict__.iteritems():
-            if isinstance(v, Register):
-                print("{0} {1:04X} {2:04X}".format(k, v.addr, int(v)))
 
         @instance
         def tbstim():            

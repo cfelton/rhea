@@ -3,6 +3,12 @@ from myhdl import *
 from ...system import RegisterFile, Register, RegisterBits
 
 """
+      ----------------------------------------------------------------
+      @todo: resolve the local register file organizaiton with 
+         the memmap organiztion (e.g. this register file is a 
+         colleciton of 8bit registers, if the memmap is setup 
+         as 32 databits and 32 address bits want to organize 
+         these differently (combing into 32 bit registers))
       Registers are on 32bit boundaries and are big-edian.  Meaning
       the most significant byte is byte 0.  Example the first register
       byte addresses are:
@@ -10,6 +16,8 @@ from ...system import RegisterFile, Register, RegisterBits
             2 byte == address 0x62
             1 byte == address 0x61
         MSB 0 byte == address 0x60
+      end todo
+      ----------------------------------------------------------------
 
       Registers: (Base address +)
         0x60: SPCR control register
