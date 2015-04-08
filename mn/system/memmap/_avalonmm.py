@@ -60,8 +60,9 @@ class AvalonMM(MemMap):
 
     def add_output_bus(self, name, readdata, readdatavalid, waitrequest):
         self._readdata.append(readdata)
-        self._readatavalid.append(readatavalid)
+        self._readatavalid.append(readdatavalid)
         self._waitrequest.append(waitrequest)
+
 
     def m_per_outputs(self):
         """ combine all the peripheral outputs
@@ -79,8 +80,16 @@ class AvalonMM(MemMap):
                 rddats = rddats | av._readdata[ii]
                 valids = valids | av._readdatavalid[ii]
             av.readdata.next = rddats
-            av.readdatavalid = valids
+            av.readdatavalid.next = valids
 
         return rtl_or_combine
 
-    def m_per_interface(self, glbl, ):
+
+    def m_per_interface(self, glbl, regfile, name='', base_address=0x0):
+        """ memory-mapped avalon peripheral interface
+        """
+
+        # local alias
+        av = self      # register bus
+        rf = regfile   # register file definition
+

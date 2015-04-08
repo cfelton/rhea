@@ -21,18 +21,6 @@ from mn.system import Clock
 from mn.system import Reset
 from mn.system.memmap._memmap import MemMap
 
-# a count of the number of wishbone peripherals
-_wb_per = 0
-_wb_list = {}
-
-def _add_bus(wb, name=None):
-    """ globally keep track of all the busses added.
-    """
-    global _wb_per, _wb_list
-    nkey = "{:04d}".format(_wb_per) if name is None else name
-    _wb_list[name] = wb
-    _wb_per += 1
-
 
 class WishboneController(object):
     def __init__(self, data_width=8, address_width=16):
@@ -103,7 +91,7 @@ class Wishbone(MemMap):
         self.wval = 0
         self.rval = 0
 
-        _add_bus(self, name)
+        self._add_bus(name)
         
     def add_output_bus(self, name, dat, ack):
         self._pdat_o.append(dat)
@@ -128,12 +116,10 @@ class Wishbone(MemMap):
             
         return rtl_or_combine
 
-    # @todo: use *glbl* and figure out *args*
-    def m_per_interface(self, clock, reset, regfile,
-                        name='', base_address=0x00):
+    def m_per_interface(self, glbl, regfile, name='', base_address=0x00):
         """ memory-mapped wishbone peripheral interface
         """
-            
+        clock, reset = glbl.clock, glbl.reset
         # local alias
         wb = self    # register bus
         rf = regfile # register file definition

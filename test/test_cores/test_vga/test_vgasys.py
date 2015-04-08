@@ -3,6 +3,9 @@
 from __future__ import division
 from __future__ import print_function
 
+"""
+"""
+
 import sys
 import os
 import argparse
@@ -11,7 +14,6 @@ from array import array
 
 from myhdl import *
 
-# resuse some of the interfaces
 import mn
 from mn.system import Clock
 from mn.system import Reset
@@ -41,7 +43,7 @@ def test_vgasys(args):
     
 
     def _test():
-        # prepare and start the cosimulation with the Verilogs
+        # top-level VGA system 
         tbdut = mm_vgasys(clock, reset, vselect, 
                           vga.hsync, vga.vsync, 
                           vga.red, vga.green, vga.blue,
@@ -51,10 +53,12 @@ def test_vgasys(args):
 
         # group global signals
         glbl = Global(clock=clock, reset=reset)
+
         # a display for each dut        
         mvd = VideoDisplay(frequency=clock.frequency,
                            resolution=res,
                            line_rate=line_rate)
+
         # connect VideoDisplay model to the VGA signals
         tbvd = mvd.process(glbl, vga)
         # clock generator

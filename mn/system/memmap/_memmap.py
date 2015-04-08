@@ -5,6 +5,10 @@ from __future__ import print_function
 from copy import deepcopy
 from ..regfile import Register
 
+# a count of the number of wishbone peripherals
+_mm_per = 0
+_mm_list = {}
+
 class MemMap(object):
     def __init__(self, data_width, address_width):
         self.data_width = data_width
@@ -12,8 +16,15 @@ class MemMap(object):
         self.names = {}
         self.regfiles = {}
         
+    def _add_bus(self, name):
+        """ globally keep track of all per bus
+        """
+        global _mm_per, _mm_list
+        nkey = "{:04d}".format(_mm_per) if name is None else name
+        _mm_list[name] = self
+        _mm_per += 1
 
-    def add(self, name, rf, base_address=0):
+    def add(self, glbl, rf, name, base_address=0):
         """ add a peripheral register-file to the bus
         """
         # want a copy of the register-file so that the
@@ -34,3 +45,16 @@ class MemMap(object):
         self.regfiles[name] = arf       
 
         # @todo: return the peripheral generator
+        g = self.m_per_interface(glbl, rf, name, base_address)
+
+        return g
+
+    def m_per_interface(self, glbl, rf, name, base_address=0):
+         """ override
+         :param glbl:
+         :param rf:
+         :param name:
+         :param base_address:
+         :return:
+         """
+         pass

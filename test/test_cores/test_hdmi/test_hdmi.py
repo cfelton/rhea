@@ -13,6 +13,15 @@ from array import array
 
 from myhdl import *
 
+import mn
+from mn.system import Global
+from mn.cores.video import HDMI
+from mn.cores.video import m_hdmi
+
+# a video desplay model to check the timings
+form mn.models.video import VideoDisplay
+
+# @todo move cosimulation to cosimulation directory
 from _hdmi_prep_cosim import prep_cosim
 from interfaces import HDMI
 
@@ -24,9 +33,15 @@ def test_hdmi(args):
     clock = Signal(bool(0))
     reset = ResetSignal(0, active=0, async=True)
 
+    # this currently tests a Verilog version
     tbdut = prep_cosim(clock, reset, args=args)
+
     
     def _test():
+
+        #tbdut = mm_hdmisys(glbl, vselect, hdmi,
+        #                   resolution=res,
+        #                   line_rate=line_rate)
 
         # clock for the design
         @always(delay(5))
@@ -61,12 +76,10 @@ def test_hdmi(args):
 
         return tbclk, tbstim
 
+    # run the above test
+    vcd = tb_clean_vcd('_test')
     traceSignals.timescale = '1ns'
-    traceSignals.name = 'vcd/_test'
-    fn = traceSignals.name + '.vcd'
-    if os.path.isfile(fn):
-        os.remove(fn)
-
+    traceSignals.name = vcd
     Simulation((traceSignals(_test), tbdut,)).run()
 
 
