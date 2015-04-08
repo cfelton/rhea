@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict
+import collections
 from random import randint
 import traceback
 
@@ -42,7 +42,7 @@ def _create_mask(n):
 
 def _create_test_regfile():
     global regdef
-    regdef = OrderedDict()
+    regdef = collections.OrderedDict()
     # --register 0--
     reg = Register('control', 0x0018, 8, 'rw', 0)
     reg.comment = "register 0"
@@ -75,15 +75,14 @@ def m_per_top(clock, reset, mon):
     glbl = Global(clock, reset)
     wb = Wishbone(glbl)
     #gpm = wb.m_controller(wb)
-    gp1 = m_per(clock, reset, wb, mon)
+    gp1 = m_per(glbl, wb, mon)
     return gp1
 
 
-def m_per(clock,reset, regbus, mon):
-    global regfile
+def m_per(glbl, regbus, mon):
     regfile = _create_test_regfile()
-    g_regfile = regfile.m_per_interface(clock, reset, regbus)
-
+    g_regfile = regbus.m_per_interface(glbl, regfile)
+    clock, reset = glbl.clock, glbl.reset
     ## all "read-only" (status) bits if needed
     @always_seq(clock.posedge, reset=reset)
     def rtl_roregs():
@@ -93,12 +92,11 @@ def m_per(clock,reset, regbus, mon):
     return g_regfile #, rtl_roregs
 
 
-def m_per_bits(clock, reset, regbus, mon):
-    global regfile
+def m_per_bits(glbl, regbus, mon):
     regfile = _create_test_regfile()
-    g_regfile = regfile.m_per_interface(clock, reset, regbus)
+    g_regfile = regbus.m_per_interface(glbl, regfile)
     count = modbv(0, min=0, max=1)
-
+    clock, reset = glbl.clock, glbl.reset
     ## all "read-only" (status) bits if needed
     @always(clock.posedge)
     def rtl_roregs():
@@ -131,12 +129,12 @@ def test_register_file():
 
     # top-level signals and interfaces
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0,active=1,async=False)
+    reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl) 
 
     def _test_rf():
-        tb_dut = m_per(clock,reset,regbus,0xAA)
+        tb_dut = m_per(glbl, regbus, 0xAA)
         tb_or = regbus.m_per_outputs()
         tb_mclk = clock.gen()
         tb_rclk = regbus.clk_i.gen()
@@ -173,15 +171,16 @@ def test_register_file():
 
             raise StopSimulation
 
-        return tb_mclk,tb_stim,tb_dut,tb_or,tb_rclk
+        return tb_mclk, tb_stim, tb_dut, tb_or, tb_rclk
 
-    tb_clean_vcd('_test_rf')
+    vcd = tb_clean_vcd('_test_rf')
+    traceSignals.name = vcd
     g = traceSignals(_test_rf)
     Simulation(g).run()
 
 
 def test_register_file_bits():
-    global regfile
+    regfile = _create_test_regfile()
     # top-level signals and interfaces
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
@@ -189,7 +188,7 @@ def test_register_file_bits():
     regbus = Wishbone(glbl) 
 
     def _test():
-        tb_dut = m_per_bits(clock, reset, regbus, 0xAA)
+        tb_dut = m_per_bits(glbl, regbus, 0xAA)
         tb_or = regbus.m_per_outputs()
         tb_mclk = clock.gen()
         tb_rclk = regbus.clk_i.gen()
@@ -213,7 +212,7 @@ def test_register_file_bits():
                     yield clock.posedge
             except AssertionError,err:
                 asserr.next = True
-                for _ in xrange(10):
+                for _ in xrange(20):
                     yield clock.posedge
                 raise err
             
@@ -222,14 +221,15 @@ def test_register_file_bits():
         return tb_mclk, tb_stim, tb_dut, tb_or, tb_rclk
 
 
-    tb_clean_vcd('_test')
+    vcd = tb_clean_vcd('_test')
+    traceSignals.name = vcd
     g = traceSignals(_test)
     Simulation(g).run()
 
 
 def test_convert():
-    clock = Clock(0,frequency=50e6)
-    reset = Reset(0,active=1,async=False)
+    clock = Signal(bool(0))
+    reset = ResetSignal(0, active=0, async=True)
     mon = Signal(intbv(0)[8:])
     toVerilog(m_per_top, clock, reset, mon)
     toVHDL(m_per_top, clock, reset, mon)

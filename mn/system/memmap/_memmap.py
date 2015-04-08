@@ -24,7 +24,7 @@ class MemMap(object):
         _mm_list[name] = self
         _mm_per += 1
 
-    def add(self, glbl, rf, name, base_address=0):
+    def add(self, glbl, rf, name='', base_address=0):
         """ add a peripheral register-file to the bus
         """
         # want a copy of the register-file so that the

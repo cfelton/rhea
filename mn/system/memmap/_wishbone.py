@@ -119,11 +119,10 @@ class Wishbone(MemMap):
     def m_per_interface(self, glbl, regfile, name='', base_address=0x00):
         """ memory-mapped wishbone peripheral interface
         """
-        clock, reset = glbl.clock, glbl.reset
+
         # local alias
         wb = self    # register bus
         rf = regfile # register file definition
-        clk = self.clk_i
 
         al,rl,rol,dl = rf.get_reglist()
         addr_list,regs_list = al,rl
@@ -213,7 +212,10 @@ class Wishbone(MemMap):
                 else:
                     for ii in range(nregs):
                         pwr[ii].next = False
-        
+
+        # get the generators that assign the named bits
+        gas = regfile.get_assigns()
+
         return instances()
 
     def get_controller_intf(self):
