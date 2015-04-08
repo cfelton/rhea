@@ -10,9 +10,9 @@ from mn.system.regfile._regfile import Register
 from mn.system.regfile._regfile import RegisterFile
 
 # different busses supported by the register file interface
-#from mn.system.memmap._barebone import Barebone  
+from mn.system.memmap._barebone import Barebone  
 from mn.system.memmap._wishbone import Wishbone  
-#from mn.system.memmap._avalonmm import AvalonMM  
+from mn.system.memmap._avalonmm import AvalonMM  
 #from mn.system.memmap._axi4 import AXI4          
 
 
