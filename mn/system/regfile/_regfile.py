@@ -80,6 +80,25 @@ class Register(_Signal):
         return self.__copy__()
 
     def add_named_bits(self, name, slc, comment=""):
+        """ Add a named bit
+        A named bit allows named access to a bit
+
+            reg = Regsiter()
+            #...
+            if reg.enable
+            # ...
+
+        Where `reg.enable` might be bit reg[0].  For read-write (rw)
+        registers (read-write from the controllers perspective) named bits
+        are read-only on the peripheral side and read-only (ro) registers
+        named bits are read-write.  For the read-only register (rw nmb)
+        a copy of the signals is created.
+
+        :param name:
+        :param slc:
+        :param comment:
+        :return:
+        """
         bits = RegisterBits(name, slc, comment)
         self.bits[bits.name] = bits
 
@@ -110,9 +129,11 @@ class Register(_Signal):
             # if a namedbit does not exist stub it out
             if not isinstance(namedbits, SignalType):                
                 self._nmb[ii] = Signal(bool(self[ii]))
-                
+
+        # local references (sane names for generator)
         wbits = self._nmb
         nbits = self.width
+
         @always_comb
         def rtl_assign():
             for ii in range(nbits):

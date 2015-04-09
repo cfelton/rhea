@@ -46,14 +46,14 @@ def _create_test_regfile():
     # --register 0--
     reg = Register('control', 0x0018, 8, 'rw', 0)
     reg.comment = "register 0"
-    reg.add_named_bits('enable', slice(1,0))
-    reg.add_named_bits('loop', slice(2,1))
+    reg.add_named_bits('enable', slice(1, 0))  # read-only namedbit
+    reg.add_named_bits('loop', slice(2, 1))    # read-only namedbit
     regdef[reg.name] = reg
     
     # -- more registers register --
     for addr,default in zip((0x20, 0x40, 0x80),
                             (0xDE, 0xCA, 0xFB)):
-        reg = Register('reg%s'%(addr), addr, 8, 'rw', default)
+        reg = Register('reg%s' % (addr,), addr, 8, 'rw', default)
         regdef[reg.name] = reg
 
     # -- read only register --
@@ -62,9 +62,9 @@ def _create_test_regfile():
 
     # another read only register, with named bits
     reg = Register('status', 0x200, 8, 'ro', 0)
-    reg.add_named_bits('error', slice(1,0))  # bit 0
-    reg.add_named_bits('ok', slice(2,1))     # bit 1
-    reg.add_named_bits('cnt', slice(8,2))    # bits 7-2
+    reg.add_named_bits('error', slice(1, 0))  # bit 0, read-write namedbit
+    reg.add_named_bits('ok', slice(2, 1))     # bit 1, read-write namedbit
+    reg.add_named_bits('cnt', slice(8, 2))    # bits 7-2, read-write namedbit
     regdef[reg.name] = reg
 
     regfile = RegisterFile(regdef)
@@ -80,9 +80,11 @@ def m_per_top(clock, reset, mon):
 
 
 def m_per(glbl, regbus, mon):
+    global regfile
     regfile = _create_test_regfile()
     g_regfile = regbus.m_per_interface(glbl, regfile)
     clock, reset = glbl.clock, glbl.reset
+
     ## all "read-only" (status) bits if needed
     @always_seq(clock.posedge, reset=reset)
     def rtl_roregs():
@@ -93,6 +95,7 @@ def m_per(glbl, regbus, mon):
 
 
 def m_per_bits(glbl, regbus, mon):
+    global regfile
     regfile = _create_test_regfile()
     g_regfile = regbus.m_per_interface(glbl, regfile)
     count = modbv(0, min=0, max=1)
@@ -126,7 +129,7 @@ def test_register_def():
 
 
 def test_register_file():
-
+    global regfile
     # top-level signals and interfaces
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
@@ -180,7 +183,7 @@ def test_register_file():
 
 
 def test_register_file_bits():
-    regfile = _create_test_regfile()
+    global regfile
     # top-level signals and interfaces
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
@@ -210,7 +213,7 @@ def test_register_file_bits():
                                        ~regbus.readval)
                     truefalse = not truefalse
                     yield clock.posedge
-            except AssertionError,err:
+            except AssertionError, err:
                 asserr.next = True
                 for _ in xrange(20):
                     yield clock.posedge
@@ -219,7 +222,6 @@ def test_register_file_bits():
             raise StopSimulation
 
         return tb_mclk, tb_stim, tb_dut, tb_or, tb_rclk
-
 
     vcd = tb_clean_vcd('_test')
     traceSignals.name = vcd
