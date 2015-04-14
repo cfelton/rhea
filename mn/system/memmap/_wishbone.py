@@ -35,15 +35,14 @@ class WishboneController(object):
 class Wishbone(MemMap):
     name = 'wishbone'
     
-    def __init__(self, glbl=None, data_width=8, address_width=16, 
-                 name=None):
-        """
+    def __init__(self, glbl=None, data_width=8, address_width=16, name=None):
+        """ Wishbose bus object
         Parameters (kwargs):
         --------------------
-          glbl: system clock and reset
-          data_width: data bus width
-          address_width: address bus width
-          name: name for the bus
+          :param glbl: system clock and reset
+          :param data_width: data bus width
+          :param address_width: address bus width
+          :param name: name for the bus
         """
         # @todo: ?? not sure if this how the arguments should
         #        should be handled.  Passing args is simple but a
@@ -124,20 +123,21 @@ class Wishbone(MemMap):
         wb = self    # register bus
         rf = regfile # register file definition
 
-        al,rl,rol,dl = rf.get_reglist()
-        addr_list,regs_list = al,rl
-        pwr,prd = rf.get_strobelist()
+        al, rl, rol, dl = rf.get_reglist()
+        addr_list, regs_list = al, rl
+        pwr, prd = rf.get_strobelist()
+
         nregs = len(regs_list)
         max_address = base_address + max(addr_list)
 
-        # @todo: VHDL conversion can't handle a leading "_"
         lwb_do = Signal(intbv(0)[self.data_width:])
         (lwb_sel,lwb_acc,lwb_wr,
          lwb_wrd,lwb_ack,) = [Signal(bool(0)) for ii in range(5)]
         wb.add_output_bus(name, lwb_do, lwb_ack)
-        
+
+
         ACNT = 1
-        ackcnt = Signal(intbv(ACNT,min=0,max=ACNT+1))
+        ackcnt = Signal(intbv(ACNT, min=0, max=ACNT+1))
         newcyc = Signal(bool(0))
         
         @always_comb
@@ -168,11 +168,13 @@ class Wishbone(MemMap):
 
         # @todo: scan the register list, if it is contiguous remove
         #        the base and use the offset directly to access the
-        #        the register list instead of the for loop
+        #        register list instead of the for loop
         # if rf.contiguous:
         #     @always_seq(rb.clk_i.posedge, reset=rb.rst_i)
         #     def rtl_read():
         # else:
+
+        # @todo
         @always(wb.clk_i.posedge)
         def rtl_read():
             if wb.rst_i == int(wb.rst_i.active):
@@ -218,8 +220,10 @@ class Wishbone(MemMap):
 
         return instances()
 
+
     def get_controller_intf(self):
         return WishboneController(self.data_width, self.address_width)
+
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def m_controller_basic(self, ctl):

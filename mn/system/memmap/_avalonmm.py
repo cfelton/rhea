@@ -22,12 +22,21 @@ from mn.system import Reset
 from mn.system.memmap._memmap import MemMap
 
 
+class AvalonMMController(object):
+    def __init__(self, data_width=8, address_width=16):
+        self.address = Signal(intbv(0)[address_width:])
+        self.writedata = Signal(intbv(0)[data_width:])
+        self.readdata = Signal(intbv(0)[data_width:])
+        self.read = Signal(bool(0))
+        self.write = Signal(bool(0))
+        self.done = Signal(bool(0))
+
+
 class AvalonMM(MemMap):
     name = 'avalon'
 
-    def __init__(self, glbl=None, data_width=8, address_width=16,
-                 name=None):
-        """
+    def __init__(self, glbl=None, data_width=8, address_width=16, name=None):
+        """ AvalonMM bus object
         Parameters (kwargs):
         --------------------
         :param glbl: system clock and reset
@@ -74,13 +83,15 @@ class AvalonMM(MemMap):
 
         @always_seq(self.clk.posedge, reset=self.reset)
         def rtl_or_combine():
-            rddats = 0
-            valids = 0
+            rddats, valids, waits = 0, 0, 0
             for ii in range(ndevs):
                 rddats = rddats | av._readdata[ii]
                 valids = valids | av._readdatavalid[ii]
+                waits = waits | av._waitrequest[ii]
+
             av.readdata.next = rddats
             av.readdatavalid.next = valids
+            av.waitrequest.next = waits
 
         return rtl_or_combine
 
@@ -93,3 +104,124 @@ class AvalonMM(MemMap):
         av = self      # register bus
         rf = regfile   # register file definition
 
+        # get the list-of-signals that represent the regfile
+        al, rl, rol, dl = rf.get_reglist()
+        addr_list, regs_list = al, rl
+        pwr, prd = rf.get_strobelist()
+
+        # @todo: have be base_address be an attribute of the regfile
+        nregs = len(regs_list)
+        max_address = base_address + max(addr_list)
+
+        # @todo: add the peripheral interface stuff ...
+
+        clock = self.clk
+        reset = self.reset
+
+        # determine if this register-file is selected, this check
+        # adds an extra clock cycle to the transaction
+        selected = Signal(bool(0))
+        @always_seq(clock.posedge, reset=reset)
+        def rtl_selected():
+            if av.address >= base_address and av.address <= max_address:
+                selected.next = True
+            else:
+                selected.next = False
+
+        # @todo: scan hte register list, if it is contiguous remove
+        #        the base and use the offset directly to access the
+        #        register list instead of the for loop
+        # if regfile.contiguous:
+        #     @always_seq(clock.posedge, reset=reset)
+        #     ...
+
+        # read side of the bus transaction
+        @always(clock.posedge)
+        def rtl_read():
+            if reset == int(reset.active):
+                for ii in range(nregs):
+                    prd[ii].next = False
+            else:
+                if selected and not av.write:
+                    for ii in range(nregs):
+                        aa = addr_list[ii]
+                        aa = aa + base_address
+                        if av.address == aa:
+                            av.readdata.next = regs_list[ii]
+                            prd[ii].next = True
+                else:
+                    av.readdata.next = 0
+                    for ii in range(nregs):
+                        prd[ii].next = False
+
+        # write side of the bus transaction
+        @always(clock.posedge)
+        def rtl_write():
+            if reset == int(reset.active):
+                for ii in range(nregs):
+                    ro = rol[ii]
+                    dd = dl[ii]
+                    if not ro:
+                        regs_list[ii].next = dd
+                    pwr[ii].next = False
+            else:
+                if selected and av.write:
+                    for ii in range(nregs):
+                        aa = addr_list[ii]
+                        aa = aa + base_address
+                        ro = rol[ii]
+                        if not ro and av.address == aa:
+                            regs_list[ii].next = av.writedata
+                            pwr[ii].next = True
+                else:
+                    for ii in range(nregs):
+                        pwr[ii].next = False
+
+        # get the generators that assign the named bits
+        gas = regfile.get_assigns()
+
+        return instances()
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def m_controller_basic(self, ctl):
+        """
+        Bus controllers (master) are typically custom and
+        built into whatever the controller is (e.g. a processor).
+        This is a simple example with a simple interface to
+        invoke bus cycles.
+
+        :param ctl:
+        :return:
+        """
+        av = self
+
+
+    def write(self, addr, val):
+        """ write accessor for testbenches
+        :param addr: address to write
+        :param val: value to write to the address
+        :return: yields
+        """
+        self.wval = val
+        yield self.clk.posedge
+        self.address.next = addr
+        self.writedata.next = val
+        self.write.next = True
+        while self.waitrequest and to < self.TIMEOUT:
+            yield self.clk.posedge
+            to += 1
+        yield self.clk.posedge
+        self.write.next = False
+        yield self.clk.posedge
+
+    def read(self, addr):
+        """ read accessor for testbenches
+        :param addr:
+        :return:
+        """
+        yield self.clk.posedge
+        self.address = addr
+        self.read = True
+        to = 0
+        while self.waitrequest and to < self.TIMEOUT:
+            yield delay(1)

@@ -6,11 +6,8 @@ from __future__ import print_function
 """
 """
 
-import sys
-import os
 import argparse
 from argparse import Namespace
-from array import array
 
 from myhdl import *
 
@@ -19,7 +16,6 @@ from mn.system import Clock
 from mn.system import Reset
 from mn.system import Global
 from mn.cores.video import VGA
-from mn.cores.video import m_vga_sync
 
 # a video display model to check the timings
 from mn.models.video import VideoDisplay
