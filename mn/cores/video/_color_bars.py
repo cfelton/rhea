@@ -1,24 +1,26 @@
 
 from myhdl import *
 
-
-
-cbars = [
+# color bar template
+COLOR_BARS = (
 #    r, g, b
-    [1, 1, 1,],  # white
-    [1, 1, 0,],  # yellow
-    [0, 1, 1,],  # cyan
-    [0, 1, 0,],  # green
-    [1, 0, 1,],  # magenta
-    [1, 0, 0,],  # red
-    [0, 0, 1,],  # blue
-    [0, 0, 0,],  # black
-]
+    (1, 1, 1,),  # white
+    (1, 1, 0,),  # yellow
+    (0, 1, 1,),  # cyan
+    (0, 1, 0,),  # green
+    (1, 0, 1,),  # magenta
+    (1, 0, 0,),  # red
+    (0, 0, 1,),  # blue
+    (0, 0, 0,),  # black
+)
 
-cbarvals = [None for _ in range(len(cbars))]
 
 def _update_cbars_with_max(P, width):
-    global cbars
+    global COLOR_BARS
+
+    cbars = [list(clr) for clr in COLOR_BARS]
+    cbarvals = [None for _ in range(len(cbars))]
+
     for cc in range(len(cbars)):
         for ii in range(3):
             if cbars[cc][ii] == 1:
@@ -31,20 +33,22 @@ def _update_cbars_with_max(P, width):
 
         cbarvals[cc] = val
 
-    cbarvals = tuple(cbars)
+    cbarvals = tuple(cbarvals)
+    print("Color bar values:")
     for ii in range(len(cbarvals)):
-        print("%3d:  %08X" % (ii, cbarvals[ii]))
+        print("   {:3d}:  {:08X}".format(ii, cbarvals[ii]))
+
+    return cbarvals
     
 
 def m_color_bars(glbl, vmem, resolution=(640,480), width=10):
     """ generate a color bar pattern
     """
-    global cbarvals
+    global COLOR_BARS
 
-    NUM_COLORS, PMAX, res = len(cbarvals), (2**width)-1, resolution
-    # for a design there is only one VGA driver it is ok to
-    # globally update cbars!
-    _update_cbars_with_max(PMAX, width)
+    NUM_COLORS, PMAX, res = len(COLOR_BARS), (2**width)-1, resolution
+
+    cbarvals = _update_cbars_with_max(PMAX, width)
 
     # the width of each boundrary
     pw = res[0] / NUM_COLORS

@@ -123,14 +123,11 @@ class Register(_Signal):
 
 class RegisterFile(object):
 
-    def __init__(self, regdef=None, args=None):
+    def __init__(self, regdef=None):
         """
         Arguments
         ---------
-        regdef : register file dictionary definition
-        args : arguments for the register file and register
-               bus interface
-        
+        regdef : register file dictionary definition        
         
         """
         self._rwregs = []  # read-write registers
@@ -197,11 +194,11 @@ class RegisterFile(object):
     def get_reglist(self):
         """ return a list of addresses and a list of registers.        
         """
-        rwa = [aa for aa,rr in self._rwregs]
-        rwr = [rr for aa,rr in self._rwregs]
+        rwa = [aa for aa,rr in self._rwregs]       # rw address
+        rwr = [rr for aa,rr in self._rwregs]       # rw register
         _rrw = [False for aa,rr in self._rwregs]
-        roa = [aa for aa,rr in self._roregs]
-        ror = [rr for aa,rr in self._roregs]
+        roa = [aa for aa,rr in self._roregs]       # ro address
+        ror = [rr for aa,rr in self._roregs]       # ro register
         _rro = [True for aa,rr in self._rwregs]
         self._allregs = rwr+ror
         dl = [rr.default for aa,rr in self._rwregs+self._roregs]
@@ -236,7 +233,7 @@ class RegisterFile(object):
     
 
     def m_per_interface(self, clock, reset, regbus,
-                        args = None,
+                        name = '',
                         base_address = 0x00):
         """ Memory-mapped peripheral interface
         The register bus access to the register file, external
@@ -248,7 +245,7 @@ class RegisterFile(object):
         # get the memmap bus specific read/write 
         busi = regbus.m_per_interface(clock, reset, 
                                       regfile=self, 
-                                      args=args,
+                                      name=name,
                                       base_address=base_address)
 
         # get the generators that assign the named-bits

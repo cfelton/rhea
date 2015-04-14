@@ -14,10 +14,31 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from setuptools import setup,find_packages
+try:
+    from setuptools import setup
+    from setuptools import find_packages
+except ImportError:
+    from distutils.core import setup
+    from pkgutil import walk_packages
+
+    import mn
+
+    # many pypy installs don't have setuptools (?)
+    def _find_packages(path='.', prefix=''):
+        yield prefix
+        prefix = prefix + "."
+        for _, name, ispkg in walk_packages(path, 
+                                            prefix,
+                                            onerror=lambda x: x):
+            if ispkg:
+                yield name
+                
+    def find_packages():
+        return list(_find_packages(mn.__path__, mn.__name__))
+    
 
 setup(name        = "minnesota",
-      version     = "0.1pre",
+      version     = "0.1.pre",
       description = "collection of HDL cores ",
       license     = "LGPL",
       platforms   = ["Any"],

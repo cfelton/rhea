@@ -98,7 +98,8 @@ def test_spi():
 
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # enable the system                
-                yield regbus.write(rf.spcr.addr, 0x82)
+                yield regbus.write(rf.spst.addr, 0x02)  # register data drives fifo
+                yield regbus.write(rf.spcr.addr, 0x9A)  # default plus enable (98 + 02)
 
                 yield regbus.write(rf.sptx.addr, 0x02)
                 yield regbus.write(rf.sptx.addr, 0x00)
