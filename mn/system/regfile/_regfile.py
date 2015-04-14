@@ -106,7 +106,7 @@ class Register(_Signal):
         # check for any missing bits and add a stub
         # @todo: ? create warning for missing bits, these 
         #    will be dangling ?
-        for ii,namedbits in enumerate(self._nmb):
+        for ii, namedbits in enumerate(self._nmb):
             # if a namedbit does not exist stub it out
             if not isinstance(namedbits, SignalType):                
                 self._nmb[ii] = Signal(bool(self[ii]))
@@ -231,27 +231,32 @@ class RegisterFile(object):
     #    assert roreg is not None, "Invalid register %s %x"%(name,addr)
     #    return roreg
     
+    # @todo: remove, use regbus.add/regbus.m_per_interface
+    # def m_per_interface(self, clock, reset, regbus,
+    #                     name = '',
+    #                     base_address = 0x00):
+    #     """ Memory-mapped peripheral interface
+    #     The register bus access to the register file, external
+    #     to the module reads and writes.
+    #
+    #     """
+    #
+    #     # @todo: use *glbl* and figure out *args*
+    #     # get the memmap bus specific read/write
+    #     busi = regbus.m_per_interface(clock, reset,
+    #                                   regfile=self,
+    #                                   name=name,
+    #                                   base_address=base_address)
+    #
+    #     # get the generators that assign the named-bits
+    #     gas = []
+    #     for aa,rr in self._roregs:
+    #         gas += [rr.m_assign()]
+    #
+    #     return busi, gas
 
-    def m_per_interface(self, clock, reset, regbus,
-                        name = '',
-                        base_address = 0x00):
-        """ Memory-mapped peripheral interface
-        The register bus access to the register file, external
-        to the module reads and writes.
-
-        """
-
-        # @todo: use *glbl* and figure out *args*
-        # get the memmap bus specific read/write 
-        busi = regbus.m_per_interface(clock, reset, 
-                                      regfile=self, 
-                                      name=name,
-                                      base_address=base_address)
-
-        # get the generators that assign the named-bits
+    def get_assigns(self):
         gas = []
         for aa,rr in self._roregs:
             gas += [rr.m_assign()]
-
-        return busi, gas
-        
+        return gas

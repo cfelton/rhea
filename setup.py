@@ -38,7 +38,7 @@ except ImportError:
     
 
 setup(name        = "minnesota",
-      version     = "0.1.pre",
+      version     = "0.1pre",
       description = "collection of HDL cores ",
       license     = "LGPL",
       platforms   = ["Any"],

@@ -13,7 +13,7 @@ from mn.cores.misc import m_led_mm_per   # memmap peripheral
 from mn.system import Barebone
 from mn.system import Wishbone
 from mn.system import AvalonMM
-from mn.system import AXI4
+#from mn.system import AXI4
 from mn.system import Global
 
 
@@ -41,8 +41,8 @@ def m_btn_led_mm(clock, reset, leds, btns, bus_type='W'):
         regbus = Wishbone(glbl, data_width=8, address_width=16)
     elif bus_type == 'A':
         regbus = AvalonMM(glbl, data_width=8, address_width=16)
-    elif bus_type == 'X':
-        regbus = AXI4(glbl, data_wdith=8, address_width=16)
+    #elif bus_type == 'X':
+    #    regbus = AXI4(glbl, data_wdith=8, address_width=16)
 
     gbtn = m_btn_mm_ctl(glbl, regbus, btns)  # memmap controller
     gled = m_led_mm_per(glbl, regbus, leds)  # memmap peripheral

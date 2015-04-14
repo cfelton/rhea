@@ -21,18 +21,6 @@ from mn.system import Clock
 from mn.system import Reset
 from mn.system.memmap._memmap import MemMap
 
-# a count of the number of wishbone peripherals
-_wb_per = 0
-_wb_list = {}
-
-def _add_bus(wb, name=None):
-    """ globally keep track of all the busses added.
-    """
-    global _wb_per, _wb_list
-    nkey = "{:04d}".format(_wb_per) if name is None else name
-    _wb_list[name] = wb
-    _wb_per += 1
-
 
 class WishboneController(object):
     def __init__(self, data_width=8, address_width=16):
@@ -47,15 +35,14 @@ class WishboneController(object):
 class Wishbone(MemMap):
     name = 'wishbone'
     
-    def __init__(self, glbl=None, data_width=8, address_width=16, 
-                 name=None):
-        """
+    def __init__(self, glbl=None, data_width=8, address_width=16, name=None):
+        """ Wishbose bus object
         Parameters (kwargs):
         --------------------
-          glbl: system clock and reset
-          data_width: data bus width
-          address_width: address bus width
-          name: name for the bus
+          :param glbl: system clock and reset
+          :param data_width: data bus width
+          :param address_width: address bus width
+          :param name: name for the bus
         """
         # @todo: ?? not sure if this how the arguments should
         #        should be handled.  Passing args is simple but a
@@ -103,7 +90,7 @@ class Wishbone(MemMap):
         self.wval = 0
         self.rval = 0
 
-        _add_bus(self, name)
+        self._add_bus(name)
         
     def add_output_bus(self, name, dat, ack):
         self._pdat_o.append(dat)
@@ -128,31 +115,29 @@ class Wishbone(MemMap):
             
         return rtl_or_combine
 
-    # @todo: use *glbl* and figure out *args*
-    def m_per_interface(self, clock, reset, regfile,
-                        name='', base_address=0x00):
+    def m_per_interface(self, glbl, regfile, name='', base_address=0x00):
         """ memory-mapped wishbone peripheral interface
         """
-            
+
         # local alias
         wb = self    # register bus
         rf = regfile # register file definition
-        clk = self.clk_i
 
-        al,rl,rol,dl = rf.get_reglist()
-        addr_list,regs_list = al,rl
-        pwr,prd = rf.get_strobelist()
+        al, rl, rol, dl = rf.get_reglist()
+        addr_list, regs_list = al, rl
+        pwr, prd = rf.get_strobelist()
+
         nregs = len(regs_list)
         max_address = base_address + max(addr_list)
 
-        # @todo: VHDL conversion can't handle a leading "_"
         lwb_do = Signal(intbv(0)[self.data_width:])
         (lwb_sel,lwb_acc,lwb_wr,
          lwb_wrd,lwb_ack,) = [Signal(bool(0)) for ii in range(5)]
         wb.add_output_bus(name, lwb_do, lwb_ack)
-        
+
+
         ACNT = 1
-        ackcnt = Signal(intbv(ACNT,min=0,max=ACNT+1))
+        ackcnt = Signal(intbv(ACNT, min=0, max=ACNT+1))
         newcyc = Signal(bool(0))
         
         @always_comb
@@ -183,11 +168,13 @@ class Wishbone(MemMap):
 
         # @todo: scan the register list, if it is contiguous remove
         #        the base and use the offset directly to access the
-        #        the register list instead of the for loop
+        #        register list instead of the for loop
         # if rf.contiguous:
         #     @always_seq(rb.clk_i.posedge, reset=rb.rst_i)
         #     def rtl_read():
         # else:
+
+        # @todo
         @always(wb.clk_i.posedge)
         def rtl_read():
             if wb.rst_i == int(wb.rst_i.active):
@@ -227,11 +214,16 @@ class Wishbone(MemMap):
                 else:
                     for ii in range(nregs):
                         pwr[ii].next = False
-        
+
+        # get the generators that assign the named bits
+        gas = regfile.get_assigns()
+
         return instances()
+
 
     def get_controller_intf(self):
         return WishboneController(self.data_width, self.address_width)
+
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def m_controller_basic(self, ctl):

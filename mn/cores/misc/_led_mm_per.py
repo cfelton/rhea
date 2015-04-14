@@ -26,13 +26,12 @@ def m_led_mm_per(glbl, regbus, leds, base_address=0x8240):
 
     clock,reset = glbl.clock, glbl.reset
     rleds = Signal(intbv(0)[len(leds):])
+
     # assign the LED port to the local register
     gas = m_assign(leds, rleds)
 
     # memory-mapped registers
-    greg = regfile.m_per_interface(clock, reset, regbus,
-                                   base_address=base_address)
-    regbus.add('led', regfile, base_address)
+    greg = regbus.add(glbl, regfile, 'led', base_address)
 
     # led bus from each driver
     dled = [Signal(intbv(0)[len(leds):]) 
@@ -50,6 +49,4 @@ def m_led_mm_per(glbl, regbus, leds, base_address=0x8240):
             idx = regfile.select
             rleds.next = dled[idx-1]
 
-
     return gas, gl, greg, rtl
-    

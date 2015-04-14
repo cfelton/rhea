@@ -36,10 +36,7 @@ from _regfile_def import regfile
 
 def m_spi(
     # ---[ Module Ports]---
-    # @todo: use glbl (glbl.clock, glbl.reset)
-    clock,
-    reset,
-   
+    glbl,    # global interface, clock, reset, etc.
     regbus,  # memory-mapped register bus
     rxfb,    # streaming interface, receive fifo bus
     txfb,    # streaming inteface, transmit fifo bus
@@ -49,14 +46,14 @@ def m_spi(
     
     # ---[ Module Parameters ]---
     base_address = 0x0400,  # base address (memmap register bus)
-    include_fifo = True     # inclde aan 8 byte deep FIFO
+    include_fifo = True     # include aan 8 byte deep FIFO
     ):
     """ SPI (Serial Peripheral Interface) module
 
     This is a generic SPI implementation, the register layout
     is similar to outher SPI controller.
     """
-
+    clock, reset = glbl.clock, glbl.reset
     # -- local signals --
     ena    = Signal(False)
     clkcnt = Signal(modbv(0, min=0, max=2**12))
@@ -79,11 +76,8 @@ def m_spi(
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # memory- mapped registers
-    # get the register file for this core/peripheral
-    g_regbus = regfile.m_per_interface(clock, reset, regbus,
-                                       base_address=base_address)
     # add the peripheral's regfile to the bus (informational only)
-    regbus.add('spi', regfile, base_address)
+    g_regbus = regbus.add(glbl, regfile, 'spi', base_address)
 
     # FIFO for the wishbone data transfer
     if include_fifo:
@@ -233,12 +227,13 @@ def m_spi(
                     state.next = States.IDLE
                     assert False, "SPI Invalid State"
 
+
     @always_comb
     def rtl_fifo_sigs():
         txfb.wdata.next = regfile.sptx
         regfile.sprx.next = rxfb.rdata
 
-        
+
     @always_comb
     def rtl_fifo_sel():
         # data comes from the register file
