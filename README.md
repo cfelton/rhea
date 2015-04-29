@@ -95,7 +95,8 @@ code and run setup in *develop* mode.
   >> python compile_fpgalink.py
 ```
 
-<!-- move to the docs
+<!-- 
+move to the docs
 system (Infrastructure)
 -----------------------
 
@@ -128,7 +129,8 @@ or
 ```python
 regfile = RegisterFile(width=32)
 regfile.add_register(Register('reg0', 0x0018, 32, 'rw', 0))
--->```
+```
+-->
 
 <!-- 
 somethings missing from refile
