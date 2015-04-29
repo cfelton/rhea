@@ -7,13 +7,12 @@ minnesota (`mn`)
 ================
 
 The minnesota python package is a collection of HDL cores written 
-in MyHDL.  The "mn" package is dependent on the myhdl package 
-(obviously).  The myhdl package can be retrieved from 
-http://www.myhdl.org
+in MyHDL.  The "mn" package is dependent on the myhdl package.  
+The myhdl package can be retrieved from http://www.myhdl.org
 
 Some of the [examples](https://github.com/cfelton/minnesota/tree/master/examples) 
 have an additional dependency, the [gizflow](https://github.com/cfelton/gizflo) package.
-The gizflo package is used to manage different development boards and to 
+The gizflo package is used to manage different development boards and 
 simplify the FPGA tool flow.  See the FPGA compile templates 
 in the [examples directory](https://github.com/cfelton/minnesota/tree/master/examples) for 
 varioius boards.
@@ -22,7 +21,7 @@ varioius boards.
 **IMPORTANT NOTE** this repository is under development and is using
 features from a development version of MyHDL (0.9dev).  If you 
 wish to try out this package get 
-[the development myhdl](https://github.com/jandecaluwe/myhdl)  (will 
+[the development myhdl](https://github.com/jandecaluwe/myhdl)  (you will 
 need to clone it and install the source).  The first 
 *mn* release will not occur until myhdl 0.9 is released (probably much
 later).
@@ -52,6 +51,9 @@ The following are the definition of some terms used in this README :
      A register-file is a programming/configuration interface to a 
      core.
 
+   * csr: control and status register.  This term is commonly used for
+     the memory-mapped interface to the cores.
+
 
 getting started
 -------------------
@@ -63,10 +65,9 @@ code and run setup in *develop* mode.
   # get the required python packages, myhdl, gizflo,
   # and the latest minnesota package.
   >> git clone https://github.com/jandecaluwe/myhdl
-  >> cd myhdl
-  >> hg up -C 0.9-dev
   >> sudo python setup.py install
-  >> ..
+  >> cd ..
+  
   # see www.myhdl.org for information on myhdl, the *mn* package 
   # requires a 0.9 feature -interfaces-.  After 0.9 is release the
   # official myhdl releases should be used.  Refer to the myhdl
@@ -94,7 +95,7 @@ code and run setup in *develop* mode.
   >> python compile_fpgalink.py
 ```
 
-
+<!-- move to the docs
 system (Infrastructure)
 -----------------------
 
@@ -127,7 +128,7 @@ or
 ```python
 regfile = RegisterFile(width=32)
 regfile.add_register(Register('reg0', 0x0018, 32, 'rw', 0))
-```
+-->```
 
 <!-- 
 somethings missing from refile
@@ -136,13 +137,14 @@ somethings missing from refile
       that can occur under the hood
 -->
 
-<!--
+<!-- move to the docs
 #### Adding a Register File to a Peripheral
 
 
 #### Adding a Memory-Mapped Bus to a System
 -->
 
+<!--
 ### memmap
 The memory-map type buses
 
@@ -204,8 +206,6 @@ For more information on the [fpgalink]() software, firmware, and
 general design information see [makestuff]().
 
 
-
-<!--
 ### usbp
 
 USB Peripheral, this is another Cypress FX2 controller interface, 
@@ -224,13 +224,13 @@ via pip.
 
 One of the tricky items with USB devices is setting the permissions
 correctly.  On a linux system to set the …
--->
+
 
 ### fifo ramp
 
 
 ### spi
-
+-->
 
 test
 ----
@@ -244,9 +244,9 @@ examples
 In the examples directory are projects that demonstrate how to build 
 systems using the cores and various tools and target a particular FPGA 
 development board.  As mentioned above the examples have an additional 
-dependency, `myhdl_tools`_ to create the actual bitstreams.  
+dependency, [gizflo]() to create the actual bitstreams.  
 
-
+<!-- move to the docs
 ### Xess Xula(2)
 Examples
 
@@ -261,7 +261,7 @@ Examples
    * fpgalink
    * usbp
 
-<!--
+
 ### Digilent Atlys
    * binary hello (blinky)
    * fpgalink
@@ -271,7 +271,7 @@ Examples
 ### Digilent Zybo
    * binary hello (blinky)
    
--->
+
 
 ### Open-Source UFO-400
 Examples
@@ -289,3 +289,5 @@ Examples
    * audio examples
       * audio echo
       * audio streaming
+      
+ -->
