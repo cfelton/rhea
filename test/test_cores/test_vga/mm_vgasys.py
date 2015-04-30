@@ -32,6 +32,7 @@ def mm_vgasys(
     vga = VGA(hsync=hsync, vsync=vsync, 
               red=red, green=green, blue=blue,
               pxlen=pxlen, active=active)
+
     # video memory interface
     vmem = VideoMemory()
         
@@ -40,7 +41,9 @@ def mm_vgasys(
                         resolution=resolution)
 
     gvga = m_vga_sync(glbl, vga, vmem,
-                      resolution=resolution)
+                      resolution=resolution,
+                      refresh_rate=refresh_rate,
+                      line_rate=line_rate)
 
     return gvga, gbar
 

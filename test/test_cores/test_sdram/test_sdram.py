@@ -8,6 +8,8 @@ import argparse
 from argparse import Namespace
 from array import array
 
+import pytest
+
 from myhdl import *
 
 # resuse some of the interfaces
@@ -22,6 +24,7 @@ from mn.cores.sdram import m_sdram
 #from mn.models.sdram import SDRAMModel
 
 
+@pytest.mark.xfail
 def test_sdram(args):
     
     clock = Clock(0, frequency=50e6)

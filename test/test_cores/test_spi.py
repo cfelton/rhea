@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2006-2013 Christopher L. Felton
+# Copyright (c) 2009-2013 Christopher L. Felton
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -16,6 +16,7 @@
 
 
 from pprint import pprint
+import pytest
 
 from myhdl import *
 
@@ -31,10 +32,12 @@ from mn.system.regfile import Register
 
 from mn.utils.test import *
 
-def m_test_top(clock,reset,sck,mosi,miso,ss):
-    # @todo:
+def m_test_top(clock, reset, sck, mosi, miso, ss):
+    # @todo: create a top-level for conversion ...
     g_spi = m_spi()
-    
+    return g_spi
+
+
 def convert(to='ver'):
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
@@ -46,6 +49,8 @@ def convert(to='ver'):
     toVerilog(m_test_top, clock, reset, sck, mosi, miso, ss)
     toVHDL(m_test_top, clock, reset, sck, mosi, miso, ss)
 
+
+@pytest.mark.xfail
 def test_spi():
     
     base_address = ba = 0x400
