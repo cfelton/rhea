@@ -128,9 +128,6 @@ are installed attempt to build one of the example projects.
   >> python compile_fpgalink.py
 ```
 
-An Example
-==========
-
 
 <!-- 
 move to the docs
