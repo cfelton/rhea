@@ -15,7 +15,7 @@ def m_vga_sync(
     # [parameters]
     resolution = (640,480,), # resolution in pixels
     refresh_rate = 60,       # refresh rate in Hz (vertical rate)
-    line_rate = 31250        # line rate in Hz (horizontral rate)
+    line_rate = 31250        # line rate in Hz (horizontal rate)
     ):
     """
     The following is the generation of the signals required 

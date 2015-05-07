@@ -82,8 +82,17 @@ def map_ext_int(clock, reset, fx2_ext, fx2_bus):
             
     return tb_assign, tb_monitor
         
-        
-def test_fpgalink(args):
+
+def test_fpgalink():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cosim', action='store_true', default=False,
+                        help='Run cosimulation with verilog version of fpgalink requires icarus')
+    args = parser.parse_args()
+    tb_clean_vcd('m_fpgalink_fx2')
+    tb_fpgalink(args)
+
+
+def tb_fpgalink(args):
     """
         flbus1 - MyHDL model
         flbus2 - original fpgalink Verilog
@@ -150,5 +159,5 @@ if __name__ == '__main__':
                         help='Run cosimulation with verilog version of fpgalink requires icarus')
     args = parser.parse_args()
     tb_clean_vcd('m_fpgalink_fx2')
-    test_fpgalink(args)
+    tb_fpgalink(args)
     
