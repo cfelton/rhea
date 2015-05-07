@@ -15,7 +15,7 @@ def test_config1_host_write():
 
     fm = Fx2Model(Config=1, Verbose=True, Trace=False)
     fb = fm.GetFx2Bus()
-    tb_dut = traceSignals(SlaveFifo,fm,fb)
+    tb_dut = traceSignals(SlaveFifo, fm, fb)
 
     def _write(fm, num=1):
         pass
@@ -116,8 +116,6 @@ def test_config1_host_write():
         assert fb.FLAGB == True  # still should have room
         assert fb.FLAGC == False # now data now
         assert fm.IsEmpty(fm.EP2)
-
-        
 
         raise StopSimulation
     

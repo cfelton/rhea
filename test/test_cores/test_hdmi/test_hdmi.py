@@ -19,7 +19,7 @@ from mn.cores.video import HDMI
 from mn.cores.video import m_hdmi
 
 # a video desplay model to check the timings
-form mn.models.video import VideoDisplay
+from mn.models.video import VideoDisplay
 
 # @todo move cosimulation to cosimulation directory
 from _hdmi_prep_cosim import prep_cosim
