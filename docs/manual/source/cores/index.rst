@@ -1,5 +1,8 @@
 
 
+Cores
+======
+
 .. toctree::
    :maxdepth: 2
    fifo
