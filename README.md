@@ -136,7 +136,7 @@ are installed attempt to build one of the example projects.
 test
 ----
 The test directory contains test for the different cores in the package.
-Most of the test have the additional dependency of the `myhdl_tools`_ 
+Most of the test have the additional dependency of the gizflo
 package.
 
 
