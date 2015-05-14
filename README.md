@@ -53,8 +53,8 @@ The following are the definition of some terms used in this README :
      A register-file is a programming/configuration interface to a 
      core.
 
-   * CSR: control and status register.  This term is commonly used for
-     the memory-mapped interface to the cores.
+   * CSR: control and status registers also known as config and status.  
+     This term is commonly used for the memory-mapped interface to the cores.
 
 
 getting started
