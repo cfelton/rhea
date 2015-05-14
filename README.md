@@ -9,6 +9,8 @@ be unstable until the first minor release 0.1.
 minnesota (`mn`)
 ================
 
+[![Join the chat at https://gitter.im/cfelton/minnesota](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cfelton/minnesota?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The minnesota python package is a collection of HDL cores written 
 in MyHDL.  The myhdl package can be retrieved from http://www.myhdl.org
 
