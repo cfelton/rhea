@@ -25,7 +25,9 @@ from mn.cores.spi import SPIBus
 
 from mn.models.spi import SPIEEPROM
 
-from mn.system import Clock,Reset
+from mn.system import Clock
+from mn.system import Reset
+from mn.system import Global
 from mn.system import Wishbone
 from mn.system import FIFOBus 
 from mn.system.regfile import Register
@@ -56,14 +58,15 @@ def test_spi():
     base_address = ba = 0x400
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
-    regbus = Wishbone(clock, reset)    
+    glbl = Global(clock, reset)
+    regbus = Wishbone(glbl)    
     fiforx,fifotx = FIFOBus(size=16), FIFOBus(size=16)
     spiee = SPIEEPROM()
     spibus = SPIBus()
     asserr = Signal(bool(0))
     
     def _test_spi():
-        tbdut = m_spi(clock, reset, regbus, 
+        tbdut = m_spi(glbl, regbus, 
                       fiforx, fifotx, spibus,
                       base_address=base_address)
         tbeep = spiee.gen(clock, reset, spibus)
@@ -72,7 +75,7 @@ def test_spi():
         tbmap = regbus.m_per_outputs()
 
         # get a reference to the SPI register file
-        rf = regbus.regfiles['spi000']
+        rf = regbus.regfiles['SPI_000']
         # dumpy the registers for the SPI peripheral
         for name,reg in rf.registers.iteritems():
             print("{0} {1:04X} {2:04X}".format(name, reg.addr, int(reg)))
@@ -99,10 +102,12 @@ def test_spi():
 
 
                 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                # enable the system                
+                # enable the system         
+                print("  enable the SPI core")
                 yield regbus.write(rf.spst.addr, 0x02)  # register data drives fifo
                 yield regbus.write(rf.spcr.addr, 0x9A)  # default plus enable (98 + 02)
 
+                print("  write to the transmit register")
                 yield regbus.write(rf.sptx.addr, 0x02)
                 yield regbus.write(rf.sptx.addr, 0x00)
                 yield regbus.write(rf.sptx.addr, 0x00)

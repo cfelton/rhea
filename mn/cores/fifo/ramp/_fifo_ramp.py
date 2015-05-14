@@ -15,10 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from myhdl import *
+from mn.system import Global
 from _regfile_def import regfile
 
 def m_fifo_ramp(
     # --[ports]--
+    # @todo: use glbl for clock and reset
     clock,
     reset,
     regbus,
@@ -33,10 +35,8 @@ def m_fifo_ramp(
     to validate the usb connection and the device to host (IN) data
     rates.
     """
-
-    g_regbus = regfile.m_per_interface(clock,reset,regbus,
-                                       base_address=base_address)
-    
+    glbl = Global(clock=clock, reset=reset)
+    g_regbus = regbus.add(glbl, regfile, 'fifo_ramp', base_address)    
     
     enable = Signal(False)
     ramp  =  Signal(intbv(0)[fifobus.width:])
@@ -67,7 +67,7 @@ def m_fifo_ramp(
         if regfile.enable and not fifobus.full:
             if wcnt == 0 :
                 fifobus.wr.next = True
-                fifobus.di.next = ramp
+                fifobus.wdata.next = ramp
                 if ramp+1 == ramp_mod:
                     rcnt.next = rcnt + 1
                 ramp.next = (ramp + 1) % ramp_mod
@@ -77,7 +77,7 @@ def m_fifo_ramp(
                 wcnt.next = wcnt - 1
         else:
             fifobus.wr.next = False
-            fifobus.di.next = 0
+            fifobus.wdata.next = 0
             wcnt.next = div
     
     return instances()

@@ -1,6 +1,6 @@
 
 from myhdl import *
-from ...system import RegisterFile, Register, RegisterBits
+from mn.system import RegisterFile, Register, RegisterBits
 
 """
       ----------------------------------------------------------------

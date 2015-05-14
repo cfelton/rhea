@@ -23,9 +23,9 @@ from mn.cores.fifo import m_fifo_ramp
 
 from mn.system import Clock
 from mn.system import Reset
+from mn.system import Global
 from mn.system import Wishbone
 from mn.system import FIFOBus
-from mn.system import RWData
 
 # @todo: move utils to mn.utils, most of these functions
 #        will be used by the *examples*.  Or move these
@@ -37,7 +37,8 @@ def test_fifo_ramp():
 
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
-    regbus = Wishbone(clock, reset)
+    glbl = Global(clock, reset)
+    regbus = Wishbone(glbl)
     fifobus = FIFOBus()
 
     def _test_fifo_ramp():
@@ -46,7 +47,6 @@ def test_fifo_ramp():
         tb_rbor = regbus.m_per_outputs()
         tb_clk = clock.gen()
         
-        rwd = RWData()
         asserr = Signal(bool(0))
                 
         @instance 
@@ -58,18 +58,17 @@ def test_fifo_ramp():
                 # simply enable, enable the module and then
                 # verify an incrementing pattern over the
                 # fifobus
-                rwd.wval = 1
-                yield regbus.write(0x00, rwd)
-                yield regbus.read(0x00, rwd)
-                assert rwd.wval == rwd.rval, "cfg reg write failed"
+                yield regbus.write(0x00, 1)
+                yield regbus.read(0x00)
+                assert 1 == regbus.readval, "cfg reg write failed"
 
                 # monitor the bus until ?? ramps
-                Nramps,rr = 128,0
+                Nramps, rr = 128, 0
                 while rr < Nramps:
                     cnt = 0
-                    for ii,sh in enumerate((24, 16, 8, 0,)):
-                        yield regbus.read(0x08+ii, rwd)
-                        cnt = cnt | (rwd.rval << sh)
+                    for ii, sh in enumerate((24, 16, 8, 0,)):
+                        yield regbus.read(0x08+ii)
+                        cnt = cnt | (regbus.readval << sh)
                     rr = cnt
 
             except AssertionError, err:
@@ -87,7 +86,7 @@ def test_fifo_ramp():
         @always(clock.posedge)
         def tb_mon():
             if fifobus.wr:
-                assert _cval == fifobus.di
+                assert _cval == fifobus.wdata
                 _cval.next = _cval+1
 
         return tb_clk, tb_dut, tb_stim, tb_mon, tb_rbor
@@ -95,6 +94,7 @@ def test_fifo_ramp():
     tb_clean_vcd('_test_fifo_ramp')
     g = traceSignals(_test_fifo_ramp)
     Simulation(g).run()
+
 
 if __name__ == '__main__':
     test_fifo_ramp()
