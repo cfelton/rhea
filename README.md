@@ -137,8 +137,18 @@ are installed attempt to build one of the example projects.
 test
 ----
 The test directory contains test for the different cores in the package.
-Most of the test have the additional dependency of the gizflo
-package.
+
+Run the tests in the test directory:
+```
+>> cd test
+>> py.test
+```
+
+Run the tests in the examples directory:
+```
+>> cd examples
+>> py.test
+```
 
 
 examples
