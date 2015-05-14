@@ -17,6 +17,9 @@ install:
 
 # run the test, nosetests can be used
 script:
+   - cd examples
+   - py.test -s
+   - cd ../test
    - py.test -s
 
 notifications:
