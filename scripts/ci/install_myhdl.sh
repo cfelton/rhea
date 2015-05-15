@@ -1,7 +1,7 @@
 #!/bin/sh
 git clone https://github.com/jandecaluwe/myhdl
-git checkout 88cb76b
 cd myhdl
+git checkout 88cb76b
 python setup.py install
 make -C cosimulation/icarus
 # copy the VPI to the test directory
