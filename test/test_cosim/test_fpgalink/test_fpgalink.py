@@ -84,10 +84,7 @@ def map_ext_int(clock, reset, fx2_ext, fx2_bus):
         
 
 def test_fpgalink():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--cosim', action='store_true', default=False,
-                        help='Run cosimulation with verilog version of fpgalink requires icarus')
-    args = parser.parse_args()
+    args = argparse.Namespace(cosim=False)
     tb_clean_vcd('m_fpgalink_fx2')
     tb_fpgalink(args)
 
