@@ -20,13 +20,14 @@ from mn.cores.video import m_hdmi
 
 # a video desplay model to check the timings
 from mn.models.video import VideoDisplay
+from mn.utils.test import tb_clean_vcd
 
 # @todo move cosimulation to cosimulation directory
-from _hdmi_prep_cosim import prep_cosim
-from interfaces import HDMI
+#from _hdmi_prep_cosim import prep_cosim
+#from interfaces import HDMI
 
 
-def test_hdmi(args):
+def test_hdmi():
     """ simple test to demonstrate test framework
     """
 
@@ -34,8 +35,8 @@ def test_hdmi(args):
     reset = ResetSignal(0, active=0, async=True)
 
     # this currently tests a Verilog version
-    tbdut = prep_cosim(clock, reset, args=args)
-
+    #tbdut = prep_cosim(clock, reset, args=args)
+    tbdut = m_hdmi()
     
     def _test():
 
@@ -80,6 +81,6 @@ def test_hdmi(args):
     vcd = tb_clean_vcd('_test')
     traceSignals.timescale = '1ns'
     traceSignals.name = vcd
-    Simulation((traceSignals(_test), tbdut,)).run()
+    #Simulation((traceSignals(_test), tbdut,)).run()
 
 

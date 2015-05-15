@@ -1,11 +1,12 @@
 
+import os
 from random import randint
 import shutil
 
 from myhdl import *
 
 from mn.models.usbext import Fx2Model
-from mn.models.usbext.fx2._fx2_model import SlaveFifo
+from mn.models.usbext.fx2 import SlaveFifo
 
 # The Fx2Model has two config modes.  The actual FX2 controller has
 # numerous programmable modes.  The "configs" emulate configurations
@@ -120,13 +121,15 @@ def test_config1_host_write():
         raise StopSimulation
     
     Simulation((tb_dut, tb_stimulus)).run()
-    shutil.move('SlaveFifo.vcd', 'v_test_config1_host_write.vcd')
+    if os.path.isfile('SlaveFifo.vcd'):
+        shutil.move('SlaveFifo.vcd', 'v_test_config1_host_write.vcd')
+
 
 def test_config1_host_read():
 
     fm = Fx2Model(Config=1, Verbose=True, Trace=False)
     fb = fm.GetFx2Bus()
-    tb_dut = traceSignals(SlaveFifo,fm,fb)
+    tb_dut = traceSignals(SlaveFifo, fm, fb)
 
     def _write(fb, data):
         yield fb.IFCLK.posedge
@@ -196,7 +199,8 @@ def test_config1_host_read():
         
 
     Simulation((tb_dut, tb_stimulus)).run()
-    shutil.move('SlaveFifo.vcd', 'v_test_config1_host_read.vcd')
+    if os.path.isfile('SlaveFifo.vcd'):
+        shutil.move('SlaveFifo.vcd', 'v_test_config1_host_read.vcd')
     
 if __name__ == '__main__':
     test_config1_host_write()

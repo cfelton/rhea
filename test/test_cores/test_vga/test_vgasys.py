@@ -40,7 +40,7 @@ def test_vgasys(args=None):
         refresh_rate = args.refresh_rate
         line_rate = args.line_rate
 
-    clock = Clock(0, frequency=50e6)
+    clock = Clock(0, frequency=1e6)
     reset = Reset(0, active=0, async=False)
     vselect = Signal(bool(0))
 
