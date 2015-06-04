@@ -6,7 +6,7 @@ Xess Xula(2)
 ============
 
    * binary hello (blinky)
-   * VGA
+   * VGA (TBC)
 
 
 Digilent Nexys
@@ -21,8 +21,8 @@ Digilent Atlys
 ==============
 
    * binary hello (blinky)
-   * fpgalink
-   * usbp
+   * fpgalink (TBC)
+   * usbp (TBC)
 
 
 Digilent Zybo
@@ -45,7 +45,7 @@ DSPtronics Signa-X1 (sx1)
    * fpgalink
    * usbp
    * audio examples
-      * audio echo (wip)
-      * audio streaming (wip)
+      * audio echo (TBC)
+      * audio streaming (TBC)
 
 

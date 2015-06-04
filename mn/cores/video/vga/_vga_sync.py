@@ -13,9 +13,9 @@ def m_vga_sync(
     vmem,  # the video memory interface
 
     # [parameters]
-    resolution = (640,480,), # resolution in pixels
-    refresh_rate = 60,       # refresh rate in Hz (vertical rate)
-    line_rate = 31250        # line rate in Hz (horizontal rate)
+    resolution = (640, 480,),  # resolution in pixels
+    refresh_rate = 60,         # refresh rate in Hz (vertical rate)
+    line_rate = 31250          # line rate in Hz (horizontal rate)
     ):
     """
     The following is the generation of the signals required 
@@ -40,8 +40,8 @@ def m_vga_sync(
       glbl.clock : system synchronous clock
       glbl.reset : system reset
       
-      vga.hsync : horinontal sync
-      vga.vsync : veritcal sync
+      vga.hsync : horizontal sync
+      vga.vsync : vertical sync
       vga.red   : 
       vga.green :
       vga.blue  :
@@ -65,15 +65,15 @@ def m_vga_sync(
     reset = glbl.reset
 
     # compute the limits (counter limits) for the vsync
-    # and hsync timings.  Review the cacl_timing function
-    # for defintions of A,B,C,D,E,O,P,Q,R,S, and Z
+    # and hsync timings.  Review the calc_timing function
+    # for definitions of A,B,C,D,E,O,P,Q,R,S, and Z
     (A,B,C,D,E,O,
      P,Q,R,S,X,Z,) = calc_timings(clock.frequency, resolution,
                                   refresh_rate, line_rate)
     FullScreen = O
 
     # counters to count the pixel clock (clock)
-    HPXL,VPXL = res
+    HPXL, VPXL = res
     xcnt = intbv(0, min=-1, max=X+1) # clock div
     hcnt = intbv(0, min=0, max=A+1)  # hor count in ticks
     vcnt = intbv(0, min=0, max=O+1)  # ver count in ticks

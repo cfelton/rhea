@@ -41,7 +41,7 @@ def _update_cbars_with_max(P, width):
     return cbarvals
     
 
-def m_color_bars(glbl, vmem, resolution=(640,480), width=10):
+def m_color_bars(glbl, vmem, resolution=(640, 480), width=10):
     """ generate a color bar pattern
     """
     global COLOR_BARS
@@ -50,10 +50,10 @@ def m_color_bars(glbl, vmem, resolution=(640,480), width=10):
 
     cbarvals = _update_cbars_with_max(PMAX, width)
 
-    # the width of each boundrary
+    # the width of each boundary
     pw = res[0] / NUM_COLORS
     
-    clock,reset = glbl.clock, glbl.reset
+    clock, reset = glbl.clock, glbl.reset
     pval = Signal(intbv(0)[3*width:])
     # DEBUG
     ssel = Signal(intbv(0)[32:0])
@@ -67,14 +67,13 @@ def m_color_bars(glbl, vmem, resolution=(640,480), width=10):
         ssel.next = sel
         pval.next = cbarvals[sel]
 
+    W2, W, MASK = 2*width, width, PMAX
 
-    W2,W,MASK = 2*width, width, PMAX
     @always_seq(clock.posedge, reset=reset)
     def rtl_rgb():
         # unpack the RGB value
         vmem.red.next   = (pval >> W2) & MASK
         vmem.green.next = (pval >> W) & MASK 
         vmem.blue.next  = pval & MASK
-    
 
     return rtl_pval, rtl_rgb

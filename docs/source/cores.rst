@@ -63,7 +63,7 @@ device (virtual serial port).  The [fx2 firmware]() also has a
 couple vendor unique commands that can be sent using the pyusb
 (or other low-level USB interfaces like libusb).  The Python
 version of the host software (including firmware) can be retrieved
-via pip :
+via pip ::
 
     >> pip install usbp
     >>> import usbp
