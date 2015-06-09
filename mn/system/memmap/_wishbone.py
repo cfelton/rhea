@@ -22,6 +22,7 @@ from mn.system import Reset
 from mn.system.memmap._memmap import MemMap
 
 
+#@todo: Single controller interface
 class WishboneController(object):
     def __init__(self, data_width=8, address_width=16):
         self.addr = Signal(intbv(0)[address_width:])

@@ -7,7 +7,7 @@ def m_btn_mm_ctl(glbl, regbus, btns, led_addr=0x8240):
     """
     """
 
-    clock,reset = glbl.clock, glbl.reset
+    clock, reset = glbl.clock, glbl.reset
     dbtns = Signal(intbv(0)[len(btns):])
 
     # simple interface to control (invoke) the controller
@@ -21,7 +21,6 @@ def m_btn_mm_ctl(glbl, regbus, btns, led_addr=0x8240):
     # will start a write cycle and a read strobe a read cycle.
     gctl = regbus.m_controller_basic(ctl)
 
-    assert clock == regbus.clk_i
 
     # @todo: finish, can't use the write's like they are
     #    but I need a bus agnostic method to read/write

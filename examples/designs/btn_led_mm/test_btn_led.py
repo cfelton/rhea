@@ -17,8 +17,9 @@ def test_btn_led():
     btns = Signal(intbv(0)[4:])
 
     def _test():
-        
-        tbdut = m_btn_led_mm(clock, reset, leds, btns)
+
+        # bus_type = ('A', 'B', 'W', 'X') # avalon, barebone, wishbon, AXI
+        tbdut = m_btn_led_mm(clock, reset, leds, btns, bus_type='A')
 
         def dumpg(glist):
             for gg in glist:

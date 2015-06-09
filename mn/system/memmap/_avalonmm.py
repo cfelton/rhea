@@ -22,11 +22,12 @@ from mn.system import Reset
 from mn.system.memmap._memmap import MemMap
 
 
+#@todo: Single controller interface
 class AvalonMMController(object):
     def __init__(self, data_width=8, address_width=16):
-        self.address = Signal(intbv(0)[address_width:])
-        self.writedata = Signal(intbv(0)[data_width:])
-        self.readdata = Signal(intbv(0)[data_width:])
+        self.addr = Signal(intbv(0)[address_width:])
+        self.wdata = Signal(intbv(0)[data_width:])
+        self.rdata = Signal(intbv(0)[data_width:])
         self.read = Signal(bool(0))
         self.write = Signal(bool(0))
         self.done = Signal(bool(0))
@@ -66,6 +67,11 @@ class AvalonMM(MemMap):
         self.writedata = Signal(intbv(0)[data_width:])
         self.response = Signal(intbv(0)[2:])
 
+        self._readdata = []
+        self._readdatavalid = []
+        self._waitrequest = []
+        # @todo: _response ???
+
 
     def add_output_bus(self, name, readdata, readdatavalid, waitrequest):
         self._readdata.append(readdata)
@@ -76,7 +82,7 @@ class AvalonMM(MemMap):
     def m_per_outputs(self):
         """ combine all the peripheral outputs
         """
-        assert len(self._readata) == len(self._readatavalid)
+        assert len(self._readdata) == len(self._readdatavalid)
         ndevs = len(self._readdata)
 
         av = self
@@ -182,6 +188,11 @@ class AvalonMM(MemMap):
 
         return instances()
 
+
+    def get_controller_intf(self):
+        return AvalonMMController(self.data_width, self.address_width)
+
+            
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def m_controller_basic(self, ctl):
         """
@@ -194,7 +205,83 @@ class AvalonMM(MemMap):
         :return:
         """
         av = self
+        clock = av.clk
+        reset = av.reset
+        States = enum('Idle', 'Wait', 'Write', 'Read', 'ReadValid', 'Done')
+        state = Signal(States.Idle)
+        TOMAX = 33
+        tocnt = Signal(intbv(0, min=0, max=TOMAX))
 
+        @always_comb
+        def assign():
+            av.address.next = ctl.addr
+            av.writedata.next = ctl.wdata
+            ctl.rdata.next = av.readdata
+
+        @always_seq(clock.posedge, reset=reset)
+        def rtl():
+            # ~~~[Idle]~~~
+            if state == States.Idle:
+                av.write.next = False
+                av.read.next = False
+                ctl.done.next = False
+                if av.waitrequest:
+                    state.next = States.Wait
+                elif ctl.write:
+                    state.next = States.Write
+                elif ctl.read:
+                    state.next = States.Read
+                else:
+                    ctl.done.next = True
+
+            # ~~~[Wait]~~~
+            elif state == States.Wait:
+                if ctl.write:
+                    av.write.next = True
+                    av.read.next = False
+                elif ctl.read:
+                    av.write.next = False
+                    av.read.next = True
+
+                if not av.waitrequest:
+                    tocnt.next = 0
+                    if ctl.write:
+                        state.next = States.Done
+                    elif ctl.read:
+                        state.next = States.ReadValid
+
+            # ~~~[Write]~~~
+            elif state == States.Write:
+                av.write.next = True
+                # @todo byteenables !!!
+                state.next = States.Done
+                tocnt.next = 0
+
+            # ~~~[Read]~~~
+            elif state == States.Read:
+                av.read.next = True
+                state.next = States.ReadValid
+
+            # ~~~[ReadValid]~~~
+            elif state == States.ReadValid:
+                av.read.next = False
+                if av.readdatavalid:
+                    state.next = States.Done
+
+            # ~~~[Done]~~~
+            elif state == States.Done:
+                ctl.done.next = True
+                av.write.next = False
+                av.read.next = False
+                if not (ctl.write or ctl.read):
+                    state.next = States.Idle
+
+            else:
+                assert False, "Invalid state %s" % (state,)
+
+        return assign, rtl
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def write(self, addr, val):
         """ write accessor for testbenches
@@ -207,21 +294,28 @@ class AvalonMM(MemMap):
         self.address.next = addr
         self.writedata.next = val
         self.write.next = True
+        to = 0
         while self.waitrequest and to < self.TIMEOUT:
             yield self.clk.posedge
             to += 1
         yield self.clk.posedge
         self.write.next = False
         yield self.clk.posedge
-
+                      
     def read(self, addr):
         """ read accessor for testbenches
         :param addr:
         :return:
         """
         yield self.clk.posedge
-        self.address = addr
-        self.read = True
+        self.address.next = addr
+        self.read.next = True
         to = 0
         while self.waitrequest and to < self.TIMEOUT:
             yield delay(1)
+        self.read.next = False
+        self.rval = self.readdata
+
+    @property
+    def readval(self):
+        return self.rval
