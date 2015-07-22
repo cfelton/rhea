@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from myhdl import *
-from mn.system import Global
+from rhea.system import Global
 from _regfile_def import regfile
 
 def m_fifo_ramp(
@@ -39,10 +39,10 @@ def m_fifo_ramp(
     g_regbus = regbus.add(glbl, regfile, 'fifo_ramp', base_address)    
     
     enable = Signal(False)
-    ramp  =  Signal(intbv(0)[fifobus.width:])
-    wcnt    = Signal(intbv(0x3FF)[32:])
-    div     = Signal(intbv(0)[32:])
-    rcnt    = Signal(intbv(0)[32:])
+    ramp =  Signal(intbv(0)[fifobus.width:])
+    wcnt = Signal(intbv(0x3FF)[32:])
+    div  = Signal(intbv(0)[32:])
+    rcnt = Signal(intbv(0)[32:])
 
     # ?? not sure if this makes sense ??
     ramp_mod = int(2**fifobus.width)

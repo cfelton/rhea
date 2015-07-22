@@ -23,7 +23,8 @@ from _fifo_syncers import *
 from _fifo_intf import check_fifo_intf
 from _fifo_intf import _fifobus
 
-def m_fifo_async(reset, wclk, rclk, fbus):
+
+def fifo_async(reset, wclk, rclk, fbus):
     """
     The following is a general purpose, platform independent 
     asynchronous FIFO (dual clock domains).
@@ -131,8 +132,7 @@ def m_fifo_async(reset, wclk, rclk, fbus):
 
         # the dillio with the full determination ...
         wfull.next = (wpn == concat(~wq2_rptr[Asz+1:Asz-1],
-                                    wq2_rptr[Asz-1:0]))
-    
+                                    wq2_rptr[Asz-1:0]))    
     
     @always_comb
     def rtl_addrs():
@@ -142,4 +142,4 @@ def m_fifo_async(reset, wclk, rclk, fbus):
 
     return instances()
 
-m_fifo_async.fbus_intf = _fifobus
+fifo_async.fbus_intf = _fifobus

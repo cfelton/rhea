@@ -18,10 +18,11 @@ from argparse import Namespace
 
 from myhdl import *
 
-from ...cores.fifo._fifo_async import m_fifo_async
+from ...cores.fifo._fifo_async import fifo_async
 
 _fb_num = 0
 _fb_list = {}
+
 
 def _add_bus(fb, name=''):
     """ globally keep track of all the busses added.
@@ -29,6 +30,7 @@ def _add_bus(fb, name=''):
     global _fb_num, _fb_list
     _fb_num += 1
     _fb_list[name] = fb
+
 
 class FIFOBus(object):
     """
@@ -57,13 +59,15 @@ class FIFOBus(object):
         _add_bus(self, self.name)
 
 
-    def m_fifo(self, reset, wclk, rclk):
-        #self.wclk = wclk
-        #self.rclk = rclk
-        # map the FIFO interface to the actual fifo
-        gfifo = m_fifo_async(reset, wclk, rclk, self)
-        return gfifo
+    # @todo: waffling if this should be included or not???
+    #def m_fifo(self, reset, wclk, rclk):
+    #    #self.wclk = wclk
+    #    #self.rclk = rclk
+    #    # map the FIFO interface to the actual fifo
+    #    gfifo = fifo_async(reset, wclk, rclk, self)
+    #    return gfifo
 
+    # @todo: get the separate buses
     # def get_upstream()    
     #     """ write bus, into the FIFO """
     # def get_downstream()

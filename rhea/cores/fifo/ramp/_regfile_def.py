@@ -1,7 +1,7 @@
 
 from collections import OrderedDict
 from myhdl import *
-from mn.system import RegisterFile, Register, RegisterBits
+from rhea.system import RegisterFile, Register, RegisterBits
 
 
 regfile = RegisterFile()

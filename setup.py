@@ -37,12 +37,12 @@ except ImportError:
         return list(_find_packages(mn.__path__, mn.__name__))
     
 
-setup(name        = "minnesota",
+setup(name        = "rhea",
       version     = "0.1pre",
       description = "collection of HDL cores ",
       license     = "LGPL",
       platforms   = ["Any"],
-      keywords    = "DSP HDL MyHDL FPGA FX2 USB",
+      keywords    = "HDL MyHDL FPGA FX2 USB cores",
 
       packages    = find_packages(),
       # @todo need to add the examples and test directories,

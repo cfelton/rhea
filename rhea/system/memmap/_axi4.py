@@ -3,9 +3,9 @@ from __future__ import absolute_import
 
 from myhdl import *
 
-from mn.system import Clock
-from mn.system import Reset
-from mn.system.memmap._memmap import MemMap
+from rhea.system import Clock
+from rhea.system import Reset
+from ._memmap import MemMap
 
 class AXI4(MemMap):
     def __init__(self, glbl, data_width=8, address_width=16):
