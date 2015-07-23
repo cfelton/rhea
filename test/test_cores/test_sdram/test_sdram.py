@@ -13,15 +13,16 @@ import pytest
 from myhdl import *
 
 # resuse some of the interfaces
-import mn
-from mn.system import Clock
-from mn.system import Reset
-from mn.system import Global
-from mn.system import Wishbone
+import rhea
+from rhea.system import Clock
+from rhea.system import Reset
+from rhea.system import Global
+from rhea.system import Wishbone
 
-from mn.cores.sdram import SDRAM
-from mn.cores.sdram import m_sdram
-#from mn.models.sdram import SDRAMModel
+from rhea.cores.sdram import SDRAMInterface
+from rhea.cores.sdram import sdram_sdr_controller
+from rhea.models.sdram import SDRAMModel
+from rhea.models.sdram import sdram_controller_model
 
 
 @pytest.mark.xfail
@@ -29,14 +30,21 @@ def test_sdram(args):
     
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=0, async=False)
-    
 
-    def _test():
+    def _test_stim():
+
+        # interfaces to the modules
         ibus = Wishbone()
-        extmem = SDRAM(clock)
+        extmem = SDRAMInterface(clock)
         print(vars(extmem))
-        tbdut = m_sdram(clock, reset, ibus, extmem)
         glbl = Global(clock=clock, reset=reset)
+
+        # Models
+        sdram = SDRAMModel()
+        sdram_ctlr_model = sdram_controller_model(extmem, ibus)
+
+
+        tbdut = sdram_sdr_controller(ibus, extmem)
         tbclk = clock.gen()
 
         @instance

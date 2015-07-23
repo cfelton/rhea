@@ -5,8 +5,10 @@ from __future__ import print_function
 from copy import deepcopy
 from myhdl import *
 from ..regfile import Register
+from .._clock import Clock
+from .._reset import Reset
 
-# a count of the number of wishbone peripherals
+# a count of the number of memory-map peripherals
 _mm_per = 0
 _mm_list = {}
 
@@ -21,12 +23,71 @@ class MemMapController(object):
 
 
 class MemMap(object):
+    """ Base class for the different memory-map interfaces.
+    This is a base class for the various memory-mapped (control and status (CSR)
+    register interfaces.
+    """
+
     def __init__(self, data_width, address_width):
         self.data_width = data_width
         self.address_width = address_width
         self.names = {}
         self.regfiles = {}
-        
+
+        self.clock = Clock(bool(0))
+        self.reset = Reset(0, active=1, async=False)
+
+        self._write = False
+        self._read = False
+        self._address = 0
+        self._data = 0
+        self._write_data = -1  # holds the data written
+        self._read_data = -1   # holds the data read
+
+        # bus transaction timeout in clock ticks
+        self.timeout = 100
+
+    @property
+    def is_write(self):
+        return self._write
+
+    @property
+    def is_read(self):
+        return self._read
+
+    def get_read_data(self):
+        return self._read_data
+
+    def get_write_data(self):
+        return self._write_data
+
+    def get_address(self):
+        return self._address
+
+    def start_transaction(self, write, read, address, data=None):
+        self._write = write
+        self._read = read
+        self._address = address
+        if write:
+            self._write_data = data
+        elif read:
+            self._read_data = data
+
+    def end_transaction(self, data=None):
+        if self._read and data is not None:
+            self._read_data = data
+        self._write = False
+        self._read = False
+
+    def write(self, addr, val):
+        raise NotImplementedError
+
+    def read(self, addr):
+        raise NotImplementedError
+
+    def ack(self, data=None):
+        raise NotImplementedError
+
     def _add_bus(self, name):
         """ globally keep track of all per bus
         """
@@ -64,12 +125,13 @@ class MemMap(object):
     def m_per_interface(self, glbl, regfile, name, base_address=0):
          """ override
          :param glbl: global signals, clock and reset
-         :param rf: register file interfacing to.
+         :param regfile: register file interfacing to.
          :param name: name of this interface
          :param base_address: base address for this register file
          :return:
          """
          pass
+
 
     def m_controller_basic(self, ctl):
         """

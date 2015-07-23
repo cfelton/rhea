@@ -1,18 +1,6 @@
 #
 # Copyright (c) 2014-2015 Christopher L. Felton
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
 
@@ -56,15 +44,13 @@ class Wishbone(MemMap):
         # (the interface is passed) there isn't a need for 
         # _o and _i on many of the signals.  Preserved the
         # peripheral (slave) point of view names.
-        if glbl is None:
-            self.clk_i = Clock(0)
-        else:
-            self.clk_i = glbl.clock
+        if glbl is not None:
+            self.clock = glbl.clock
+        self.clk_i = self.clock
 
-        if glbl.reset is None:
-            self.rst_i = Reset(0, active=1, async=False)
-        else:
-            self.rst_i = glbl.reset
+        if glbl is not None and glbl.reset is not None:
+            self.reset = glbl.reset
+        self.rst_i = self.reset
         
         self.cyc_i = Signal(bool(0))
         self.stb_i = Signal(bool(0))
@@ -81,10 +67,7 @@ class Wishbone(MemMap):
         self._pdat_o = []
         self._pack_o = []
 
-        self.clock = self.clk_i
-        self.reset = self.rst_i        
-
-        self.TIMEOUT = 1111
+        self.timeout = 1111
 
         # accessors (transactors) are generators, they don't return
         # only yield.  Need a mechanism to return data
@@ -292,9 +275,10 @@ class Wishbone(MemMap):
     
     def write(self, addr, val):
         """ write accessor for testbenches
+        Not convertible.
         """
-        self.wval = val
-
+        self.start_transaction(True, False, addr, val)
+        # toggle the signals for the bus transaction
         yield self.clk_i.posedge
         self.adr_i.next = addr
         self.dat_i.next = self.wval
@@ -303,29 +287,38 @@ class Wishbone(MemMap):
         self.stb_i.next = True
         to = 0
         # wait for ack
-        while not self.ack_o and to < self.TIMEOUT:
-            yield delay(1) #self.clk_i.posedge
+        while not self.ack_o and to < self.timeout:
+            yield self.clk_i.posedge   # was delay(1)
             to += 1
         self.we_i.next = False
         self.cyc_i.next = False
         self.stb_i.next = False
         yield self.clk_i.posedge
+        self.end_transaction()
 
     def read(self, addr):
         """ read accessor for testbenches
         """
+        self.start_transaction(False, True, addr)
         yield self.clk_i.posedge
         self.adr_i.next = addr
         self.cyc_i.next = True
         self.stb_i.next = True
         to = 0
-        while not self.ack_o and to < self.TIMEOUT:
+        while not self.ack_o and to < self.timeout:
             yield self.clk_i.posedge
             to += 1
         self.cyc_i.next = False
         self.stb_i.next = False
-        self.rval = self.dat_o
+        self.end_transaction(self.dat_o)
 
-    @property
-    def readval(self):
-        return self.rval
+    def ack(self, data=None):
+        """ acknowledge accessor for testbenches
+        :param data:
+        :return:
+        """
+        self.ack_o.next = True
+        if data is not None:
+            self.dat_o.next = data
+        yield self.clk_i.posedge
+        self.ack_o.next = False

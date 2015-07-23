@@ -4,7 +4,7 @@ from ...system import Clock
 from _intf import SDRAM
 
     
-def m_sdram(clock, reset, ibus, extram, refresh=True):
+def sdram_sdr_controller(clock, reset, ibus, extram, refresh=True):
     """ SDRAM controller
     This module is an SDRAM controller to interface and control
     SDRAM modules.  This module contains a state-machine that 
@@ -36,7 +36,6 @@ def m_sdram(clock, reset, ibus, extram, refresh=True):
               intbv('001000')[5:],
               intbv('000000')[5:],
               intbv('000100')[5:])
-
 
     sdram = extram
     sdram.cmd = Signal(intbv(0)[5:])

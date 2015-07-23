@@ -1,7 +1,7 @@
 
-from _intf import SDRAM
+from _intf import SDRAMInterface
 
-class Winboad_W9812G6JH_75(SDRAM):
+class Winboad_W9812G6JH_75(SDRAMInterface):
     
     freq = 10e6  # clock frequency in Hz
     timing = { # all timing parameters in ns
