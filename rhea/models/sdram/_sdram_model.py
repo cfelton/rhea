@@ -30,7 +30,7 @@ class SDRAMModel(object):
         self.intf = intf
 
         # emulate banks in an SDRAM
-        self.banks = [{} for _ in range(intf.Nbanks)]
+        self.banks = [{} for _ in range(intf.num_banks)]
 
         # typically DRAM is defined using states (@todo add reference)
         self.States = enum("IDLE", "ACTIVE")

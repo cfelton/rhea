@@ -9,12 +9,12 @@ from rhea.system.regfile._regfile import RegisterBits
 from rhea.system.regfile._regfile import Register
 from rhea.system.regfile._regfile import RegisterFile
 
-# different busses supported by the register file interface
+# different buses supported by the register file interface
+from rhea.system.memmap._memmap import MemMap
 from rhea.system.memmap._barebone import Barebone  
 from rhea.system.memmap._wishbone import Wishbone  
 from rhea.system.memmap._avalonmm import AvalonMM  
 #from mn.system.memmap._axi4 import AXI4          
 
-
-# various other busses
+# various other buses
 from rhea.system.fifobus._fifobus import FIFOBus

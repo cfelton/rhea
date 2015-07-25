@@ -7,19 +7,20 @@ from math import ceil, floor
 
 from myhdl import *
 
-from rhea.utils import extract_freq
+# @todo: what was this for ???
+#from rhea.utils import extract_freq
 
 class SDRAMInterface(object):
     clock_frequency = 100e6
-    timing = { # all timing parameters in ns
+    timing = {  # all timing parameters in ns
         'init': 200000.0,   # min init interval
-        'ras': 45.0,       # min interval between active precharge commands
-        'rcd': 20.0,       # min interval between active R/W commands
-        'ref': 64000000.0, # max refresh interval
-        'rfc': 65.0,       # refresh operaiton duration
-        'rp': 20.0,       # min precharge command duration
-        'xsr': 75.0,       # exit self-refresh time
-        'wr': 55,         # @todo ...
+        'ras': 45.0,        # min interval between active precharge commands
+        'rcd': 20.0,        # min interval between active R/W commands
+        'ref': 64000000.0,  # max refresh interval
+        'rfc': 65.0,        # refresh operaiton duration
+        'rp': 20.0,         # min precharge command duration
+        'xsr': 75.0,        # exit self-refresh time
+        'wr': 55,           # @todo ...
     }
 
     addr_width = 12   # SDRAM address width
@@ -71,21 +72,20 @@ class SDRAMInterface(object):
         # extract the default timing parameters, all parameters in ns
         # but convert to "ps" like ticks.
         cycles = {}
-        for k, v in self.timing.iteritems():
+        for k, v in self.timing.items():
             cycles[k] = (v * (self.clock_frequency / 1e9))
             # @todo: if 'ddr' in self.ver: cycles[k] *= 2
 
         # add the cycle numbers to the
-        for k, v in cycles.iteritems():
+        for k, v in cycles.items():
             # majority of the timing parameters are maximum times,
             # floor error on the side of margin ...
             self.__dict__['cyc_'+k] = int(floor(v))
 
         # convert the time parameters to simulation ticks
         # @todo: where to get the global simulation step?
-        for k, v in self.timing.iteritems():
+        for k, v in self.timing.items():
             self.__dict__['tick_'+k] = int(ceil(v * 1000))
-
 
     def get_data_driver(self):
         return self.dq.driver()
@@ -135,21 +135,18 @@ class SDRAMInterface(object):
 
     def write(self, val, row_addr, col_addr, bankid=0, burst=1):
         """ Controller side write
+        The steps for a complete write
         Not convertible.
         """
         self.bs.next = bankid
+        yield self.clk.posedge
 
     def read(self, row_addr, col_addr, bankid=0, burst=1):
         """ Controller side read
+        The steps for a complete read
         Not convertible.
         """
         self.bs.next = bankid
-        self.addr.next = col_addr
-        self._set_cmd(self.Commands.)
-        self.cs.next = False
-        self.ras.next = True
-        self.cas.next = False
-        self.we.next = True
         yield self.clk.posedge
 
     def get_read_data(self):

@@ -31,26 +31,28 @@ def test_sdram(args):
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=0, async=False)
 
+    # interfaces to the modules
+    ibus = Wishbone()
+    extmem = SDRAMInterface(clock)
+    glbl = Global(clock=clock, reset=reset)
+
+    # Models
+    sdram = SDRAMModel(extmem)
+    tbmdl_sdm = sdram.process()
+    tbmdl_ctl = sdram_controller_model(extmem, ibus)
+
     def _test_stim():
+        """
+        This
+        """
 
-        # interfaces to the modules
-        ibus = Wishbone()
-        extmem = SDRAMInterface(clock)
-        print(vars(extmem))
-        glbl = Global(clock=clock, reset=reset)
-
-        # Models
-        sdram = SDRAMModel()
-        sdram_ctlr_model = sdram_controller_model(extmem, ibus)
-
-
-        tbdut = sdram_sdr_controller(ibus, extmem)
-        tbclk = clock.gen()
+        #tbdut = sdram_sdr_controller(ibus, extmem)
+        tbclk = clock.gen(hticks=10000)≈
 
         @instance
         def tbstim():
             reset.next = reset.active
-            yield delay(18)
+            yield delay(18000)
             reset.next = not reset.active
 
             for ii in range(100):
@@ -58,14 +60,14 @@ def test_sdram(args):
 
             raise StopSimulation
 
-        return tbclk, tbdut, tbstim
+        return tbclk, tbstim, tbmdl_sdm, tbmdl_ctl
 
     if os.path.isfile('vcd/_test.vcd'):
         os.remove('vcd/_test.vcd')
 
-    traceSignals.timescale = '1ns'
+    traceSignals.timescale = '1ps'
     traceSignals.name = 'vcd/_test'
-    Simulation(traceSignals(_test)).run()
+    Simulation(traceSignals(_test_stim)).run()
     #convert()
 
 if __name__ == '__main__':

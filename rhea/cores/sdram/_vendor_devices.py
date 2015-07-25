@@ -1,5 +1,7 @@
 
-from _intf import SDRAMInterface
+from __future__ import absolute_import
+
+from ._sdram_intf import SDRAMInterface
 
 class Winboad_W9812G6JH_75(SDRAMInterface):
     
@@ -16,3 +18,5 @@ class Winboad_W9812G6JH_75(SDRAMInterface):
     
     addr_width = 12   # SDRAM address width
     data_width = 16   # SDRAM data width
+
+

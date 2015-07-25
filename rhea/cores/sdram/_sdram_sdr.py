@@ -1,7 +1,10 @@
 
+from __future__ import absolute_import
+
 from myhdl import *
-from ...system import Clock
-from _intf import SDRAM
+from rhea.system import Clock
+
+from ._sdram_intf import SDRAMInterface
 
     
 def sdram_sdr_controller(clock, reset, ibus, extram, refresh=True):
@@ -68,11 +71,11 @@ def sdram_sdr_controller(clock, reset, ibus, extram, refresh=True):
 
 # default portmap
 clock = Clock(0, frequency=100e6)
-m_sdram.portmap = {
+sdram_sdr_controller.portmap = {
     'clock': clock, 
     'reset': ResetSignal(0, active=0, async=False),
     'ibus': None,
-    'extmem': SDRAM(clock)
+    'extmem': SDRAMInterface(clock)
 }
 
 

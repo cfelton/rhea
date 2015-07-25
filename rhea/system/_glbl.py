@@ -1,7 +1,9 @@
 
+from __future__ import absolute_import
+
 from myhdl import *
-from _clock import Clock
-from _reset import Reset
+from ._clock import Clock
+from ._reset import Reset
 
 class Global:
     """ global clock, reset, and control signals """
