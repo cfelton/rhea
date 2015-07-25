@@ -41,7 +41,6 @@ def sdram_controller_model(sdram_intf, internal_intf):
         """
 
         while True:
-
             addr = ix.get_address()
             row_addr, col_addr = translate_address(addr)
             if ix.is_write:
