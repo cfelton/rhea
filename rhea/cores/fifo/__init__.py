@@ -1,6 +1,7 @@
 
-# 
-from _fifo_async import fifo_async
+from __future__ import absolute_import
+
+from ._fifo_async import fifo_async
 #from _fifo_sync import m_fifo_sync
 #from _fifo_fast import m_fifo_fast
 #from ramp._fifo_ramp import m_fifo_ramp

@@ -46,8 +46,8 @@ def check_fifo_intf(fbus):
 
         assert len(fbus.wdata) == len(fbus.rdata)
         # @todo: the above is a small start ... to be continued ...
-    except AssertionError, err:
+    except AssertionError as err:
         _fifo_intf_dump()
         raise err
-    except Exception, err:
+    except Exception as err:
         raise err

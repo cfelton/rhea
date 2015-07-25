@@ -1,5 +1,6 @@
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 import myhdl
 from myhdl import instance
@@ -27,7 +28,7 @@ def sdram_controller_model(sdram_intf, internal_intf):
 
     def translate_address(addr):
         #@todo: add correct translation
-        row_addr = 0, col_addr = addr
+        row_addr, col_addr = 0, addr
         return row_addr, col_addr
 
     @instance

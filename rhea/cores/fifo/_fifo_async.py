@@ -1,3 +1,6 @@
+
+from __future__ import absolute_import
+
 #
 # Copyright (c) 2006-2014 Christopher L. Felton
 #
@@ -6,10 +9,10 @@ from math import log, ceil
 
 from myhdl import *
 
-from _fifo_mem import m_fifo_mem_generic
-from _fifo_syncers import *
-from _fifo_intf import check_fifo_intf
-from _fifo_intf import _fifobus
+from ._fifo_mem import m_fifo_mem_generic
+from ._fifo_syncers import *
+from ._fifo_intf import check_fifo_intf
+from ._fifo_intf import _fifobus
 
 
 def fifo_async(reset, wclk, rclk, fbus):
