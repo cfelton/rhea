@@ -45,11 +45,16 @@ def sdram_controller_model(sdram_intf, internal_intf):
             addr = ix.get_address()
             row_addr, col_addr = translate_address(addr)
             if ix.is_write:
-                yield ex.write(ix.get_write_data(), row_addr, col_addr)
+                data = ix.get_write_data()
+                print("[SDRAM CTLR] translate write {:08X}: {:08X} {:08X} -> {:08X}".format(addr, row_addr, col_addr, data))
+                yield ex.write(data, row_addr, col_addr)
                 yield ix.ack()
             elif ix.is_read:
+                print("[SDRAM CTLR] translate read  {:08X}: {:08X} {:08X}".format(addr, row_addr, col_addr))
                 yield ex.read(row_addr, col_addr)
                 read_data = ex.get_read_data()
                 yield ix.ack(read_data)
 
             yield ix.clock.posedge
+
+    return process

@@ -4,17 +4,42 @@ a minor release point.  If you happen to come across this public repository
 feel free to try it out and contribute.  This repository will
 be unstable until the first minor release 0.1. 
  
-[![Documentation Status](https://readthedocs.org/projects/minnesota/badge/?version=latest)](https://readthedocs.org/projects/minnesota/?badge=latest) 
-[![Build Status](https://travis-ci.org/cfelton/minnesota.svg)](https://travis-ci.org/cfelton/minnesota) 
-[![Join the chat at https://gitter.im/cfelton/minnesota](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cfelton/minnesota?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Documentation Status](https://readthedocs.org/projects/minnesota/badge/?version=latest)](https://readthedocs.org/projects/rhea/?badge=latest) 
+[![Build Status](https://travis-ci.org/cfelton/rhea.svg)](https://travis-ci.org/cfelton/rhea) 
+[![Join the chat at https://gitter.im/cfelton/rhea](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cfelton/rhea?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+<!-- banner -->
  
-minnesota (`mn`)
-================
+rhea 
+====
 
-The minnesota python package is a collection of HDL cores written 
+The rhea python package is a collection of HDL cores written 
 in MyHDL.  The myhdl package can be retrieved from http://www.myhdl.org
 
+
+the name
+--------
+Pronounced ray (as in ray-gun), just a random name and not 
+necissarily pronoucned the same as the bird or moon, but like the singer.
+ 
+ 
+dependencies
+------------
+   - [myhdl](www.myhdl.org) 0.9 or later
+   - [pytest](www.pytest.org) for the test suite
+   
+   
+quick start
+-----------
+If you are not familiar with [myhdl](www.myhdl.org) starting with the
+[myhdl manual]() and [examples]() is recommended.  General myhdl questions 
+can be answered on the [#myhdl IRC channel]() or on the [myhdl mailing-list]().  
+I am often available to answer `rhea` specific questions on the previously
+mentioned communications or the `rhea` gitter can be used.
+
+
+general comments
+----------------
 Some of the [examples](https://github.com/cfelton/minnesota/tree/master/examples) 
 have an additional dependency, the [gizflo](https://github.com/cfelton/gizflo) package.
 The gizflo package is used to manage different development boards and 

@@ -117,7 +117,7 @@ class MemMap(object):
 
         self.regfiles[name] = arf       
 
-        # @todo: return the peripheral generator
+        # return the peripheral generators for this bus
         g = self.m_per_interface(glbl, regfile, name, base_address)
 
         return g
@@ -131,7 +131,6 @@ class MemMap(object):
          :return:
          """
          pass
-
 
     def m_controller_basic(self, ctl):
         """

@@ -7,6 +7,7 @@ import os
 import argparse
 from argparse import Namespace
 from array import array
+from random import randint
 
 import pytest
 
@@ -32,22 +33,28 @@ def test_sdram(args):
     reset = Reset(0, active=0, async=False)
 
     # interfaces to the modules
-    ibus = Wishbone()
-    extmem = SDRAMInterface(clock)
     glbl = Global(clock=clock, reset=reset)
+    ixbus = Wishbone(glbl=glbl, data_width=32, address_width=32)
+    exbus = SDRAMInterface(clock)
 
     # Models
-    sdram = SDRAMModel(extmem)
-    tbmdl_sdm = sdram.process()
-    tbmdl_ctl = sdram_controller_model(extmem, ibus)
+    sdram = SDRAMModel(exbus)   # model driven by model :)
+
+    max_addr = 2048   # @todo: add actual SDRAM memory size limit
+    max_data = 2**32  # @todo: add actual databus width
 
     def _test_stim():
         """
-        This
+        This test exercises a SDRAM controller ...
         """
 
-        #tbdut = sdram_sdr_controller(ibus, extmem)
-        tbclk = clock.gen(hticks=10000)≈
+        tbmdl_sdm = sdram.process()
+        tbmdl_ctl = sdram_controller_model(exbus, ixbus)
+
+        # test currently only exercises the models, insert a second
+        # SDRAMInterface to test an actual controller
+        #tbdut = sdram_sdr_controller(ibus, exbus)
+        tbclk = clock.gen(hticks=10000)
 
         @instance
         def tbstim():
@@ -55,8 +62,28 @@ def test_sdram(args):
             yield delay(18000)
             reset.next = not reset.active
 
-            for ii in range(100):
-                yield delay(1000)
+            # test a bunch of random addresses
+            try:
+                for ii in range(10):
+                    addr = randint(0, max_addr)
+                    data = randint(0, max_data)
+                    print("invoke internal bus write {:08X} -> {:08X}".format(addr, data))
+                    yield ixbus.write(addr, data)
+                    print("invoke internal bus read  {:08X} -> {:08X}".format(addr, data))
+                    yield ixbus.read(addr)
+                    print("check read data")
+                    read_data = ixbus.get_read_data()
+                    print(read_data, data)
+                    assert read_data == data, "{:08X} != {:08X}".format(read_data, data)
+
+                for ii in range(10):
+                    yield delay(1000)
+
+            except AssertionError as err:
+                # if test check fails about let the simulation run more cycles,
+                # useful for debug
+                yield delay(20000)
+                raise err
 
             raise StopSimulation
 
@@ -68,7 +95,7 @@ def test_sdram(args):
     traceSignals.timescale = '1ps'
     traceSignals.name = 'vcd/_test'
     Simulation(traceSignals(_test_stim)).run()
-    #convert()
+
 
 if __name__ == '__main__':
     test_sdram(Namespace())

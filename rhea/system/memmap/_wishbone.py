@@ -10,7 +10,7 @@ from rhea.system import Reset
 from ._memmap import MemMap
 
 
-#@todo: Single controller interface
+#@todo: Single controller interface, move to separate file
 class WishboneController(object):
     def __init__(self, data_width=8, address_width=16):
         self.addr = Signal(intbv(0)[address_width:])
@@ -228,7 +228,6 @@ class Wishbone(MemMap):
             wb.adr_i.next = ctl.addr
             wb.dat_i.next = ctl.wdata
             ctl.rdata.next = wb.dat_o
-
 
         @always_seq(wb.clock.posedge, reset=wb.reset)
         def rtl():
