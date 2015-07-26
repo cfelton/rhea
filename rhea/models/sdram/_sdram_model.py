@@ -43,7 +43,9 @@ class SDRAMModel(object):
         intf = self.intf   # external SDRAM memory interface
 
         state = Signal(self.States.IDLE)
-        cmd = Signal(self.Commands.NOP)
+        cmdmn = Signal(self.Commands.NOP)
+
+        Commands, States = self.Commands, self.States
 
         @instance
         def mproc():
@@ -52,25 +54,60 @@ class SDRAMModel(object):
 
             # emulate the initialization sequence / requirement
             if skip_init:
-                pass
+                pass  # don't do anything
             else:
                 pass  # @todo: do init
 
-            # the
             while True:
                 # check the refresh counter
                 if refresh_counter >= intf.cyc_ref:
-                    # @todo: create specific
-                    raise
+                    # @todo: create specific exception for refresh error
+                    raise ValueError
                 refresh_counter += 1
 
+                intf.dqi.next = None   # release the bi-dir bus (default)
+                bs, addr = int(intf.bs), int(intf.addr)
                 if intf.cke:
                     cmd = intf.get_command()
 
+                    # @todo: need to add the device specific states
+                    if cmd == Commands.NOP:
+                        print("[SDRAM] nop commands")
+                    elif cmd == Commands.ACT:
+                        print("[SDRAM] ack commands")
+                    elif cmd == Commands.WR:
+                        print("[SDRAM] wr commands")
+                        # @todo look at the intf.dq bus and only get if valid
+                        data = 0
+                        if intf.dq is not None:
+                            data = int(intf.dq)
+                        assert intf.dq == intf.wdq
+                        self.banks[bs][addr] = data
+                    elif cmd == Commands.RD:
+                        print("[SDRAM] rd commands")
+                        data = 0
+                        if addr in self.banks[bs]:
+                            data = self.banks[bs][addr]
+                        intf.rdq.next = data
+                        intf.dqi.next = data
+
+                # this command, will always be one clock delayed
+                cmdmn.next = cmd
                 # synchronous RAM :)
                 # @todo: if 'ddr' in intf.ver yield intf.clk.posedge, intf.clk.negedge
                 yield intf.clk.posedge
 
+        # in the model case the following signals are not used in
+        # a generator.  The traceSignals will skip over these signals
+        # because it doesnt' think it is used.  Mirror the signals here
+        # so they are traced.
+        cs, ras, cas, we = [Signal(bool(0 )) for _ in range(4)]
 
+        @always_comb
+        def mon():
+            cs.next = intf.cs
+            ras.next = intf.ras
+            cas.next = intf.cas
+            we.next = intf.we
 
-        return mproc
+        return mproc, mon

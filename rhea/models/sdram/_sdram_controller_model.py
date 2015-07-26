@@ -32,7 +32,7 @@ def sdram_controller_model(sdram_intf, internal_intf):
         return row_addr, col_addr
 
     @instance
-    def process():
+    def mproc():
         """
         Emulated using the interface transactors, performs the
         following:
@@ -57,4 +57,4 @@ def sdram_controller_model(sdram_intf, internal_intf):
 
             yield ix.clock.posedge
 
-    return process
+    return mproc

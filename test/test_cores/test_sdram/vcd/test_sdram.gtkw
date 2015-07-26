@@ -1,33 +1,47 @@
 [*]
-[*] GTKWave Analyzer v3.3.57 (w)1999-2014 BSI
-[*] Sun Jul 26 00:24:22 2015
+[*] GTKWave Analyzer v3.3.58 (w)1999-2014 BSI
+[*] Sun Jul 26 03:36:27 2015
 [*]
-[dumpfile] "/Users/cfelton/Projects/active_projects/rhea/test/test_cores/test_sdram/vcd/_test.vcd"
-[dumpfile_mtime] "Sun Jul 26 00:23:06 2015"
-[dumpfile_size] 644
-[savefile] "/Users/cfelton/Projects/active_projects/rhea/test/test_cores/test_sdram/vcd/test_sdram.gtkw"
+[dumpfile] "/Users/cfelton/Projects/mndev/rhea/test/test_cores/test_sdram/vcd/_test.vcd"
+[dumpfile_mtime] "Sun Jul 26 03:36:09 2015"
+[dumpfile_size] 13203
+[savefile] "/Users/cfelton/Projects/mndev/rhea/test/test_cores/test_sdram/vcd/test_sdram.gtkw"
 [timestart] 0
-[size] 1322 893
+[size] 1235 718
 [pos] -1 -1
-*-13.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-16.000000 145000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] vcd/_test.
 [sst_width] 193
-[signals_width] 167
+[signals_width] 217
 [sst_expanded] 1
-[sst_vpaned_height] 271
+[sst_vpaned_height] 339
 @28
 vcd/_test.clock
 vcd/_test.reset
 @200
 -Controller Model
-@29
+@28
 vcd/_test.tbmdl_ctl.ix_clock
+vcd/_test.tbclk_sdram.self
 @200
 -SDRAM Model
 @28
 vcd/_test.tbmdl_sdm.intf_cke
 vcd/_test.tbmdl_sdm.intf_clk
-vcd/_test.tbmdl_sdm.cmd
+vcd/_test.tbmdl_sdm.intf_cs
+vcd/_test.tbmdl_sdm.intf_ras
+vcd/_test.tbmdl_sdm.intf_cas
+vcd/_test.tbmdl_sdm.intf_we
+>-10000
+vcd/_test.tbmdl_sdm.cmdmn
+>0
 vcd/_test.tbmdl_sdm.state
+@22
+vcd/_test.tbmdl_sdm.intf_dq[15:0]
+@23
+vcd/_test.tbmdl_sdm.intf_wdq[15:0]
+@22
+vcd/_test.tbmdl_sdm.intf_dqi[15:0]
+vcd/_test.tbmdl_sdm.intf_rdq[15:0]
 [pattern_trace] 1
 [pattern_trace] 0

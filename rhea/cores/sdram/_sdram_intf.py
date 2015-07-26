@@ -20,7 +20,7 @@ class SDRAMInterface(object):
         'rfc': 65.0,        # refresh operaiton duration
         'rp': 20.0,         # min precharge command duration
         'xsr': 75.0,        # exit self-refresh time
-        'wr': 55,           # @todo ...
+        'wr': 55.0,         # @todo ...
     }
 
     addr_width = 12   # SDRAM address width
@@ -29,31 +29,36 @@ class SDRAMInterface(object):
     def __init__(self, num_banks=4, addr_width=12, data_width=16, ver='sdr'):
 
         # signals in the interface
-        self.frequency = 0.          # @todo:
-        self.clk = Signal(bool(0))   # interface clock
-        self.cke = Signal(bool(0))   # clock enable
-        self.cs = Signal(bool(0))    # chip select
-        self.cas = Signal(bool(0))   # column address strobe
-        self.ras = Signal(bool(0))   # row address strobe
-        self.we = Signal(bool(0))
-        self.bs = Signal(intbv(0)[2:])
+        self.frequency = 0.            # @todo:
+        self.clk = Signal(bool(0))     # interface clock
+        self.cke = Signal(bool(0))     # clock enable
+        self.cs = Signal(bool(0))      # chip select
+        self.cas = Signal(bool(0))     # column address strobe
+        self.ras = Signal(bool(0))     # row address strobe
+        self.we = Signal(bool(0))      # write strobe
+        self.bs = Signal(intbv(0)[2:]) # bank select
         self.addr = Signal(intbv(0)[addr_width:])
+        self.dqm = Signal(bool(0))
         self.dqml = Signal(bool(0))
         self.dqmh = Signal(bool(0))
         self.dq = TristateSignal(intbv(0)[data_width:])
+        # the controller and SDRAM bi-dir bus drivers
+        self.dqo = self.dq.driver()
+        self.dqi = self.dq.driver()
 
-        # the separate write and read buses are not used
-        # in an actual device.  They are used by the model
-        # for debug and testing.
+        # the following separate write and read buses are
+        # not used in an actual device.  They are used by
+        # the model for debug and testing.
         self.wdq = Signal(intbv(0)[data_width:])
         self.rdq = Signal(intbv(0)[data_width:])
 
+        # configurations for the SDRAM interfacing with
         self.num_banks = num_banks
         self.addr_width = addr_width
         self.data_width = data_width
         self.ver = ver
 
-        # saved read
+        # saved read, transactors save the read data here
         self.read_data = None
 
         # generic commands for a DRAM, override these for specific (S)DRAM devices
@@ -87,8 +92,12 @@ class SDRAMInterface(object):
         for k, v in self.timing.items():
             self.__dict__['tick_'+k] = int(ceil(v * 1000))
 
-    def get_data_driver(self):
-        return self.dq.driver()
+    def get_data_driver(self, dir='o'):
+        if dir == 'o':
+            drv = self.dqo
+        else:
+            drv = self.dqi
+        return drv
 
     def get_command(self):
         """ extract the current command from based in the interface signals
@@ -126,28 +135,76 @@ class SDRAMInterface(object):
     def _set_cmd(self, cmd):
         pass
 
-    def nop(self):
+    def _nop(self):
         self.cs.next = False
         self.ras.next = True
         self.cas.next = True
         self.we.next = True
         yield self.clk.posedge
 
+    def _activate(self, row_addr):
+        self.addr.next = row_addr
+        self.cs.next = False
+        self.ras.next = False
+        self.cas.next = True
+        self.we.next = True
+        yield self.clk.posedge
+
+    def _write(self, addr, val):
+        self.addr.next = addr
+        self.wdq.next = val     # transaction bus only
+        self.dqo.next = val     # host side driver (controller)
+        self.cs.next = False
+        self.ras.next = True
+        self.cas.next = False
+        self.we.next = False
+        yield self.clk.posedge
+        self.dqo.next = None
+
+    def _read(self, addr):
+        self.addr.next = addr
+        self.cs.next = False
+        self.ras.next = True
+        self.cas.next = False
+        self.we.next = True
+        yield self.clk.posedge
+        if self.dq is not None and self.dqo is None:
+            self.rdq.next = self.dq
+
     def write(self, val, row_addr, col_addr, bankid=0, burst=1):
         """ Controller side write
-        The steps for a complete write
+        This is a transaction generator, this generator is used to
+        emulate a host write to an SDRAM device.
+
+        @todo: complete burst transaction
         Not convertible.
         """
         self.bs.next = bankid
-        yield self.clk.posedge
+        self.cke.next = True
+        yield self._nop()
+        yield self._activate(row_addr)
+        yield self._nop()
+        yield self._write(col_addr, val)
+        yield self._nop()
+        self.cke.next = False
 
     def read(self, row_addr, col_addr, bankid=0, burst=1):
         """ Controller side read
-        The steps for a complete read
+        This is a transaction generator, this genertor is used to
+        emulate a host read to an SDRAM device.
+
+        @todo: complete burst transaction
         Not convertible.
         """
         self.bs.next = bankid
-        yield self.clk.posedge
+        self.cke.next = True
+        yield self._nop()
+        yield self._activate(row_addr)
+        yield self._nop()
+        yield self._read(col_addr)
+        yield self._nop()
+        self.cke.next = False
+        self.read_data = int(self.rdq)
 
     def get_read_data(self):
         return self.read_data

@@ -28,20 +28,25 @@ from rhea.models.sdram import sdram_controller_model
 
 @pytest.mark.xfail
 def test_sdram(args):
-    
+
+    # internal clock
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=0, async=False)
+
+    # sdram clock
+    clock_sdram = Clock(0, frequency=100e6)
 
     # interfaces to the modules
     glbl = Global(clock=clock, reset=reset)
     ixbus = Wishbone(glbl=glbl, data_width=32, address_width=32)
-    exbus = SDRAMInterface(clock)
+    exbus = SDRAMInterface()
+    exbus.clk = clock_sdram
 
     # Models
     sdram = SDRAMModel(exbus)   # model driven by model :)
 
     max_addr = 2048   # @todo: add actual SDRAM memory size limit
-    max_data = 2**32  # @todo: add actual databus width
+    max_data = 2**16  # @todo: add actual databus width
 
     def _test_stim():
         """
@@ -54,7 +59,8 @@ def test_sdram(args):
         # test currently only exercises the models, insert a second
         # SDRAMInterface to test an actual controller
         #tbdut = sdram_sdr_controller(ibus, exbus)
-        tbclk = clock.gen(hticks=10000)
+        tbclk = clock.gen(hticks=10*1000)
+        tbclk_sdram = clock_sdram.gen(hticks=5*1000)
 
         @instance
         def tbstim():
@@ -64,9 +70,12 @@ def test_sdram(args):
 
             # test a bunch of random addresses
             try:
+                saved_addr_data = {}
                 for ii in range(10):
+                    # get a random address and random data, save the address and data
                     addr = randint(0, max_addr)
                     data = randint(0, max_data)
+                    saved_addr_data[addr] = data
                     print("invoke internal bus write {:08X} -> {:08X}".format(addr, data))
                     yield ixbus.write(addr, data)
                     print("invoke internal bus read  {:08X} -> {:08X}".format(addr, data))
@@ -75,6 +84,15 @@ def test_sdram(args):
                     read_data = ixbus.get_read_data()
                     print(read_data, data)
                     assert read_data == data, "{:08X} != {:08X}".format(read_data, data)
+
+                yield delay(20*1000)
+
+                # verify all the addresses have the last written data
+                for addr, data in saved_addr_data.items():
+                    yield ixbus.read(addr)
+                    read_data = ixbus.get_read_data()
+                    assert read_data == data
+                    yield clock.posedge
 
                 for ii in range(10):
                     yield delay(1000)
@@ -87,7 +105,7 @@ def test_sdram(args):
 
             raise StopSimulation
 
-        return tbclk, tbstim, tbmdl_sdm, tbmdl_ctl
+        return tbclk, tbclk_sdram, tbstim, tbmdl_sdm, tbmdl_ctl
 
     if os.path.isfile('vcd/_test.vcd'):
         os.remove('vcd/_test.vcd')
