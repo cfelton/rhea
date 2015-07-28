@@ -46,11 +46,9 @@ def sdram_controller_model(sdram_intf, internal_intf):
             row_addr, col_addr = translate_address(addr)
             if ix.is_write:
                 data = ix.get_write_data()
-                print("[SDRAM CTLR] translate write {:08X}: {:08X} {:08X} -> {:08X}".format(addr, row_addr, col_addr, data))
                 yield ex.write(data, row_addr, col_addr)
                 yield ix.ack()
             elif ix.is_read:
-                print("[SDRAM CTLR] translate read  {:08X}: {:08X} {:08X}".format(addr, row_addr, col_addr))
                 yield ex.read(row_addr, col_addr)
                 read_data = ex.get_read_data()
                 yield ix.ack(read_data)

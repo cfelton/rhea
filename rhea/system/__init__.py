@@ -11,6 +11,8 @@ from rhea.system.regfile._regfile import RegisterFile
 
 # different buses supported by the register file interface
 from rhea.system.memmap._memmap import MemMap
+from rhea.system.memmap._memmap import MemMapController    # generic controller
+from rhea.system.memmap._memmap import MemMapPeripherial   # generic peripherial
 from rhea.system.memmap._barebone import Barebone  
 from rhea.system.memmap._wishbone import Wishbone  
 from rhea.system.memmap._avalonmm import AvalonMM  

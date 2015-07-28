@@ -76,13 +76,9 @@ def test_sdram(args):
                     addr = randint(0, max_addr)
                     data = randint(0, max_data)
                     saved_addr_data[addr] = data
-                    print("invoke internal bus write {:08X} -> {:08X}".format(addr, data))
                     yield ixbus.write(addr, data)
-                    print("invoke internal bus read  {:08X} -> {:08X}".format(addr, data))
                     yield ixbus.read(addr)
-                    print("check read data")
                     read_data = ixbus.get_read_data()
-                    print(read_data, data)
                     assert read_data == data, "{:08X} != {:08X}".format(read_data, data)
 
                 yield delay(20*1000)

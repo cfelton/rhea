@@ -72,11 +72,11 @@ class SDRAMModel(object):
 
                     # @todo: need to add the device specific states
                     if cmd == Commands.NOP:
-                        print("[SDRAM] nop commands")
+                        pass #print("[SDRAM] nop commands")
                     elif cmd == Commands.ACT:
-                        print("[SDRAM] ack commands")
+                        pass #print("[SDRAM] ack commands")
                     elif cmd == Commands.WR:
-                        print("[SDRAM] wr commands")
+                        #print("[SDRAM] wr commands")
                         # @todo look at the intf.dq bus and only get if valid
                         data = 0
                         if intf.dq is not None:
@@ -84,7 +84,7 @@ class SDRAMModel(object):
                         assert intf.dq == intf.wdq
                         self.banks[bs][addr] = data
                     elif cmd == Commands.RD:
-                        print("[SDRAM] rd commands")
+                        #print("[SDRAM] rd commands")
                         data = 0
                         if addr in self.banks[bs]:
                             data = self.banks[bs][addr]

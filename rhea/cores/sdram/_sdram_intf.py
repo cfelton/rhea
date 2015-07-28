@@ -179,6 +179,8 @@ class SDRAMInterface(object):
         @todo: complete burst transaction
         Not convertible.
         """
+        # start on the posedge of the interface clock
+        yield self.clk.posedge
         self.bs.next = bankid
         self.cke.next = True
         yield self._nop()
@@ -196,6 +198,8 @@ class SDRAMInterface(object):
         @todo: complete burst transaction
         Not convertible.
         """
+        # start of the posedge of the interface clock
+        yield self.clk.posedge
         self.bs.next = bankid
         self.cke.next = True
         yield self._nop()
