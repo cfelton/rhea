@@ -8,17 +8,7 @@ from myhdl import *
 from rhea.system import Clock
 from rhea.system import Reset
 from ._memmap import MemMap
-
-
-#@todo: Single controller interface, move to separate file
-class WishboneController(object):
-    def __init__(self, data_width=8, address_width=16):
-        self.addr = Signal(intbv(0)[address_width:])
-        self.wdata = Signal(intbv(0)[data_width:])
-        self.rdata = Signal(intbv(0)[data_width:])
-        self.read = Signal(bool(0))
-        self.write = Signal(bool(0))
-        self.done = Signal(bool(0))
+from ._memmap_controller import MemMapController
 
 
 class Wishbone(MemMap):
@@ -119,7 +109,6 @@ class Wishbone(MemMap):
          lwb_wrd,lwb_ack,) = [Signal(bool(0)) for ii in range(5)]
         wb.add_output_bus(name, lwb_do, lwb_ack)
 
-
         ACNT = 1
         ackcnt = Signal(intbv(ACNT, min=0, max=ACNT+1))
         newcyc = Signal(bool(0))
@@ -204,13 +193,11 @@ class Wishbone(MemMap):
 
         return instances()
 
-
     def get_controller_intf(self):
-        return WishboneController(self.data_width, self.address_width)
-
+        return MemMapController(self.data_width, self.address_width)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def m_controller_basic(self, ctl):
+    def m_controller(self, ctl):
         """
         Bus controllers (masters) are typically custom and 
         built into whatever the controller is (e.g a processor).
@@ -276,7 +263,7 @@ class Wishbone(MemMap):
         """ write accessor for testbenches
         Not convertible.
         """
-        self.start_transaction(True, False, addr, val)
+        self._start_transaction(write=True, address=addr, data=val)
         # toggle the signals for the bus transaction
         yield self.clk_i.posedge
         self.adr_i.next = addr
@@ -293,12 +280,12 @@ class Wishbone(MemMap):
         self.cyc_i.next = False
         self.stb_i.next = False
         yield self.clk_i.posedge
-        self.end_transaction()
+        self._end_transaction()
 
     def read(self, addr):
         """ read accessor for testbenches
         """
-        self.start_transaction(False, True, addr)
+        self._start_transaction(write=False, address=addr)
         yield self.clk_i.posedge
         self.adr_i.next = addr
         self.cyc_i.next = True
@@ -309,7 +296,7 @@ class Wishbone(MemMap):
             to += 1
         self.cyc_i.next = False
         self.stb_i.next = False
-        self.end_transaction(self.dat_o)
+        self._end_transaction(self.dat_o)
 
     def ack(self, data=None):
         """ acknowledge accessor for testbenches
@@ -321,3 +308,29 @@ class Wishbone(MemMap):
             self.dat_o.next = data
         yield self.clk_i.posedge
         self.ack_o.next = False
+
+
+# -----------------------------------------------------------------------------
+def m_controller(generic, memmap):
+    """ Generic memap interface to Wishbone controller
+
+    :return: myhdl generators
+    """
+    assert isinstance(generic, Barebone)
+    assert isinstance(memmap, MemMap)
+    raise NotImplementedError
+
+
+def m_peripherial(memmap, generic):
+    """ Wishbone to generic memmap interface
+
+    Ports
+    -----
+      gen:
+      memmap:
+
+    :return: myhdl generators
+    """
+    assert isinstance(memmap, MemMap)
+    assert isinstance(generic, Barebone)
+    raise NotImplementedError

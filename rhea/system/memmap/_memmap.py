@@ -13,6 +13,9 @@ _mm_per = 0
 _mm_list = {}
 
 class MemMapController(object):
+    """
+    Provide a generic interface
+    """
     def __init__(self, data_width=8, address_width=16):
         self.addr = Signal(intbv(0)[address_width:])
         self.wdata = Signal(intbv(0)[data_width:])
@@ -21,6 +24,8 @@ class MemMapController(object):
         self.write = Signal(bool(0))
         self.done = Signal(bool(0))
 
+    def m_memmap_controller(self):
+        raise NotImplementedError
 
 class MemMap(object):
     """ Base class for the different memory-map interfaces.
@@ -37,10 +42,11 @@ class MemMap(object):
         self.clock = Clock(bool(0))
         self.reset = Reset(0, active=1, async=False)
 
-        self._write = False
-        self._read = False
-        self._address = 0
-        self._data = 0
+        # transaction information (simulation only)
+        self._write = False    # write command in progress
+        self._read = False     # read command in progress
+        self._address = 0      # address of current/last transaction
+        self._data = 0         # ??? @todo: is this used ???
         self._write_data = -1  # holds the data written
         self._read_data = -1   # holds the data read
 
@@ -64,20 +70,24 @@ class MemMap(object):
     def get_address(self):
         return self._address
 
-    def start_transaction(self, write, read, address, data=None):
+    def _start_transaction(self, write=False, address=None, data=None):
         self._write = write
-        self._read = read
+        self._read = not write
         self._address = address
         if write:
             self._write_data = data
         elif read:
             self._read_data = data
 
-    def end_transaction(self, data=None):
+    def _end_transaction(self, data=None):
         if self._read and data is not None:
             self._read_data = data
         self._write = False
         self._read = False
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # public transactor API
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def write(self, addr, val):
         raise NotImplementedError
@@ -87,6 +97,10 @@ class MemMap(object):
 
     def ack(self, data=None):
         raise NotImplementedError
+
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # keep track of all the components on the bus
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     def _add_bus(self, name):
         """ globally keep track of all per bus
@@ -122,74 +136,34 @@ class MemMap(object):
 
         return g
 
-    def m_per_interface(self, glbl, regfile, name, base_address=0):
-         """ override
-         :param glbl: global signals, clock and reset
-         :param regfile: register file interfacing to.
-         :param name: name of this interface
-         :param base_address: base address for this register file
-         :return:
-         """
-         pass
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # module (component) implementations
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    def m_controller_basic(self, ctl):
+    def m_per_regfile(self, glbl, regfile, name, base_address=0):
+        """ override
+        :param glbl: global signals, clock and reset
+        :param regfile: register file interfacing to.
+        :param name: name of this interface
+        :param base_address: base address for this register file
+        :return:
+        """
+        raise NotImplementedError
+
+    def m_controller(self, generic):
         """
         Bus controllers (masters) are typically custom and
         built into whatever the controller is (e.g a processor).
         This is a simple example with a simple interface to
         invoke bus cycles.
 
-        :param ctl:
-        :return:
+        Ports
+        -----
+          generic: generic memory-map (Barebone) interface
+
+        :return: myhdl generators
         """
-        mm = self
-        States = enum('Idle', 'Write', 'WriteAck', 'Read', 'ReadAck', 'Done')
-        state = Signal(States.Idle)
-        TOMAX = 33
-        tocnt = Signal(intbv(0, min=0, max=TOMAX))
+        raise NotImplementedError
 
-        @always(mm.clock.posedge)
-        def rtl_assign():
-            mm.address.next = ctl.addr
-            mm.writedata.next = ctl.wdata
-
-        @always_seq(wb.clock.posedge, reset=wb.reset)
-        def rtl():
-            # ~~~[Idle]~~~
-            if state == States.Idle:
-                if ctl.write:
-                    state.next = States.Write
-                    ctl.done.next = False
-                elif ctl.read:
-                    state.next = States.Read
-                    ctl.done.next = False
-                else:
-                    ctl.done.next = True
-
-            # ~~~[Write]~~~
-            elif state == States.Write:
-                if not wb.ack_o:
-                    wb.we_i.next = True
-                    wb.cyc_i.next = True
-                    wb.stb_i.next = True
-                    state.next = States.WriteAck
-                    tocnt.next = 0
-
-            # ~~~[WriteAck]~~~
-            elif state == States.WriteAck:
-                if wb.ack_o:
-                    wb.we_i.next = False
-                    wb.cyc_i.next = False
-                    wb.stb_i.next = False
-                    state.next = States.Done
-
-            # ~~~[Done]~~~
-            elif state == States.Done:
-                ctl.done.next = True
-                if not (ctl.write or ctl.read):
-                    state.next = States.Idle
-
-            else:
-                assert False, "Invalid state %s" % (state,)
-
-        return rtl_assign, rtl
+    def m_peripherial(self, generic):
+        raise NotImplementedError

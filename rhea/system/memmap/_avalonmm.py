@@ -8,17 +8,7 @@ from myhdl import *
 from rhea.system import Clock
 from rhea.system import Reset
 from ._memmap import MemMap
-
-
-#@todo: Single controller interface
-class AvalonMMController(object):
-    def __init__(self, data_width=8, address_width=16):
-        self.addr = Signal(intbv(0)[address_width:])
-        self.wdata = Signal(intbv(0)[data_width:])
-        self.rdata = Signal(intbv(0)[data_width:])
-        self.read = Signal(bool(0))
-        self.write = Signal(bool(0))
-        self.done = Signal(bool(0))
+from ._memmap import MemMapController
 
 
 class AvalonMM(MemMap):
@@ -60,12 +50,10 @@ class AvalonMM(MemMap):
         self._waitrequest = []
         # @todo: _response ???
 
-
     def add_output_bus(self, name, readdata, readdatavalid, waitrequest):
         self._readdata.append(readdata)
         self._readatavalid.append(readdatavalid)
         self._waitrequest.append(waitrequest)
-
 
     def m_per_outputs(self):
         """ combine all the peripheral outputs
@@ -88,7 +76,6 @@ class AvalonMM(MemMap):
             av.waitrequest.next = waits
 
         return rtl_or_combine
-
 
     def m_per_interface(self, glbl, regfile, name='', base_address=0x0):
         """ memory-mapped avalon peripheral interface
@@ -176,10 +163,8 @@ class AvalonMM(MemMap):
 
         return instances()
 
-
     def get_controller_intf(self):
-        return AvalonMMController(self.data_width, self.address_width)
-
+        return MemMapController(self.data_width, self.address_width)
             
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def m_controller_basic(self, ctl):
@@ -307,3 +292,29 @@ class AvalonMM(MemMap):
     @property
     def readval(self):
         return self.rval
+
+
+# -----------------------------------------------------------------------------
+def m_controller(generic, memmap):
+    """ Generic memap interface to Wishbone controller
+
+    :return: myhdl generators
+    """
+    assert isinstance(generic, Barebone)
+    assert isinstance(memmap, MemMap)
+    raise NotImplementedError
+
+
+def m_peripherial(memmap, generic):
+    """ Wishbone to generic memmap interface
+
+    Ports
+    -----
+      gen:
+      memmap:
+
+    :return: myhdl generators
+    """
+    assert isinstance(memmap, MemMap)
+    assert isinstance(generic, Barebone)
+    raise NotImplementedError
