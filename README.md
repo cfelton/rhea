@@ -4,7 +4,7 @@ a minor release point.  If you happen to come across this public repository
 feel free to try it out and contribute.  This repository will
 be unstable until the first minor release 0.1. 
  
-[![Documentation Status](https://readthedocs.org/projects/minnesota/badge/?version=latest)](https://readthedocs.org/projects/rhea/?badge=latest) 
+[![Documentation Status](https://readthedocs.org/projects/rhea/badge/?version=latest)](https://readthedocs.org/projects/rhea/?badge=latest) 
 [![Build Status](https://travis-ci.org/cfelton/rhea.svg)](https://travis-ci.org/cfelton/rhea) 
 [![Join the chat at https://gitter.im/cfelton/rhea](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cfelton/rhea?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -20,7 +20,7 @@ in MyHDL.  The myhdl package can be retrieved from http://www.myhdl.org
 the name
 --------
 Pronounced ray (as in ray-gun), just a random name and not 
-necissarily pronoucned the same as the bird or moon, but like the singer.
+pronoucned the same as the bird or moon.
  
  
 dependencies
@@ -40,27 +40,19 @@ mentioned communications or the `rhea` gitter can be used.
 
 general comments
 ----------------
-Some of the [examples](https://github.com/cfelton/minnesota/tree/master/examples) 
-have an additional dependency, the [gizflo](https://github.com/cfelton/gizflo) package.
-The gizflo package is used to manage different development boards and 
-simplify the FPGA tool flow.  See the FPGA compile templates 
-in the [examples directory](https://github.com/cfelton/minnesota/tree/master/examples) for 
-various boards.
-
-
 **IMPORTANT NOTE** this repository is under development and is using
-features from a development version of MyHDL (0.9dev).  If you 
+features from a development version of MyHDL (1.0dev).  If you 
 wish to try out this package get 
 [the development myhdl](https://github.com/jandecaluwe/myhdl)  (you will 
 need to clone it and install the source).  The first 
-*mn* release will not occur until myhdl 0.9 is released (probably much
+*rhea* release will not occur until myhdl 1.o is released (probably much
 later).
 
-This code/package is licensed user the LGPL license.  This allows 
-anyone to use the package in their projects with no limitations but
-if the code in the mn package is modified those modifications need to
+This code/package is licensed under the ~~LGPL~~ ??? license.  This allows 
+anyone to use the package in their projects with no limitations ~~but
+if the code in the `rhea` package is modified those modifications need to
 be made available to the public (not the code the cores are used 
-in or with).  Questions and other license options email me.
+in or with).~~  Questions and other license options email me.
 
 The following are the definition of some terms used in this README :
 
