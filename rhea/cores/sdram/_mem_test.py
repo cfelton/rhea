@@ -1,7 +1,9 @@
 
+from __future__ import absolute_import
 
 from myhdl import *
-from rhea.cores.misc import random_generator
+from ..misc import random_generator
+
 
 def mem_test(glbl, memmap, progress, error, done,
         start_address=0x00000000, end_address=0xFFFFFFFF):
@@ -11,7 +13,8 @@ def mem_test(glbl, memmap, progress, error, done,
     if end_address > memmap.addr.max:
         end_address = memmap.addr.max
 
-    States = enum('init', 'write', 'write_ack', 'compare_read', 'compare', 'end')
+    States = enum('init', 'write', 'write_ack', 'compare_read',
+                  'compare', 'end')
     state = Signal(States.init)
 
     clock, reset = glbl.clock, glbl.reset
@@ -72,6 +75,6 @@ def mem_test(glbl, memmap, progress, error, done,
             pass
 
         else:
-            assert False, "Invalid state %s" % (state)
+            assert False, "Invalid state %s" % (state,)
 
     return i_rand, rtl

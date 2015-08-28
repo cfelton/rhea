@@ -3,7 +3,9 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from copy import deepcopy
-from myhdl import *
+
+from myhdl import Signal, intbv
+
 from ..regfile import Register
 from .._clock import Clock
 from .._reset import Reset
@@ -12,20 +14,6 @@ from .._reset import Reset
 _mm_per = 0
 _mm_list = {}
 
-class MemMapController(object):
-    """
-    Provide a generic interface
-    """
-    def __init__(self, data_width=8, address_width=16):
-        self.addr = Signal(intbv(0)[address_width:])
-        self.wdata = Signal(intbv(0)[data_width:])
-        self.rdata = Signal(intbv(0)[data_width:])
-        self.read = Signal(bool(0))
-        self.write = Signal(bool(0))
-        self.done = Signal(bool(0))
-
-    def m_memmap_controller(self):
-        raise NotImplementedError
 
 class MemMap(object):
     """ Base class for the different memory-map interfaces.
@@ -76,7 +64,7 @@ class MemMap(object):
         self._address = address
         if write:
             self._write_data = data
-        elif read:
+        else:
             self._read_data = data
 
     def _end_transaction(self, data=None):
@@ -122,8 +110,8 @@ class MemMap(object):
             if isinstance(v, Register):
                 v.addr += base_address
 
-        if self.regfiles.has_key(name):
-            self.names[name] +=1
+        if name in self.regfiles:
+            self.names[name] += 1
             name = name.upper() + "_{:03d}".format(self.names[name])
         else:
             self.names = {name : 0}
@@ -139,6 +127,14 @@ class MemMap(object):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # module (component) implementations
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def map_generic(self, generic):
+        """ Map the generic bus (Barebone) to this bus
+
+        :param generic: generic Barebone bus
+        :return: myhdl generators
+
+        """
+        raise NotImplementedError
 
     def m_per_regfile(self, glbl, regfile, name, base_address=0):
         """ override
@@ -146,7 +142,7 @@ class MemMap(object):
         :param regfile: register file interfacing to.
         :param name: name of this interface
         :param base_address: base address for this register file
-        :return:
+        :return: myhdl generators
         """
         raise NotImplementedError
 

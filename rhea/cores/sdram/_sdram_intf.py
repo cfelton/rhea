@@ -5,10 +5,8 @@ from __future__ import absolute_import
 
 from math import ceil, floor
 
-from myhdl import *
+from myhdl import Signal, TristateSignal, intbv, enum
 
-# @todo: what was this for ???
-#from rhea.utils import extract_freq
 
 class SDRAMInterface(object):
     clock_frequency = 100e6

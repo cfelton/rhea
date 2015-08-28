@@ -4,11 +4,13 @@
 
 from __future__ import absolute_import
 
-from myhdl import *
-from rhea.system import Clock
-from rhea.system import Reset
-from ._memmap import MemMap
-from ._memmap import MemMapController
+from myhdl import (Signal, intbv, always_seq, always, always_comb,
+                   instances, enum,)
+
+from .. import Clock
+from .. import Reset
+from . import MemMap
+from . import Barebone
 
 
 class AvalonMM(MemMap):

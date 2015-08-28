@@ -1,11 +1,11 @@
 
 from __future__ import absolute_import
 
-from myhdl import *
+from myhdl import Signal, intbv
 
-from rhea.system import Clock
-from rhea.system import Reset
-from ._memmap import MemMap
+from .. import Clock
+from .. import Reset
+from . import MemMap
 
 class AXI4(MemMap):
     def __init__(self, glbl, data_width=8, address_width=16):

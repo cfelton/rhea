@@ -1,8 +1,8 @@
 
 from __future__ import absolute_import
 
-from myhdl import *
-from rhea.system import Clock
+from myhdl import intbv, enum, Signal
+from ...system import Clock
 
 from ._sdram_intf import SDRAMInterface
 

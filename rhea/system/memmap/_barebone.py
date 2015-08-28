@@ -3,6 +3,8 @@
 #
 
 from __future__ import absolute_import
+
+from math import log, ceil
 from myhdl import Signal, intbv
 from ._memmap import MemMap
 
@@ -15,22 +17,32 @@ class Barebone(MemMap):
 
     Timing Diagram
     ---------------
-    clock  /--\__/--\__/--\__/--\__/--\__/--\__/--\__/--\__
-    reset  /-----\_________________________________________
-    wr     ____________/-----\_____________________________
-    rd     _____________________________/------\___________
-    ack    ___________________/----\___________/-----\_____
-    rdat   -----------------------------|read data |-------
-    wdat   ------------|write data |-----------------------
-    addr   ------------\write addr |----|read addr |-------
+    clock       /--\__/--\__/--\__/--\__/--\__/--\__/--\__/--\__
+    reset       /-----\_________________________________________
+    write       ____________/-----\_____________________________
+    read        _____________________________/------\___________
+    ack         ___________________/----\___________/-----\_____
+    done        ------------\______/---------\______/-----------
+    read_data   -----------------------------|read data |-------
+    write_data  ------------|write data |-----------------------
+    per_addr
+    reg_addr    ------------\write addr |----|read addr |-------
+
+    @todo: replace 'ack' with 'done'
     """
-    def __init__(self, data_width=8, address_width=16):
-        self.write = Signal(False)
-        self.read = Signal(False)
-        self.ack = Signal(False)
-        self.rdata = Signal(intbv(0)[data_width:])
-        self.wdata = Signal(intbv(0)[data_width:])
-        self.addr = Signal(intbv(0)[address_width:])
+    def __init__(self, num_peripherals=16, data_width=8, address_width=8):
+        self.write = Signal(bool(0))
+        self.read = Signal(bool(0))
+        self.ack = Signal(bool(0))
+        self.read_data = Signal(intbv(0)[data_width:])
+        self.write_data = Signal(intbv(0)[data_width:])
+
+        # separate address bus for selecting a peripheral and the register
+        # addresses.  The total number of peripherals is num_periphal-1,
+        # the max address (all 1s) is reserved to indicate "done" (idle)
+        pwidth = int(ceil(log(num_peripherals, 2)))
+        self.per_addr = Signal(intbv(0)[pwidth:])
+        self.reg_addr = Signal(intbv(0)[address_width:])
         super(Barebone, self).__init__(data_width=data_width,
                                        address_width=address_width)
 
@@ -70,6 +82,15 @@ class Barebone(MemMap):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Modules
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def map_generic(self, generic):
+        self.write = generic.write
+        self.read = generic.read
+        self.wdata = generic.wdata
+        self.addr = generic.addr
+        generic.ack = self.ack
+        generic.rdata = self.rdata
+        return []
+
     def m_per_regfile(self, glbl, regfile, name, base_address=0):
         pass
 
