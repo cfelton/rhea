@@ -12,7 +12,6 @@ class Clock(myhdl.SignalType):
     object and provides needed attributes and clock generation for
     testbenches.
     
-    @note: As of Jul-2014 this obj is duplicated in myhdl_tools
     """
 
     def __init__(self, val, frequency=1, timescale='1ns'):
