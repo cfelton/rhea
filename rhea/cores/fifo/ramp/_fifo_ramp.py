@@ -14,9 +14,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 from myhdl import *
-from rhea.system import Global
-from _regfile_def import regfile
+from ....system import Global
+from ._regfile_def import regfile
 
 def m_fifo_ramp(
     # --[ports]--

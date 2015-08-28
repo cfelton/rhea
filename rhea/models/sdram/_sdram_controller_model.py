@@ -6,10 +6,10 @@ import myhdl
 from myhdl import instance
 
 # @todo: move "interfaces" to system (or interfaces)
-from rhea.cores.sdram import SDRAMInterface
+from ...cores.sdram import SDRAMInterface
 
-from rhea.system import MemMap
-from rhea.system import FIFOBus
+from ...system import MemMap
+from ...system import FIFOBus   # @todo: ustilize FIFOBus
 
 def sdram_controller_model(sdram_intf, internal_intf):
     """ Model the transaction between the internal bus and external SDRAM

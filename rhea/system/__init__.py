@@ -1,22 +1,25 @@
 
 from __future__ import absolute_import
 
-from rhea.system._clock import Clock
-from rhea.system._reset import Reset
-from rhea.system._glbl import Global
+# these are mainly used by the tests and simulation
+from ._const import timespec
+from ._const import ticks_per_ns
 
-from rhea.system.regfile._regfile import RegisterBits
-from rhea.system.regfile._regfile import Register
-from rhea.system.regfile._regfile import RegisterFile
+# small wrappers to include specific attributes
+from ._clock import Clock
+from ._reset import Reset
+from ._glbl import Global
+
+from .regfile._regfile import RegisterBits
+from .regfile._regfile import Register
+from .regfile._regfile import RegisterFile
 
 # different buses supported by the register file interface
-from rhea.system.memmap._memmap import MemMap
-from rhea.system.memmap._memmap import MemMapController    # generic controller
-from rhea.system.memmap._memmap import MemMapPeripherial   # generic peripherial
-from rhea.system.memmap._barebone import Barebone  
-from rhea.system.memmap._wishbone import Wishbone  
-from rhea.system.memmap._avalonmm import AvalonMM  
-#from mn.system.memmap._axi4 import AXI4          
+from .memmap._memmap import MemMap
+from .memmap._barebone import Barebone
+from .memmap._wishbone import Wishbone
+from .memmap._avalonmm import AvalonMM
+from .memmap._axi4 import AXI4
 
 # various other buses
-from rhea.system.fifobus._fifobus import FIFOBus
+from .fifobus._fifobus import FIFOBus

@@ -5,10 +5,12 @@
 from __future__ import absolute_import
 
 from myhdl import *
-from rhea.system import Clock
-from rhea.system import Reset
-from ._memmap import MemMap
-from ._memmap_controller import MemMapController
+
+from .. import Clock
+from .. import Reset
+
+from . import MemMap
+from . import Barebone
 
 
 class Wishbone(MemMap):
@@ -194,9 +196,26 @@ class Wishbone(MemMap):
         return instances()
 
     def get_controller_intf(self):
-        return MemMapController(self.data_width, self.address_width)
+        return Barebone(self.data_width, self.address_width)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def map_generic(self, generic):
+        wb = self
+
+        @always_comb
+        def rtl_assign():
+            if generic.write or generic.read:
+                wb.cyc_i.next = True
+                wb.we_i.next = True if generic.write else False
+
+            wb.adr_i.next = concat(generic.per_addr, generic.reg_addr)
+
+            generic.ack = wb.ack_o
+
+
+        return rtl_assign
+
+    # @todo: remove this ???
     def m_controller(self, ctl):
         """
         Bus controllers (masters) are typically custom and 

@@ -6,6 +6,21 @@ from copy import deepcopy
 from myhdl import *
 from ..regfile import Register
 
+class MemMapController(object):
+    """
+    Provide a generic interface
+    """
+    def __init__(self, data_width=8, address_width=16):
+        self.addr = Signal(intbv(0)[address_width:])
+        self.wdata = Signal(intbv(0)[data_width:])
+        self.rdata = Signal(intbv(0)[data_width:])
+        self.read = Signal(bool(0))
+        self.write = Signal(bool(0))
+        self.done = Signal(bool(0))
+
+    def memmap_controller(self):
+        raise NotImplementedError
+
 
 def memmap_controller_basic(ctl, memap):
     """
@@ -18,5 +33,5 @@ def memmap_controller_basic(ctl, memap):
     Parameters:
 
     """
-
+    pass
 
