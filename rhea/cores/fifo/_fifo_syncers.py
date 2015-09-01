@@ -18,6 +18,7 @@ def m_sync_rst(clock, rsti, rsto):
 
     return rtl
 
+
 def m_sync_mbits(clock, reset, sigin, sigou):
 
     d1 = Signal(intbv(0)[len(sigou):])

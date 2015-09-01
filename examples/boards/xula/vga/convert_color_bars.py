@@ -3,8 +3,9 @@ import os
 import argparse
 
 from myhdl import *
-from vga_intf import *
-from vga_color_bars import m_color_bars
+from rhea.system import System
+from rhea.cores.video import VideoMemory
+from rhea.cores.video import m_color_bars
 
 def convert(args):
     dsys = System(frequency=50e6)

@@ -1,18 +1,6 @@
 #
 # Copyright (c) 2013-2015 Christopher L. Felton
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from pprint import pprint
@@ -20,19 +8,20 @@ import pytest
 
 from myhdl import *
 
-from mn.cores.spi import m_spi
-from mn.cores.spi import SPIBus
+from rhea.cores.spi import m_spi
+from rhea.cores.spi import SPIBus
 
-from mn.models.spi import SPIEEPROM
+from rhea.models.spi import SPIEEPROM
 
-from mn.system import Clock
-from mn.system import Reset
-from mn.system import Global
-from mn.system import Wishbone
-from mn.system import FIFOBus 
-from mn.system.regfile import Register
+from rhea.system import Clock
+from rhea.system import Reset
+from rhea.system import Global
+from rhea.system import Wishbone
+from rhea.system import FIFOBus
+from rhea.system.regfile import Register
 
-from mn.utils.test import *
+from rhea.utils.test import *
+
 
 def m_test_top(clock, reset, sck, mosi, miso, ss):
     # @todo: create a top-level for conversion ...
@@ -40,7 +29,7 @@ def m_test_top(clock, reset, sck, mosi, miso, ss):
     return g_spi
 
 
-def convert(to='ver'):
+def convert():
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
     sck = Signal(bool(0))
@@ -85,7 +74,7 @@ def test_spi():
             yield reset.pulse(33)
 
             try:
-                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # loop through the registers and check the default 
                 # values, these are the offset values.
                 for addr,sig in rf.roregs:
@@ -101,7 +90,7 @@ def test_spi():
                         assert regbus.readval == int(sig)
 
 
-                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # enable the system         
                 print("  enable the SPI core")
                 yield regbus.write(rf.spst.addr, 0x02)  # register data drives fifo
@@ -133,7 +122,7 @@ def test_spi():
                     print("spi readback {0}".format(regbus.readval))
                 
 
-            except Exception, err:
+            except Exception as err:
                 print("@W: exception {0}".format(err))                
                 yield delay(100)
                 raise err

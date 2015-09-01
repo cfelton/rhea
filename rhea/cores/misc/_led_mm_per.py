@@ -3,13 +3,13 @@ from __future__ import division
 from __future__ import absolute_import
 
 from myhdl import *
-from mn.system.regfile import RegisterFile
-from mn.system.regfile import Register
+from ...system import RegisterFile
+from ...system import Register
 
-from mn.cores.misc._assign import m_assign
-from mn.cores.misc._led_stroby import m_led_stroby
-from mn.cores.misc._led_count import m_led_count
-from mn.cores.misc._led_dance import m_led_dance
+from . import m_assign
+from . import m_led_stroby
+from . import m_led_count
+from . import m_led_dance
 
 # create a simple register file for the "core"
 regfile = RegisterFile()
@@ -24,7 +24,7 @@ def m_led_mm_per(glbl, regbus, leds, base_address=0x8240):
     """
     Ndrv = 3 # the number of different drivers
 
-    clock,reset = glbl.clock, glbl.reset
+    clock, reset = glbl.clock, glbl.reset
     rleds = Signal(intbv(0)[len(leds):])
 
     # assign the LED port to the local register

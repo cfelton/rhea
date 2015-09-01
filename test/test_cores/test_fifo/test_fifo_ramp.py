@@ -7,18 +7,15 @@ from __future__ import print_function
 
 from myhdl import *
 
-from mn.cores.fifo import m_fifo_ramp
+from rhea.cores.fifo import fifo_ramp
 
-from mn.system import Clock
-from mn.system import Reset
-from mn.system import Global
-from mn.system import Wishbone
-from mn.system import FIFOBus
+from rhea.system import Clock
+from rhea.system import Reset
+from rhea.system import Global
+from rhea.system import Wishbone
+from rhea.system import FIFOBus
 
-# @todo: move utils to mn.utils, most of these functions
-#        will be used by the *examples*.  Or move these
-#        to myhdl_tools
-from mn.utils.test import *
+from rhea.utils.test import tb_clean_vcd
 
 
 def test_fifo_ramp():
@@ -30,8 +27,8 @@ def test_fifo_ramp():
     fifobus = FIFOBus()
 
     def _test_fifo_ramp():
-        tb_dut = m_fifo_ramp(clock, reset, regbus, fifobus,
-                             base_address=0x0000)
+        tb_dut = fifo_ramp(clock, reset, regbus, fifobus,
+                           base_address=0x0000)
         tb_rbor = regbus.m_per_outputs()
         tb_clk = clock.gen()
         
@@ -48,7 +45,7 @@ def test_fifo_ramp():
                 # fifobus
                 yield regbus.write(0x00, 1)
                 yield regbus.read(0x00)
-                assert 1 == regbus.readval, "cfg reg write failed"
+                assert 1 == regbus.get_read_data(), "cfg reg write failed"
 
                 # monitor the bus until ?? ramps
                 Nramps, rr = 128, 0
@@ -56,12 +53,12 @@ def test_fifo_ramp():
                     cnt = 0
                     for ii, sh in enumerate((24, 16, 8, 0,)):
                         yield regbus.read(0x08+ii)
-                        cnt = cnt | (regbus.readval << sh)
+                        cnt = cnt | (regbus.get_read_data() << sh)
                     rr = cnt
 
-            except AssertionError, err:
+            except AssertionError as err:
                 asserr.next = True
-                for _ in xrange(10):
+                for _ in range(10):
                     yield clock.posedge
                 raise err
 
@@ -71,6 +68,7 @@ def test_fifo_ramp():
         # be a simple "ramp" increasing values
         _mask = 0xFF
         _cval = Signal(modbv(0, min=0, max=256))
+
         @always(clock.posedge)
         def tb_mon():
             if fifobus.wr:
@@ -79,7 +77,8 @@ def test_fifo_ramp():
 
         return tb_clk, tb_dut, tb_stim, tb_mon, tb_rbor
 
-    tb_clean_vcd('_test_fifo_ramp')
+    vcd = tb_clean_vcd('_test_fifo_ramp')
+    traceSignals.name = vcd
     g = traceSignals(_test_fifo_ramp)
     Simulation(g).run()
 

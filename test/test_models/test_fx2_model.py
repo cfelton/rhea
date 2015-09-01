@@ -5,8 +5,8 @@ import shutil
 
 from myhdl import *
 
-from mn.models.usbext import Fx2Model
-from mn.models.usbext.fx2 import SlaveFifo
+from rhea.models.usbext import Fx2Model
+from rhea.models.usbext.fx2 import SlaveFifo
 
 # The Fx2Model has two config modes.  The actual FX2 controller has
 # numerous programmable modes.  The "configs" emulate configurations

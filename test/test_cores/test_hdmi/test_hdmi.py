@@ -13,14 +13,14 @@ from array import array
 
 from myhdl import *
 
-import mn
-from mn.system import Global
-from mn.cores.video import HDMI
-from mn.cores.video import m_hdmi
+import rhea
+from rhea.system import Global
+from rhea.cores.video import HDMI
+from rhea.cores.video import m_hdmi
 
 # a video desplay model to check the timings
-from mn.models.video import VideoDisplay
-from mn.utils.test import tb_clean_vcd
+from rhea.models.video import VideoDisplay
+from rhea.utils.test import tb_clean_vcd
 
 # @todo move cosimulation to cosimulation directory
 #from _hdmi_prep_cosim import prep_cosim
@@ -61,14 +61,14 @@ def test_hdmi():
                 for ii in range(100):
                     yield delay(100)
                 
-            except AssertionError, err:
+            except AssertionError as err:
                 print("@E: assertion error @ %d ns" % (now(),))
                 print("    %s" % (str(err),))
                 # additional simulation cycles after the error
                 yield delay(111)
                 raise err
 
-            except Exception, err:
+            except Exception as err:
                 print("@E: error occurred")
                 print("    %s" % (str(err),))
                 raise err

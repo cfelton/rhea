@@ -2,13 +2,16 @@
 # Copyright (c) 2011-2013 Christopher L. Felton
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 from array import array
 import struct
 import time
 
 from myhdl import now
 
-from _fx2_model import Fx2Model
+from ._fx2_model import Fx2Model
 
     
 class FpgaLinkHost(Fx2Model):
@@ -105,12 +108,12 @@ class FpgaLinkHost(Fx2Model):
     def AppendWriteChannelCommand(chan, count, data):
         """ Append a write command to the end of the write buffer
         """
-        raise NotImplementedError, "Not Implemented"
+        raise NotImplementedError("Not Implemented")
 
     def PlayWriteBuffer(chan, count, data):
         """ Play the write buffer into the FPGALink device immediately
         """
-        raise NotImplementedError, "Not Implemented"
+        raise NotImplementedError("Not Implemented")
 
     def CleanWriteBuffer(self):
         """ Clean the write buffer (if any)

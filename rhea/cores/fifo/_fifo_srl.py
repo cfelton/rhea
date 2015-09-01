@@ -2,7 +2,8 @@
 
 from myhdl import *
 
-def m_fifo_srl(clock, D, ce, addr, Q, Qn=None):
+
+def fifo_srl(clock, D, ce, addr, Q, Qn=None):
     """
     Infer a shift-register-LUT without explicilty instatiating a device
     specific primitive.  This is typical in most FPGAs and works for std
@@ -37,5 +38,3 @@ def m_fifo_srl(clock, D, ce, addr, Q, Qn=None):
         g = (rtl, rtl_out,)
 
     return g
-
-    

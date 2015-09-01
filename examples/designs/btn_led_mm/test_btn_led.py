@@ -5,9 +5,10 @@ from myhdl import *
 
 from btn_led_mm import m_btn_led_mm
 
-from mn.system import Clock
-from mn.system import Reset
-from mn.utils.test import tb_clean_vcd
+from rhea.system import Clock
+from rhea.system import Reset
+from rhea.utils.test import tb_clean_vcd
+
 
 def test_btn_led():
 
@@ -69,4 +70,3 @@ def test_btn_led():
 
 if __name__ == '__main__':
     test_btn_led()
-                    

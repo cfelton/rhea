@@ -2,6 +2,7 @@
 
 from __future__ import division
 from __future__ import print_function
+from __future__ import absolute_import
 
 """
 """
@@ -11,20 +12,20 @@ from argparse import Namespace
 
 from myhdl import *
 
-import mn
-from mn.system import Clock
-from mn.system import Reset
-from mn.system import Global
-from mn.cores.video import VGA
+import rhea
+from rhea.system import Clock
+from rhea.system import Reset
+from rhea.system import Global
+from rhea.cores.video import VGA
 
 # a video display model to check the timings
-from mn.models.video import VideoDisplay
+from rhea.models.video import VideoDisplay
 
-from mn.utils.test import *
+from rhea.utils.test import *
 
 # local wrapper to build a VGA system
-from mm_vgasys import mm_vgasys
-from mm_vgasys import convert
+from .mm_vgasys import mm_vgasys
+from .mm_vgasys import convert
 
 
 def test_vgasys(args=None):

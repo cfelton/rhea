@@ -5,11 +5,12 @@
 from math import log, fmod, ceil
 from myhdl import *
 
-from _fifo_intf import check_fifo_intf
-from _fifo_intf import _fifobus
-from _fifo_mem import m_fifo_mem_generic
+from ._fifo_intf import check_fifo_intf
+from ._fifo_intf import _fifobus
+from ._fifo_mem import fifo_mem_generic
 
-def m_fifo_sync(clock, reset, fbus):
+
+def fifo_sync(clock, reset, fbus):
     """ Simple synchronous FIFO
 
     PORTS
@@ -27,20 +28,21 @@ def m_fifo_sync(clock, reset, fbus):
         Asz = int(ceil(log(N,2)))
         N = 2**Asz
         print("@W: m_fifo_sync only supports power of 2 size")
-        print("    forcing size (depth) to %d instread of " % (N, fbus.size)) 
+        print("    forcing size (depth) to %d instread of %d" % (N, fbus.size))
 
     wptr = Signal(modbv(0, min=0, max=N))
     rptr = Signal(modbv(0, min=0, max=N))
-    _vld     = Signal(False)
+    _vld = Signal(False)
 
     # generic memory model
-    g_fifomem = m_fifo_mem_generic(clock, fbus.wr, fbus.wdata, wptr,
-                                   clock, fbus.rdata, rptr,
-                                   mem_size=fbus.size)
+    g_fifomem = fifo_mem_generic(clock, fbus.wr, fbus.wdata, wptr,
+                                 clock, fbus.rdata, rptr,
+                                 mem_size=fbus.size)
 
     # @todo: almost full and almost empty flags
     read = fbus.rd
     write = fbus.wr
+
     @always_seq(clock.posedge, reset=reset)
     def rtl_fifo():
         if fbus.clear:
@@ -99,5 +101,6 @@ def m_fifo_sync(clock, reset, fbus):
 
     return (g_fifomem, rtl_fifo, rtl_assign, dbg_occupancy,)
 
+
 # attached a generic fifo bus object to the module
-m_fifo_sync.fbus_intf = _fifobus
+fifo_sync.fbus_intf = _fifobus

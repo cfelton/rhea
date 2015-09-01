@@ -5,7 +5,8 @@
 from math import ceil, log
 from myhdl import *
 
-def m_fifo_mem_generic(
+
+def fifo_mem_generic(
     wclk,
     wr,
     din,
@@ -14,7 +15,7 @@ def m_fifo_mem_generic(
     rclk,
     dout,
     addr_r,
-    mem_size = 9,
+    mem_size=9,
     ):
     """
     """
@@ -48,6 +49,4 @@ def m_fifo_mem_generic(
         if _wr:
             mem[int(_addr_w)].next = _din
 
-
     return rtl_dout, rtl_rd, rtl_wr, rtl_mem
-    

@@ -3,9 +3,10 @@ import os
 import argparse
 
 from myhdl import *
-from mn.system import Global
-from mn.cores.video import VideoMemory
-from mn.cores.video impirt m_color_bars
+from rhea.system import Global
+from rhea.cores.video import VideoMemory
+from rhea.cores.video import m_color_bars
+
 
 def convert(args):
     glbl = Global(frequency=50e6)
@@ -16,6 +17,7 @@ def convert(args):
 
     toVHDL(m_color_bars, glbl, vmem, 
            resolution=args.res, width=args.width)
+
 
 def get_cli_args():
     parser = argparse.ArgumentParser(description="Convert colobar generator")
@@ -32,7 +34,7 @@ def get_cli_args():
 
     return args
 
+
 if __name__ == '__main__':
     args = get_cli_args()
     convert(args)
-            

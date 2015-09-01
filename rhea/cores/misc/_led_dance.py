@@ -1,6 +1,8 @@
 
+from __future__ import absolute_import
+
 from myhdl import *
-from _assign import m_assign
+from . import m_assign
 
 def m_led_dance(
   # ~~~[Ports]~~~

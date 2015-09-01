@@ -9,6 +9,7 @@ from myhdl import SignalType
 
 _width = None
 
+
 class RegisterBits(object):
     def __init__(self, name, slc, comment=""):
         self.name = name     # name of the bits
@@ -17,6 +18,7 @@ class RegisterBits(object):
 
     def __getitem__(self, k):
         return self.__dict__[k]
+
 
 # a register should be a list of signals (specifically a list
 # of Signal(bool).  If a subset of the register is an int or
@@ -33,9 +35,9 @@ class Register(_Signal):
 
     def __init__(self, name, addr, width, access='rw', default=0, comment=""):
         global _width
-        _Signal.__init__(self,intbv(default)[width:])
+        _Signal.__init__(self, intbv(default)[width:])
 
-        self._nmb = [None for ii in range(width)]  # hold the named-bits
+        self._nmb = [None for _ in range(width)]  # hold the named-bits
 
         self.name = name            # the name of the register
         self.addr = addr            # address of the register
@@ -60,7 +62,7 @@ class Register(_Signal):
     def __copy__(self):
         reg = Register(self.name, self.addr, self.width, self.access,
                        self.default, self.comment)
-        for k,v in self.bits.iteritems():
+        for k,v in self.bits.items():
             reg.add_named_bits(k, v.b, v.comment)
         return reg
 
@@ -146,7 +148,7 @@ class RegisterFile(object):
         # @todo: if the regdef is dict-of-dict definiton, first
         #    build the registers
         if regdef is not None:
-            for k,v in regdef.iteritems():
+            for k,v in regdef.items():
                 if isinstance(v, Register):
                     self.registers[k] = v
             
@@ -158,7 +160,7 @@ class RegisterFile(object):
         # that conforms to a particular structure or using the Register
         # object (the dict method is not implemented yet).
         if regdef is not None:
-            for k,v in regdef.iteritems():
+            for k,v in regdef.items():
                 self._append_register(k, v)
 
     @property
@@ -187,18 +189,16 @@ class RegisterFile(object):
 
         # create a reference to the named bits, all named bits 
         # will be accessible from the regfile
-        for kb,vb in reg.bits.iteritems():
-            if self.__dict__.has_key(kb):
-                raise StandardError("bit(s) name, %s, already exists"%(kb))
+        for kb, vb in reg.bits.items():
+            if kb in self.__dict__:
+                raise Exception("bit(s) name, %s, already exists"%(kb))
             self.__dict__[kb] = reg.__dict__[kb]
-
 
     def add_register(self, reg):
         """ add a register to the register file """
-        assert not self.registers.has_key(reg.name)
+        assert reg.name not in self.registers
         self.registers[reg.name] = reg
         self._append_register(reg.name, reg)
-
 
     def get_reglist(self):
         """ return a list of addresses and a list of registers.        
@@ -215,12 +215,11 @@ class RegisterFile(object):
         #@todo: set flag if addresses are contiguous
         return (tuple(rwa+roa),rwr+ror,tuple(_rrw+_rro),tuple(dl))
 
-
     def get_strobelist(self):
         assert self._allregs is not None
         wr = [rr.wr for rr in self._allregs]
         rd = [rr.rd for rr in self._allregs]
-        return wr,rd
+        return wr, rd
 
 
     #def get_readonly(self, name=None, addr=None):

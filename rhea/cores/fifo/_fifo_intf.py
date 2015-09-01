@@ -29,6 +29,7 @@ def _fifo_intf_dump():
     """
     pass
 
+
 def check_fifo_intf(fbus):
     """
     In the MN project, typically the FIFOBus is used to created 

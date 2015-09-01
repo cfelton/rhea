@@ -13,10 +13,11 @@
   
 """
 
-import sys,os
+from __future__ import absolute_import
+
 from myhdl import *
-from _wb_master import wb_master
-from _fx2_sfifo import fx2_sfifo
+from ._wb_master import wb_master
+from ._fx2_sfifo import fx2_sfifo
 from ...fifo import fifo_two_port_sync
 
 #
@@ -32,8 +33,6 @@ class usbp(object):
         self.C_LFW_E_ADDR = C_BASE_ADDR + 0x14   # Logic in FIFO write error
         self.C_LFR_E_ADDR = C_BASE_ADDR + 0x18   # Logic out FIFO read error
         self.C_UFR_E_ADDR = C_BASE_ADDR + 0x1C   # USB out FIFO read error
-
-        
 
     def RTL(self, *sigs, **parameters):
         """usbp RTL definition

@@ -6,11 +6,11 @@ This example takes a different
 from argparse import Namespace
 
 from myhdl import *
-import myhdl_tools as tlz
 
-from mn.system import FIFOBus
-from mn.cores.fifo import m_fifo_async
-from mn.cores.fifo import m_fifo_fast
+from rhea.system import FIFOBus
+from rhea.cores.fifo import fifo_async
+from rhea.cores.fifo import fifo_fast
+
 
 def m_fifo_2clock_cascade(
     wclk,       # in:  write side clock
@@ -56,8 +56,7 @@ def m_fifo_2clock_cascade(
     #    m_fifo_fast  (16)
     #    m_fifo_async (??)
     #    m_fifo_fast  (16)
-    # not sure why the chain was needed
-    gfifo = m_fifo_async(reset, wclk, rclk, fbus)
+    gfifo = fifo_async(reset, wclk, rclk, fbus)
     # @todo: calculate space and occupied based on fbus.count
         
     # @todo: the output is delayed two clock from the "read" strobe
@@ -82,7 +81,7 @@ def m_fifo_short(clock, reset, clear,
     args = Namespace(width=36, size=16, name='fifo_2clock_cascade')
     fbus = FIFOBus(args=args)
     # need to update the fbus refernces to reference the Signals in
-    # the moudule port list (function arguments).
+    # the module port list (function arguments).
     fbus.wr = wr
     fbus.wdata = datain
     fbus.rd = rd
@@ -98,7 +97,7 @@ def m_fifo_short(clock, reset, clear,
         dst_rdy_o.next = not fbus.full
         src_rdy_o.next = not fbus.empty
 
-    gfifo = m_fifo_fast(clock, reset, fbus)
+    gfifo = fifo_fast(clock, reset, fbus)
 
     return rtl_assign1, rtl_assign2, gfifo
     
@@ -129,6 +128,7 @@ def convert(args=None):
               clock, reset, clear,
               datain, src_rdy_i, dst_rdy_o,
               dataout, src_rdy_o, dst_rdy_i)
+
 
 if __name__ == '__main__':
     convert()

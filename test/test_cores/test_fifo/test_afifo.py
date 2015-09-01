@@ -5,15 +5,15 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
 from argparse import Namespace
 
 from myhdl import *
 
-from mn.system import FIFOBus
-from mn.cores.fifo import m_fifo_async
+from rhea.system import FIFOBus
+import rhea.cores as cores
 
-from mn.utils.test import *
+from rhea.utils.test import tb_clean_vcd
+
 
 def test_afifo(args=None):
     """ verify the asynchronous FIFO    
@@ -21,12 +21,12 @@ def test_afifo(args=None):
     if args is None:
         args = Namespace(width=8, size=16, name='test')
     
-    reset   = ResetSignal(0, active=1, async=True)
-    wclk,rclk = [Signal(bool(0)), Signal(bool(0))]
-    fbus    = FIFOBus(width=args.width, size=args.size)
+    reset = ResetSignal(0, active=1, async=True)
+    wclk, rclk = [Signal(bool(0)), Signal(bool(0))]
+    fbus = FIFOBus(width=args.width, size=args.size)
     start = Signal(bool(0))
 
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # clocks
     @always(delay(10))
     def tbwclk():
@@ -36,7 +36,7 @@ def test_afifo(args=None):
     def tbrclk():
         rclk.next = not rclk
 
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # FIFO writer and reader
     _wr = Signal(bool(0))
     @instance
@@ -88,15 +88,15 @@ def test_afifo(args=None):
                     tmp = fbus.rdata
                     assert tmp == rdd, " %d != %d " % (tmp, rdd)
                     rdd[:] += 1
-            except AssertionError, err:
+            except AssertionError as err:
                 for _ in range(10):
                     yield rclk.posedge
                 raise err
 
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def _test1():
         
-        tbdut = m_fifo_async(reset, wclk, rclk, fbus)
+        tbdut = cores.fifo.fifo_async(reset, wclk, rclk, fbus)
                 
         @instance
         def tbstim():
@@ -153,10 +153,10 @@ def test_afifo(args=None):
         
         return tbdut, tbwclk, tbrclk, tbstim
 
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def _test2():
         
-        tbdut = m_fifo_async(reset, wclk, rclk, fbus)
+        tbdut = cores.fifo.fifo_async(reset, wclk, rclk, fbus)
          
         @instance
         def tbstim():
@@ -179,7 +179,8 @@ def test_afifo(args=None):
 
 
     for tt in (_test1, _test2,): 
-        tb_clean_vcd('test_afifo_%s' % (tt.func_name))
+        vcd = tb_clean_vcd('test_afifo_%s' % (tt.__name__))
+        traceSignals.name = vcd
         g = traceSignals(tt)
         Simulation(g).run()
 

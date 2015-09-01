@@ -4,10 +4,10 @@
 
 from myhdl import *
 
-from _fifo_intf import check_fifo_intf
-from _fifo_intf import _fifobus
+from ._fifo_intf import check_fifo_intf
+from ._fifo_intf import _fifobus
 
-def m_fifo_fast(clock, reset, fbus, use_srl_prim=False):
+def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     """
     Often small simple, synchronous, FIFOs can be implemented with 
     specialized hardware in an FPGA (e.g. vertically chaining LUTs).
@@ -127,4 +127,4 @@ def m_fifo_fast(clock, reset, fbus, use_srl_prim=False):
     return rtl_srl_in, rtl_srl_out, rtl_vld, rtl_fifo, dbg_occupancy
 
 # attached a generic fifo bus object to the module
-m_fifo_fast.fbus_intf = _fifobus
+fifo_fast.fbus_intf = _fifobus

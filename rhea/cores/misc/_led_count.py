@@ -1,7 +1,7 @@
 
 
 from myhdl import *
-from _assign import m_assign
+from . import m_assign
 
 def m_led_count(
   # ~~~[Ports]~~~

@@ -10,10 +10,12 @@ from argparse import Namespace
 
 from myhdl import *
 
-from mn.system import FIFOBus
-from mn.cores.fifo import m_fifo_fast
+from rhea.system import FIFOBus
+import rhea.cores as cores
+from rhea.cores.fifo import fifo_fast
 
-from mn.utils.test import *
+from rhea.utils.test import tb_clean_vcd
+
 
 def test_ffifo(args=None):
     """ verify the synchronous FIFO
@@ -32,7 +34,7 @@ def test_ffifo(args=None):
     def _test():
         
         # @todo: use args.fast, args.use_srl_prim
-        tbdut = m_fifo_fast(clock, reset, fbus, use_srl_prim=False)
+        tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
 
         @always(delay(10))
         def tbclk():
@@ -87,7 +89,8 @@ def test_ffifo(args=None):
         
         return tbdut, tbclk, tbstim
 
-    tb_clean_vcd('test_fifo_fast_%d' % (args.size))
+    vcd = tb_clean_vcd('test_fifo_fast_%d' % (args.size))
+    traceSignals.name = vcd
     g = traceSignals(_test)
     Simulation(g).run()
 

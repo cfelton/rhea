@@ -3,7 +3,9 @@ from __future__ import division
 
 import myhdl
 from myhdl import instance, delay
+from myhdl import now
 
+_clock_num = 0
 ClockList = []
 
 class Clock(myhdl.SignalType): 
@@ -15,16 +17,20 @@ class Clock(myhdl.SignalType):
     """
 
     def __init__(self, val, frequency=1, timescale='1ns'):
+        global _clock_num
         self._frequency = frequency
         self._period = 1/frequency
         self._timescale = timescale
         self._set_hticks()
-        myhdl.SignalType.__init__(self, bool(val))
+        self.clock_num = _clock_num
+        _clock_num += 1
+        super(Clock, self).__init__(bool(val))
         ClockList.append(self)
 
     @property
     def timescale(self):
         return self._timescale
+
     @timescale.setter
     def timescale(self, t):
         self._timescale = t
@@ -32,6 +38,7 @@ class Clock(myhdl.SignalType):
     @property
     def frequency(self):
         return self._frequency
+
     @frequency.setter
     def frequency(self, f):
         self._frequency = f

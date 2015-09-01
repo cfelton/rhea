@@ -2,7 +2,12 @@
 # Copyright (c) 2011-2013 Christopher L. Felton
 #
 
-from _fx2_model import Fx2Model
+from __future__ import absolute_import
+from __future__ import print_function
+
+from myhdl import delay, always, instances
+
+from ._fx2_model import Fx2Model
 
 class UsbpHost(Fx2Model):
     """
@@ -32,8 +37,8 @@ class UsbpHost(Fx2Model):
         # The last byte is the previous value of the register, it will not match
         for i in range(8):
             if wbuf[i] != rbuf[i]:
-                print "wbuf ", wbuf
-                print 'rbuf ', rbuf
+                print("wbuf ", wbuf)
+                print('rbuf ', rbuf)
             assert wbuf[i] == rbuf[i], "Write Address Failed wbuf[%d](%02x) != rbuf[%d](%02x)" % (i, wbuf[i], i, rbuf[i])
             
 
@@ -64,9 +69,9 @@ class UsbpHost(Fx2Model):
 
         for i in range(8):
             if wbuf[i] != rbuf[i]:
-                print '[%d] wbuf %s' % (i, wbuf)
-                print '[%d] rbuf %s' % (i, rbuf)
-                raise AssertionError, "Read Address Failed wbuf[%d](%02x) != rbuf[%d](%02x)" % (i, wbuf[i], i, rbuf[i])
+                print('[%d] wbuf %s' % (i, wbuf))
+                print('[%d] rbuf %s' % (i, rbuf))
+                raise AssertionError("Read Address Failed wbuf[%d](%02x) != rbuf[%d](%02x)" % (i, wbuf[i], i, rbuf[i]))
 
         if w == 1:
             data[0] = rbuf[8]
@@ -76,7 +81,7 @@ class UsbpHost(Fx2Model):
             data[0] = (rbuf[8] << 16) | (rbuf[9] << 8) | rbuf[10]
         if w == 4:
             data[0] = (rbuf[9] << 24) | (rbuf[9] << 16) | (rbuf[10] << 8) | rbuf[11]            
-            print rbuf[8], rbuf[9], rbuf[10], rbuf[11]
+            print(rbuf[8], rbuf[9], rbuf[10], rbuf[11])
     
 
     #---------------------------------------------------------------------------

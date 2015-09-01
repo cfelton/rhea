@@ -53,14 +53,14 @@ class Barebone(MemMap):
     def write(self, addr, val):
         self._start_transaction(write=True, address=addr, data=val)
         self.write.next = True
-        self.wdata.next = val
+        self.write_data.next = val
         to = 0
         while not self.ack and to < self.timeout:
             yield self.clock.posedge
             to += 1
         self.write.next = False
-        self.wdata.next = 0
-        self._end_transaction(self.wdata)
+        self.write_data.next = 0
+        self._end_transaction(self.write_data)
 
     def read(self, addr):
         self._start_transaction(write=False, address=addr)

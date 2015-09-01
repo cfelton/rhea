@@ -13,6 +13,7 @@ def tb_argparser():
     parser.add_argument('--convert', action='store_true')
     return parser
 
+
 def tb_move_v():
     for vf in glob('*.vhd'):
         if os.path.isfile(os.path.join('vhd/',vf)):
@@ -23,6 +24,7 @@ def tb_move_v():
         if os.path.isfile(os.path.join('ver/',vf)):
             os.remove(os.path.join('ver/',vf))
         shutil.move(vf, 'ver/')
+
 
 def tb_clean_vcd(name):
     if not os.path.isdir('vcd'):

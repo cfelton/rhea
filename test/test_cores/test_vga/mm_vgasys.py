@@ -1,15 +1,15 @@
 
 from myhdl import *
 
-import mn
-from mn.system import Clock
-from mn.system import Reset
-from mn.system import Global
-from mn.cores.video import VGA
-from mn.cores.video import VideoMemory
+import rhea
+from rhea.system import Clock
+from rhea.system import Reset
+from rhea.system import Global
+from rhea.cores.video import VGA
+from rhea.cores.video import VideoMemory
 
-from mn.cores.video import m_vga_sync
-from mn.cores.video import m_color_bars
+from rhea.cores.video import m_vga_sync
+from rhea.cores.video import m_color_bars
 
 def mm_vgasys(
 

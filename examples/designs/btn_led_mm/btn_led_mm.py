@@ -5,16 +5,16 @@ import argparse
 
 from myhdl import *
 
-import gizflo as flo
+import rhea.build as build
 
-from mn.cores.misc import m_btn_mm_ctl   # memmap controller
-from mn.cores.misc import m_led_mm_per   # memmap peripheral
+from rhea.cores.misc import m_btn_mm_ctl   # memmap controller
+from rhea.cores.misc import m_led_mm_per   # memmap peripheral
 
-from mn.system import Barebone
-from mn.system import Wishbone
-from mn.system import AvalonMM
-#from mn.system import AXI4
-from mn.system import Global
+from rhea.system import Global
+from rhea.system import Barebone
+from rhea.system import Wishbone
+from rhea.system import AvalonMM
+from rhea.system import AXI4
 
 
 def m_btn_led_mm(clock, reset, leds, btns, bus_type='W'):

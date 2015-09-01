@@ -6,14 +6,14 @@ import argparse
 
 from myhdl import *
 
-from mn.models.usbext import FpgaLinkHost
-from mn.cores.usbext import fpgalink
-from mn.cores.usbext import m_fpgalink_fx2
+from rhea.models.usbext import FpgaLinkHost
+from rhea.cores.usbext import fpgalink
+from rhea.cores.usbext import m_fpgalink_fx2
 
 # Example FPGA logic which interfaces with fpgalink
 from _fpgalink_logic_ex1 import m_fpga_logic_ex1
 
-from _test_utils import *
+from rhea.utils.test import *
 
 def flcosim(clock, reset, fx2_bus, fl_bus):
     f1 = '../mn/cores/usbext/fpgalink/comm_fpga_fx2_v1.v'

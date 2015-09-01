@@ -8,22 +8,23 @@ import traceback
 
 from myhdl import *
 
-from mn.system import Clock 
-from mn.system import Reset
-from mn.system import Global
-from mn.system import RegisterFile
-from mn.system import Register
-from mn.system import Wishbone
+from rhea.system import Clock
+from rhea.system import Reset
+from rhea.system import Global
+from rhea.system import RegisterFile
+from rhea.system import Register
+from rhea.system import Wishbone
 
-from mn.utils.test import *
+from rhea.utils.test import *
 
 
 regdef = None
 regfile = None
 
+
 def _create_mask(n):
     m = 1
-    for _ in xrange(n):
+    for _ in range(n):
         m = (m << 1) | 1
     return m
 
@@ -39,8 +40,8 @@ def _create_test_regfile():
     regdef[reg.name] = reg
     
     # -- more registers register --
-    for addr,default in zip((0x20, 0x40, 0x80),
-                            (0xDE, 0xCA, 0xFB)):
+    for addr, default in zip((0x20, 0x40, 0x80),
+                             (0xDE, 0xCA, 0xFB)):
         reg = Register('reg%s' % (addr,), addr, 8, 'rw', default)
         regdef[reg.name] = reg
 
@@ -89,6 +90,7 @@ def m_per_bits(glbl, regbus, mon):
     count = modbv(0, min=0, max=1)
     clock, reset = glbl.clock, glbl.reset
     ## all "read-only" (status) bits if needed
+
     @always(clock.posedge)
     def rtl_roregs():
         count[:] = count + 1
@@ -128,8 +130,14 @@ def test_register_file():
         tb_dut = m_per(glbl, regbus, 0xAA)
         tb_or = regbus.m_per_outputs()
         tb_mclk = clock.gen()
-        tb_rclk = regbus.clk_i.gen()
+        #tb_rclk = regbus.clk_i.gen()
         asserr = Signal(bool(0))
+
+        mon_ack = Signal(bool(0))
+
+        @always_comb
+        def tbmon():
+            mon_ack.next = regbus.ack_o
         
         @instance
         def tb_stim():
@@ -137,32 +145,33 @@ def test_register_file():
                 yield delay(100)
                 yield reset.pulse(111)
 
-                for k,reg in regdef.iteritems():
+                for k, reg in regdef.items():
                     if reg.access == 'ro':
                         yield regbus.read(reg.addr)
-                        rval = regbus.readval
-                        assert rval == reg.default, "ro: %02x != %02x"%(rwd.rval,reg.default)
+                        rval = regbus.get_read_data()
+                        assert rval == reg.default, \
+                            "ro: {:02x} != {:02x}".format(rval, reg.default)
                     else:
-                        wval = randint(0,(2**reg.width)-1)
+                        wval = randint(0, (2**reg.width)-1)
                         yield regbus.write(reg.addr, wval)
-                        for _ in xrange(4):
+                        for _ in range(4):
                             yield clock.posedge
                         yield regbus.read(reg.addr)
-                        rval = regbus.readval
-                        assert rval == wval, "rw: %02x != %02x"%(rwd.rval,rwd.wval)
-                
+                        rval = regbus.get_read_data()
+                        assert rval == wval, \
+                            "rw: {:02x} != {:02x}".format(rval, wval)
                 yield delay(100)
-            except AssertionError,err:
-                print("@E: %s" % (err,))
+            except AssertionError as err:
+                print("@E: %s".format(err))
                 traceback.print_exc()
                 asserr.next = True
-                for _ in xrange(10):
+                for _ in range(10):
                     yield clock.posedge
                 raise err
 
             raise StopSimulation
 
-        return tb_mclk, tb_stim, tb_dut, tb_or, tb_rclk
+        return tb_mclk, tb_stim, tb_dut, tbmon, tb_or  #, tb_rclk
 
     vcd = tb_clean_vcd('_test_rf')
     traceSignals.name = vcd
@@ -194,16 +203,17 @@ def test_register_file_bits():
                 yield clock.posedge           
                 truefalse = True
                 yield regbus.write(regfile.control.addr, 0x01)
-                for _ in xrange(100):
-                    assert (regfile.enable, regfile.loop) == (truefalse, not truefalse)
+                for _ in range(100):
+                    assert regfile.enable == truefalse
+                    assert regfile.loop == (not truefalse)
                     yield regbus.read(regfile.control.addr)
                     yield regbus.write(regfile.control.addr,
-                                       ~regbus.readval)
+                                       ~regbus.get_read_data())
                     truefalse = not truefalse
                     yield clock.posedge
-            except AssertionError, err:
+            except AssertionError as err:
                 asserr.next = True
-                for _ in xrange(20):
+                for _ in range(20):
                     yield clock.posedge
                 raise err
             

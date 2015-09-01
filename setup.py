@@ -9,7 +9,7 @@ except ImportError:
     from distutils.core import setup
     from pkgutil import walk_packages
 
-    import mn
+    import rhea
 
     # many pypy installs don't have setuptools (?)
     def _find_packages(path='.', prefix=''):
@@ -22,7 +22,7 @@ except ImportError:
                 yield name
                 
     def find_packages():
-        return list(_find_packages(mn.__path__, mn.__name__))
+        return list(_find_packages(rhea.__path__, rhea.__name__))
     
 
 setup(name = "rhea",

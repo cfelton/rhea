@@ -1,9 +1,9 @@
 
 from myhdl import *
 
-from mn.system import Clock,Reset
-from mn.cores.misc import m_serio
-from mn.utils.test import *
+from rhea.system import Clock,Reset
+from rhea.cores.misc import m_serio
+from rhea.utils.test import *
 
 def test():
     clock = Clock(0)

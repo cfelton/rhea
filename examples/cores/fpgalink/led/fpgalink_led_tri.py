@@ -1,7 +1,7 @@
 
 from myhdl import *
-from mn.cores.usb_ext import fl_fx2
-from mn.cores.usb_ext import fpgalink_fx2
+from rhea.cores.usb_ext import fl_fx2
+from rhea.cores.usb_ext import fpgalink_fx2
 
 def tristate(dio, din, dout, dsel):
     dout = dio.driver()

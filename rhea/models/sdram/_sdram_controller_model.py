@@ -11,6 +11,7 @@ from ...cores.sdram import SDRAMInterface
 from ...system import MemMap
 from ...system import FIFOBus   # @todo: ustilize FIFOBus
 
+
 def sdram_controller_model(sdram_intf, internal_intf):
     """ Model the transaction between the internal bus and external SDRAM
 

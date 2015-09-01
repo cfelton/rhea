@@ -9,7 +9,7 @@ from math import log, ceil
 
 from myhdl import *
 
-from ._fifo_mem import m_fifo_mem_generic
+from ._fifo_mem import fifo_mem_generic
 from ._fifo_syncers import *
 from ._fifo_intf import check_fifo_intf
 from ._fifo_intf import _fifobus
@@ -73,9 +73,9 @@ def fifo_async(reset, wclk, rclk, fbus):
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Memory for the FIFO
-    g_fifomem = m_fifo_mem_generic(wclk, _we, fbus.wdata, waddr,
-                                   rclk, fbus.rdata,  raddr,
-                                   mem_size=fbus.size)
+    g_fifomem = fifo_mem_generic(wclk, _we, fbus.wdata, waddr,
+                                 rclk, fbus.rdata,  raddr,
+                                 mem_size=fbus.size)
 
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

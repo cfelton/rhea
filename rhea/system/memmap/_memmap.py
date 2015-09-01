@@ -106,7 +106,7 @@ class MemMap(object):
         # address can be adjusted.
         arf = deepcopy(regfile)
 
-        for k,v in arf.__dict__.iteritems():
+        for k,v in arf.__dict__.items():
             if isinstance(v, Register):
                 v.addr += base_address
 

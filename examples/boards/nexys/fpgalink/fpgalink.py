@@ -1,7 +1,8 @@
 
+
 from myhdl import *
-from mn.cores.usbext import fpgalink
-from mn.cores.usbext import m_fpgalink_fx2
+from rhea.cores.usbext import fpgalink
+from rhea.cores.usbext import m_fpgalink_fx2
 
 
 def fpgalink_nexys(    

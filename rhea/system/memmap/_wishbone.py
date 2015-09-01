@@ -61,10 +61,11 @@ class Wishbone(MemMap):
 
         self.timeout = 1111
 
+        # @todo: remove, using properties from memmap
         # accessors (transactors) are generators, they don't return
         # only yield.  Need a mechanism to return data
-        self.wval = 0
-        self.rval = 0
+        # self.wval = 0
+        # self.rval = 0
 
         self._add_bus(name)
         
@@ -286,14 +287,14 @@ class Wishbone(MemMap):
         # toggle the signals for the bus transaction
         yield self.clk_i.posedge
         self.adr_i.next = addr
-        self.dat_i.next = self.wval
+        self.dat_i.next = self._write_data
         self.we_i.next = True
         self.cyc_i.next = True
         self.stb_i.next = True
         to = 0
         # wait for ack
         while not self.ack_o and to < self.timeout:
-            yield self.clk_i.posedge   # was delay(1)
+            yield self.clk_i.posedge
             to += 1
         self.we_i.next = False
         self.cyc_i.next = False

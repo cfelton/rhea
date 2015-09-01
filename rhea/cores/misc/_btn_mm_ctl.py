@@ -1,7 +1,7 @@
 
 from myhdl import *
 
-from _btn_debounce import m_btn_debounce
+from . import m_btn_debounce
 
 def m_btn_mm_ctl(glbl, regbus, btns, led_addr=0x8240):
     """

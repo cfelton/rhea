@@ -1,18 +1,6 @@
 #
 # Copyright (c) 2006-2013 Christopher L. Felton
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os
 import copy
@@ -28,6 +16,7 @@ class Bus(object):pass
 GG = None
 def _tricky():
     return GG
+
 
 def SlaveFifo(fm, fx2_bus):
     """ Temp wrapper
@@ -103,7 +92,7 @@ class Fx2Model(threading.Thread):
         threading.Thread.__init__(self)
 
 
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     # simulation framework thread functions
     def setup(self, fx2_bus, g=()):
         self.fx2_bus = fx2_bus
@@ -136,7 +125,7 @@ class Fx2Model(threading.Thread):
         Simulation(GG).run()
 
 
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def GetFx2Bus(self):
         #IFCLK,     # Output, 48MHz clock
         #RST,       # Input, system reset
@@ -163,7 +152,7 @@ class Fx2Model(threading.Thread):
         return fx2
         
         
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def Configure(self, Config=0):
         """
         The FX2 USB controller has many programmable options for the
@@ -204,7 +193,7 @@ class Fx2Model(threading.Thread):
 
 
     
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def TracePrint(self, str):
         if self.Verbose:
             #sys.write(str+'\n')
@@ -212,7 +201,7 @@ class Fx2Model(threading.Thread):
             self.ulog.debug('%d ... '%(now()) + str)   
 
 
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def SlaveFifo(self,
                   fx2_bus
                   ):
@@ -378,7 +367,7 @@ class Fx2Model(threading.Thread):
         return tb_clkgen, tb_reset, hdl_assign, hdl_fifo_rw, hdl_do
                 
 
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def Reset(self):
         time.sleep(.1)
         self.TracePrint('[S] RST %d' % (self.fx2_bus.RST))
@@ -389,7 +378,7 @@ class Fx2Model(threading.Thread):
             time.sleep(.1)
         self.TracePrint('[E] RST %d' % (self.fx2_bus.RST))
             
-    #---------------------------------------------------------------------------    
+    # ---------------------------------------------------------------------------
     def Read(self, ep, Num=1):
         """ Get values from an endpoint FIFO
         """
@@ -414,7 +403,7 @@ class Fx2Model(threading.Thread):
         return rd
 
 
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def Write(self, data, ep):
         assert ep in (self.EP2, self.EP4), "Incorrect Endpoint"
         self.TracePrint('FX2: Write EP %s' % (ep))
@@ -436,7 +425,7 @@ class Fx2Model(threading.Thread):
     #        functions that work with the different configurations.
     # ~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def IsEmpty(self, ep):
         self.TracePrint('FX2: Wait Empty EP %s' % (ep))
         if ep == self.EP2:
@@ -450,7 +439,7 @@ class Fx2Model(threading.Thread):
         return True
 
 
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def IsData(self, ep, Num=1):
         if ep == self.EP6:
             self.TracePrint('FX2: is Data EP %s %d' % (ep, len(self.RdFifoEP6)))
@@ -464,7 +453,7 @@ class Fx2Model(threading.Thread):
         return True
 
 
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def WaitEmpty(self, ep):
         """ Wait for empty (only if a simulation generator)
         """
@@ -473,7 +462,7 @@ class Fx2Model(threading.Thread):
             yield delay(2*self.IFCLK_TICK)
 
 
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def WaitData(self, ep, Num=1):
         """ Wait for data (only if a simulation generator)
         """
@@ -482,6 +471,3 @@ class Fx2Model(threading.Thread):
             yield delay(2*self.IFCLK_TICK)
                     
 
-        
-
-        

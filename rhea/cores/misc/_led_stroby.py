@@ -1,17 +1,5 @@
+#
 # Copyright (c) 2011-2013 Christopher Felton
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """
 The following is the HDL description of the stroby LED.
@@ -23,15 +11,16 @@ http://www.fpgarelated.com/showarticle/25.php
 
 from myhdl import *
 
-def m_led_stroby(
-  # ~~~[Ports]~~~
-  clock,             # input : system sync clock
-  reset,             # input : reset (level determined by RST_LEVEL)
-  leds,              # output : to IO ports drive LEDs
 
-  # ~~~[Parameters]~~~
-  led_rate = 333e-3, # strobe change rate of 333ms
-  num_dumb = 4,      # The number of dummy LEDS on each side
+def m_led_stroby(
+    # ~~~[Ports]~~~
+    clock,             # input : system sync clock
+    reset,             # input : reset (level determined by RST_LEVEL)
+    leds,              # output : to IO ports drive LEDs
+
+    # ~~~[Parameters]~~~
+    led_rate=333e-3,   # strobe change rate of 333ms
+    num_dumb=4,        # The number of dummy LEDS on each side
 ):
     """ strobe the LED
     """
@@ -45,15 +34,15 @@ def m_led_stroby(
     
     # Some useful definitions (constants)
     mb = led_bank + 2*num_dumb
-    lsb,msb = (0,mb-1,)
+    lsb, msb = (0, mb-1,)
     msb_reverse_val = (1 << mb-2)
     lsb_reverse_val = 2
     
     # Declare the internal Signals in our design
-    led_bit_mem    = Signal(intbv(1)[mb:])
+    led_bit_mem = Signal(intbv(1)[mb:])
     left_not_right = Signal(True)
-    clk_cnt        = Signal(intbv(0, min=0, max=cnt_max))
-    strobe         = Signal(False)
+    clk_cnt = Signal(intbv(0, min=0, max=cnt_max))
+    strobe = Signal(False)
 
     @always_seq(clock.posedge, reset=reset)
     def rtl_beh():
