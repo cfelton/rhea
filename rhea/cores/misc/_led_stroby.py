@@ -9,10 +9,10 @@ Full tutorial available at :
 http://www.fpgarelated.com/showarticle/25.php
 """
 
-from myhdl import *
+from myhdl import Signal, intbv, always_seq, always_comb
 
 
-def m_led_stroby(
+def led_stroby(
     # ~~~[Ports]~~~
     clock,             # input : system sync clock
     reset,             # input : reset (level determined by RST_LEVEL)
@@ -51,10 +51,10 @@ def m_led_stroby(
         # number of clock ticks that equals the LED strobe rate
         if clk_cnt >= cnt_max-1:
             clk_cnt.next = 0
-            strobe.next  = True
+            strobe.next = True
         else:
             clk_cnt.next = clk_cnt + 1
-            strobe.next  = False
+            strobe.next = False
         
         # The following always changes direction and "resets" when
         # either the lsb or msb is set.  This handles our initial 

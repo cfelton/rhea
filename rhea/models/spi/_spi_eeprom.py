@@ -1,12 +1,17 @@
 
+from __future__ import absolute_import
+from __future__ import division
+
 from random import randint
 
 from myhdl import *
 
+
 def _b(s):
     s = s.replace('_', '')
     s = s.replace('x', '0')
-    return int(s,2)
+    return int(s, 2)
+
 
 class SPIEEPROM(object):
     def __init__(self, addr_width=24, data_width=8, max_size=1024):
@@ -20,11 +25,10 @@ class SPIEEPROM(object):
         self.addr_width = addr_width
         self.data_width = data_width
 
-        self.mem = [Signal(intbv(randint(0,255))[8:]) for _ in xrange(size)]
+        self.mem = [Signal(intbv(randint(0, 255))[8:]) for _ in range(size)]
         # status register: WPEN, x,x,x,BP1,BP0,WEN,RDY
         self.status = Signal(intbv("0000_0000"))
-                     
-        
+
         # eeprom instructions
         self.instr = {'WREN': _b("0000_x110"),  # set write enable latch
                       'WRDI': _b("0000_x100"),  # reset write enable latch
@@ -50,7 +54,7 @@ class SPIEEPROM(object):
 
         @instance
         def model():
-            dowr,dord = False,False
+            dowr, dord = False,False
             while True:
                 yield spibus.ss.negedge
                 count,odata,rnw,dcyc = 0,0,True,False
@@ -117,4 +121,3 @@ class SPIEEPROM(object):
                         odata = odata << 1
 
         return model
-                    

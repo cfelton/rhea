@@ -1,11 +1,13 @@
 
-from myhdl import *
-from mn.system import RegisterFile, Register, RegisterBits
+from ...system import RegisterFile, Register
 
 """
       ----------------------------------------------------------------
       @todo: resolve the local register file organizaiton with 
-         the memmap organiztion (e.g. this register file is a 
+         the memmap organiztion (e.g. this register file is a
+
+
+
          colleciton of 8bit registers, if the memmap is setup 
          as 32 databits and 32 address bits want to organize 
          these differently (combing into 32 bit registers))

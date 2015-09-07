@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-from myhdl import intbv, enum, Signal
+from myhdl import intbv, enum, Signal, ResetSignal, always_seq
 from ...system import Clock
 
 from ._sdram_intf import SDRAMInterface

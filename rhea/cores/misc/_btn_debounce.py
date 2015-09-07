@@ -1,14 +1,14 @@
 
-from myhdl import *
+from myhdl import Signal, intbv, always
 
 
-def m_btn_debounce(glbl, bnts, dbnts):
+def button_debounce(glbl, bnts, dbnts):
 
-    cnt = Signal(intbv(0, min=0, max=33))
+    clock = glbl.clock
 
     # @todo finish and use m_time_strobe that checks
     #   glbl for a strober
-    @always(glbl.clock.posedge)
+    @always(clock.posedge)
     def rtl():
         dbnts.next = bnts
 

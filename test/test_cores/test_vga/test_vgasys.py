@@ -10,6 +10,8 @@ from __future__ import absolute_import
 import argparse
 from argparse import Namespace
 
+import pytest
+
 from myhdl import *
 
 import rhea
@@ -24,15 +26,15 @@ from rhea.models.video import VideoDisplay
 from rhea.utils.test import *
 
 # local wrapper to build a VGA system
-from .mm_vgasys import mm_vgasys
-from .mm_vgasys import convert
+from mm_vgasys import mm_vgasys
+from mm_vgasys import convert
 
 
 def test_vgasys(args=None):
 
     if args is None:
         args = Namespace()
-        res = (80,60)
+        res = (80, 60)
         line_rate = 4000
         refresh_rate = 60
     else:
@@ -46,7 +48,6 @@ def test_vgasys(args=None):
     vselect = Signal(bool(0))
 
     vga = VGA(color_depth=(10,10,10), )
-    
 
     def _test():
         # top-level VGA system 
@@ -89,11 +90,14 @@ def test_vgasys(args=None):
 
         return tbclk, tbvd, tbstim, tbdut
 
-
     vcd = tb_clean_vcd('_test')
     traceSignals.timescale = '1ns'
     traceSignals.name = vcd
     Simulation(traceSignals(_test)).run()
+
+
+@pytest.mark.xfail
+def test_vgasys_conversion():
     convert()
 
 

@@ -1,9 +1,12 @@
 
-from myhdl import *
+from myhdl import always_comb
 
-def m_assign(a, b):
+
+def assign(a, b):
     """ a = b """
+
     @always_comb
     def assign():
         a.next = b
-    return assign
+
+    return assign,
