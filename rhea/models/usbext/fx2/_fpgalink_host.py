@@ -5,8 +5,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from array import array
-import struct
 import time
 
 from myhdl import now
@@ -18,13 +16,14 @@ class FpgaLinkHost(Fx2Model):
     """
     """
     
-    def __init__(self, Verbose=False, Trace=False):
+    def __init__(self, verbose=False, trace=False):
         self.commOut = self.EP2
         self.commIn = self.EP6
-        Fx2Model.__init__(self, FifoSize=1024, Config=1,
-                          Verbose=Verbose, Trace=Trace)
+        # @todo: use super
+        Fx2Model.__init__(self, fifo_size=1024, config=1,
+                          verbose=verbose, trace=trace)
 
-    def IsRunning(self):
+    def isrunning(self):
         """ Is the FPGA running        
         """
         # @todo : complete
@@ -35,7 +34,7 @@ class FpgaLinkHost(Fx2Model):
         to = timeout * 1e6
         te = now() + to
         for ii in range(timeout):
-            if self.IsEmpty(ep):
+            if self.isempty(ep):
                 ok = True
                 break
             time.sleep(1)
@@ -43,12 +42,12 @@ class FpgaLinkHost(Fx2Model):
                 break
         return ok
 
-    def _wait_data(self, ep, Num=1, timeout=100):
+    def _wait_data(self, ep, num=1, timeout=100):
         ok = False
         to = timeout * 1e6
         te = now() + to
         for ii in range(timeout):
-            if self.IsData(ep, Num=Num):
+            if self.isdata(ep, num=num):
                 ok = True
                 break
             time.sleep(1)
@@ -56,7 +55,7 @@ class FpgaLinkHost(Fx2Model):
                 break
         return ok
     
-    def ReadChannel(self, chan, count=1, timeout=100):
+    def read_channel(self, chan, count=1, timeout=100):
         """ Read one or more values from the specific channel
         Read /count/ bytes from the FPGA channel /chan/ to the data /array/,
         with the supplied /timeout/ in milleseconds.
@@ -77,16 +76,16 @@ class FpgaLinkHost(Fx2Model):
         wbuf[2] = (count >> 16) & 0xFF
         wbuf[3] = (count >> 8) & 0xFF
         wbuf[4] = (count >> 0) & 0xFF
-        self.TracePrint(str(wbuf))
-        self.Write(wbuf, self.commOut)
+        self.trace_print(str(wbuf))
+        self.write(wbuf, self.commOut)
         self._wait_empty(self.commOut, timeout=timeout)
-        self._wait_data(self.commIn, Num=count, timeout=timeout)
+        self._wait_data(self.commIn, num=count, timeout=timeout)
         
         # write the command
         # read the number of bytes asked for
-        return self.Read(self.commIn, Num=count)
+        return self.read(self.commIn, num=count)
     
-    def WriteChannel(self, chan, values, timeout=100):
+    def write_channel(self, chan, values, timeout=100):
         """ Write one or more bytes to the specified channel
         Write /count/ bytes from the /data/ list/array to the FPGA
         channel /chan/, with the given /timeout/ in milleseconds.  In
@@ -94,7 +93,7 @@ class FpgaLinkHost(Fx2Model):
         """
         assert isinstance(values, (list, tuple))
         dlen = len(values)
-        wbuf = [0 for ii in range(dlen+5)]
+        wbuf = [0 for _ in range(dlen+5)]
         wbuf[0] = chan & 0x7F
         wbuf[1] = (dlen >> 24) & 0xFF
         wbuf[2] = (dlen >> 16) & 0xFF
@@ -102,20 +101,20 @@ class FpgaLinkHost(Fx2Model):
         wbuf[4] = (dlen >> 0) & 0xFF
         wbuf[5:] = values
         print(wbuf)
-        self.Write(wbuf, self.commOut)
+        self.write(wbuf, self.commOut)
         self._wait_empty(self.commOut)
 
-    def AppendWriteChannelCommand(chan, count, data):
+    def append_write_channel_command(chan, count, data):
         """ Append a write command to the end of the write buffer
         """
         raise NotImplementedError("Not Implemented")
 
-    def PlayWriteBuffer(chan, count, data):
+    def play_write_buffer(chan, count, data):
         """ Play the write buffer into the FPGALink device immediately
         """
         raise NotImplementedError("Not Implemented")
 
-    def CleanWriteBuffer(self):
+    def clean_write_buffer(self):
         """ Clean the write buffer (if any)
         """
 
@@ -124,22 +123,23 @@ def test_simple():
     # The Host interface can start the sim engine
     print('1')
     # get the host interface
-    fl = FpgaLinkHost(Verbose=True, Trace=True)   
+    fl = FpgaLinkHost(verbose=True, trace=True)
     print('2')
-    fl.setup(fl.GetFx2Bus())  # simulation setup
+    fl.setup(fl.get_bus())  # simulation setup
     print('3')
     fl.start()                # start simulation
     print('4')
 
     print('   reset')
-    fl.Reset()
+    fl.reset()
     print('   write channel')
-    fl.WriteChannel(1, [1,2,3,4])
+    fl.write_channel(1, [1,2,3,4])
     #print('   read channel')
     #bb = fl.ReadChannel(1, 4)
 
     # stop the simulation
     fl.stop()
-    
+
+
 if __name__ == '__main__':
     test_simple()
