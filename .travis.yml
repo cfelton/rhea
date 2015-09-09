@@ -1,5 +1,6 @@
 language: python
 python:
+  - "3.4"
   - "2.7"
   - "pypy"
   
@@ -11,7 +12,6 @@ before_install:
 install:
   - chmod +x ./scripts/ci/install_myhdl.sh
   - ./scripts/ci/install_myhdl.sh
-  - pip install git+https://github.com/cfelton/gizflo
   - pip install coverage
   - pip install coveralls
   - pip install Pillow
