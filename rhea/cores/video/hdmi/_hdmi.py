@@ -1,6 +1,9 @@
 
 
-from myhdl import *
+from myhdl import Signal, intbv, always_seq
 
-def m_hdmi():
+
+def hdmi():
+    """
+    """
     pass

@@ -3,7 +3,6 @@
 #
 
 
-from pprint import pprint
 import pytest
 
 from myhdl import *
@@ -49,7 +48,7 @@ def test_spi():
     reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl)    
-    fiforx,fifotx = FIFOBus(size=16), FIFOBus(size=16)
+    fiforx, fifotx = FIFOBus(size=16), FIFOBus(size=16)
     spiee = SPIEEPROM()
     spibus = SPIBus()
     asserr = Signal(bool(0))
@@ -66,7 +65,7 @@ def test_spi():
         # get a reference to the SPI register file
         rf = regbus.regfiles['SPI_000']
         # dumpy the registers for the SPI peripheral
-        for name,reg in rf.registers.iteritems():
+        for name, reg in rf.registers.items():
             print("{0} {1:04X} {2:04X}".format(name, reg.addr, int(reg)))
 
         @instance
@@ -77,17 +76,17 @@ def test_spi():
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # loop through the registers and check the default 
                 # values, these are the offset values.
-                for addr,sig in rf.roregs:
+                for addr, sig in rf.roregs:
                     yield regbus.read(addr+ba)
-                    assert regbus.readval == int(sig)
+                    assert regbus.get_read_data() == int(sig)
 
-                for addr,sig in rf.rwregs:
+                for addr, sig in rf.rwregs:
                     # need to skip the FIFO read / write
                     if addr in (0x68, 0x6C,):
                         pass
                     else:
                         yield regbus.read(addr+ba)
-                        assert regbus.readval == int(sig)
+                        assert regbus.get_read_data() == int(sig)
 
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -104,23 +103,22 @@ def test_spi():
                 yield regbus.write(rf.sptx.addr, 0x55)
 
                 yield regbus.read(rf.sptc.addr)
-                print(regbus.readval)
+                print(regbus.get_read_data())
 
                 yield regbus.read(rf.sprc.addr)
-                print(regbus.readval)
+                print(regbus.get_read_data())
 
                 yield delay(1000)
 
                 for ii in range(1000):
                     yield regbus.read(rf.sprc.addr)
-                    if regbus.readval == 5:
+                    if regbus.get_read_data() == 5:
                         break
                     yield delay(1000)
                 
                 for ii in range(5):
                     yield regbus.read(rf.sprx.addr)
-                    print("spi readback {0}".format(regbus.readval))
-                
+                    print("spi readback {0}".format(regbus.get_read_data()))
 
             except Exception as err:
                 print("@W: exception {0}".format(err))                
@@ -132,7 +130,8 @@ def test_spi():
         
         return tbstim, tbdut, tbeep, tbclk, tbmap
 
-    tb_clean_vcd('_test_spi')
+    vcd = tb_clean_vcd('_test_spi')
+    traceSignals.name = vcd
     Simulation(traceSignals(_test_spi)).run()
     
         

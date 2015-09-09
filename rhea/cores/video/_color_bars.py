@@ -1,5 +1,6 @@
 
-from myhdl import *
+from myhdl import Signal, intbv, always_comb, always_seq
+
 
 # color bar template
 COLOR_BARS = (
@@ -41,7 +42,7 @@ def _update_cbars_with_max(P, width):
     return cbarvals
     
 
-def m_color_bars(glbl, vmem, resolution=(640, 480), width=10):
+def color_bars(glbl, vmem, resolution=(640, 480), width=10):
     """ generate a color bar pattern
     """
     global COLOR_BARS

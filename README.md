@@ -2,7 +2,8 @@
 **NOTE** the following is a work-in-progress (WIP) and has not reached
 a minor release point.  If you happen to come across this public repository
 feel free to try it out and contribute.  This repository will
-be unstable until the first minor release 0.1. 
+be unstable until the first minor release 0.1.  This repository is 
+a merge of the `mn` and `gizflo` projects.g
  
 [![Documentation Status](https://readthedocs.org/projects/rhea/badge/?version=latest)](https://readthedocs.org/projects/rhea/?badge=latest) 
 [![Build Status](https://travis-ci.org/cfelton/rhea.svg)](https://travis-ci.org/cfelton/rhea) 
@@ -13,7 +14,7 @@ be unstable until the first minor release 0.1.
 rhea 
 ====
 
-The rhea python package is a collection of HDL cores written 
+The `rhea` python package is a collection of HDL cores written 
 in MyHDL.  The myhdl package can be retrieved from http://www.myhdl.org
 
 
@@ -45,10 +46,10 @@ features from a development version of MyHDL (1.0dev).  If you
 wish to try out this package get 
 [the development myhdl](https://github.com/jandecaluwe/myhdl)  (you will 
 need to clone it and install the source).  The first 
-*rhea* release will not occur until myhdl 1.o is released (probably much
+*rhea* release will not occur until myhdl 1.0 is released (probably much
 later).
 
-This code/package is licensed under the ~~LGPL~~ ??? license.  This allows 
+This code/package is licensed under the ~~LGPL~~ MIT license.  This allows 
 anyone to use the package in their projects with no limitations ~~but
 if the code in the `rhea` package is modified those modifications need to
 be made available to the public (not the code the cores are used 
@@ -85,8 +86,7 @@ code and run setup in *develop* mode.
 Dependencies:
   * myhdl
   * py.test
-  * gizflo (optional)
-
+  
 
 Install the latest myhdl.
 
@@ -104,29 +104,13 @@ or
   >> pip install git+https://github.com/jandecaluwe/myhdl
 ```
 
-See www.myhdl.org for information on myhdl, the *mn* package
-requires a 0.9 feature -interfaces-.  After 0.9 is release the
-official myhdl releases should be used.  Refer to the myhdl
-mailing-list for more information.
-
-
-Install the FPGA build package (optional only needed to build
-the example bitstreams).
-
-```
-  # FPGA build and misc HDL tools
-  >> git clone https://github.com/cfelton/gizflo
-  >> cd gizflo
-  >> sudo python setup.py install 
-  >> cd ..
-```
 
 After the dependencies have been installed clone this repository
 to get started.
 
 ```
-  >> git clone https://github.com/cfelton/minnesota
-  >> cd minnesota
+  >> git clone https://github.com/cfelton/rhea
+  >> cd rhea
   # requires setuptools
   >> python setup.py develop
 ```
@@ -139,8 +123,8 @@ The tests can be run from the test directory.
   >> py.test
 ```
 
-If the `gizflo` package was installed and the FPGA vendor tools
-are installed attempt to build one of the example projects.
+If the FPGA vendor tools (Xilinx or Altera) are installed the
+build examples can be run to generate bitstreams.
 
 ```
   # try to compile one of the examples 
@@ -172,6 +156,5 @@ examples
 --------
 In the examples directory are projects that demonstrate how to build 
 systems using the cores and various tools and target a particular FPGA 
-development board.  As mentioned above the examples have an additional 
-dependency, [gizflo]() to create the actual bitstreams.  
+development board.  
 

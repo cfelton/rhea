@@ -1,6 +1,11 @@
 
+from __future__ import absolute_import
+
 from myhdl import *
-import _fpgalink_fx2 as fl
+
+from . import get_interfaces
+from . import fpgalink_fx2
+
 
 def comm_fpga_fx2_v2(
     clk_in,
@@ -26,18 +31,19 @@ def comm_fpga_fx2_v2(
     This module bridges the "original" port mapping to the MyHDL
     version.    
     """
-    clock,reset,fx2_bus,fl_bus = fl.get_interfaces()
+    clock, reset, fx2_bus, fl_bus = get_interfaces()
 
-    # assign the ports to the busses
+    # assign the ports to the buses
     fx2_bus.fifosel = fx2FifoSel_out
     fx2_bus.data_i = fx2Data_in
     fx2_bus.data_o = fx2Data_out
     fx2_bus.data_t = fx2Data_sel
     
     # get the fpgalink module
-    g = fl.fpgalink_fx2(clk_in, reset_in, fx2_bus, fl_bus)
+    g = fpgalink_fx2(clk_in, reset_in, fx2_bus, fl_bus)
 
     return g
+
 
 def comm_fpga_fx2_v1_stub(
     clk_in,
@@ -78,9 +84,9 @@ def comm_fpga_fx2_v1_stub(
             h2fData_out.next = 3
             h2fValid_out.next = True
             f2hReady_out.next = True            
-            
 
     return hdl
+
 
 def convert(dir=None):
     clk_in = Signal(bool(0))
@@ -126,4 +132,3 @@ def convert(dir=None):
 
 if __name__ == '__main__':
     convert()
-    

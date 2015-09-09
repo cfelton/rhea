@@ -1,8 +1,9 @@
 
 
-from myhdl import *
+from myhdl import Signal, intbv, always_seq, always_comb, concat
 
-def m_serio(clock, reset, sdi, sdo, pin, pout):
+
+def io_stub(clock, reset, sdi, sdo, pin, pout):
     """ serial-in, serial-out
     This module is a simple module used for synthesis testing for 
     particular FPGA devices.  This module allows a bunch of inputs 

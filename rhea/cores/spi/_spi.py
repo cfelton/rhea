@@ -2,6 +2,9 @@
 # Copyright (c) 2006-2015 Christopher L. Felton
 #
 
+from __future__ import absolute_import
+from __future__ import division
+
 """
 SPI interface
 -------------
@@ -17,10 +20,10 @@ with a clock divide register.
 
 from myhdl import *
 
-from ..fifo import m_fifo_fast
+from ..fifo import fifo_fast
 from ...system import FIFOBus
 
-from _regfile_def import regfile
+from ._regfile_def import regfile
 
 def m_spi(
     # ---[ Module Ports]---
@@ -33,8 +36,8 @@ def m_spi(
     tstpts = None,
     
     # ---[ Module Parameters ]---
-    base_address = 0x0400,  # base address (memmap register bus)
-    include_fifo = True     # include aan 8 byte deep FIFO
+    base_address=0x0400,  # base address (memmap register bus)
+    include_fifo=True     # include aan 8 byte deep FIFO
     ):
     """ SPI (Serial Peripheral Interface) module
 
@@ -43,16 +46,16 @@ def m_spi(
     """
     clock, reset = glbl.clock, glbl.reset
     # -- local signals --
-    ena    = Signal(False)
+    ena = Signal(False)
     clkcnt = Signal(modbv(0, min=0, max=2**12))
-    bcnt   = Signal(intbv(0, min=0, max=8))
-    treg   = Signal(intbv(0)[8:])
-    rreg   = Signal(intbv(0)[8:])
+    bcnt = Signal(intbv(0, min=0, max=8))
+    treg = Signal(intbv(0)[8:])
+    rreg = Signal(intbv(0)[8:])
     
-    x_sck   = Signal(False)
-    x_ss    = Signal(False)
-    x_mosi  = Signal(False)
-    x_miso  = Signal(False)    
+    x_sck = Signal(False)
+    x_ss = Signal(False)
+    x_mosi = Signal(False)
+    x_miso = Signal(False)
 
     # internal FIFO bus
     xfb = FIFOBus(size=txfb.size, width=txfb.width)  
@@ -60,7 +63,7 @@ def m_spi(
     
     States = enum('IDLE', 'WAIT_HCLK', 'DATA_IN', 'DATA_CHANGE',
                   'WRITE_FIFO', 'END')
-    state  = Signal(States.IDLE)
+    state = Signal(States.IDLE)
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # memory- mapped registers
@@ -69,8 +72,8 @@ def m_spi(
 
     # FIFO for the wishbone data transfer
     if include_fifo:
-        g_rx_fifo = m_fifo_fast(clock, reset, rxfb)        
-        g_tx_fifo = m_fifo_fast(clock, reset, txfb)
+        g_rx_fifo = fifo_fast(clock, reset, rxfb)
+        g_tx_fifo = fifo_fast(clock, reset, txfb)
 
     @always_comb
     def rtl_assign():
@@ -82,27 +85,25 @@ def m_spi(
         else:
             ena.next = True
 
-
     @always(regbus.clock.posedge)
     def rtl_clk_div():
         if regfile.spcr.spe and clkcnt != 0 and state != States.IDLE:
             clkcnt.next = (clkcnt - 1)
         else:
-            if   regfile.spxx == 0:   clkcnt.next = 0    # 2
-            elif regfile.spxx == 1:   clkcnt.next = 1    # 4
-            elif regfile.spxx == 2:   clkcnt.next = 3    # 8
-            elif regfile.spxx == 3:   clkcnt.next = 7    # 16
-            elif regfile.spxx == 4:   clkcnt.next = 15   # 32 
-            elif regfile.spxx == 5:   clkcnt.next = 31   # 64
-            elif regfile.spxx == 6:   clkcnt.next = 63   # 128
-            elif regfile.spxx == 7:   clkcnt.next = 127  # 256
-            elif regfile.spxx == 8:   clkcnt.next = 255  # 512
-            elif regfile.spxx == 9:   clkcnt.next = 511  # 1024
-            elif regfile.spxx == 10:  clkcnt.next = 1023 # 2048
-            elif regfile.spxx == 11:  clkcnt.next = 2047 # 4096
+            if   regfile.spxx == 0:   clkcnt.next = 0     # 2
+            elif regfile.spxx == 1:   clkcnt.next = 1     # 4
+            elif regfile.spxx == 2:   clkcnt.next = 3     # 8
+            elif regfile.spxx == 3:   clkcnt.next = 7     # 16
+            elif regfile.spxx == 4:   clkcnt.next = 15    # 32
+            elif regfile.spxx == 5:   clkcnt.next = 31    # 64
+            elif regfile.spxx == 6:   clkcnt.next = 63    # 128
+            elif regfile.spxx == 7:   clkcnt.next = 127   # 256
+            elif regfile.spxx == 8:   clkcnt.next = 255   # 512
+            elif regfile.spxx == 9:   clkcnt.next = 511   # 1024
+            elif regfile.spxx == 10:  clkcnt.next = 1023  # 2048
+            elif regfile.spxx == 11:  clkcnt.next = 2047  # 4096
             else: clkcnt.next = 4095
-            
-    
+
     @always_seq(regbus.clock.posedge, reset=regbus.reset)
     def rtl_state_and_more():
         """
@@ -215,12 +216,10 @@ def m_spi(
                     state.next = States.IDLE
                     assert False, "SPI Invalid State"
 
-
     @always_comb
     def rtl_fifo_sigs():
         txfb.wdata.next = regfile.sptx
         regfile.sprx.next = rxfb.rdata
-
 
     @always_comb
     def rtl_fifo_sel():
@@ -255,12 +254,10 @@ def m_spi(
             fb.wr.next = xfb.wr
             fb.wdata.next = treg
 
-
     @always_comb
     def rtl_x_mosi():
         # @todo lsbf control signal
         x_mosi.next  = treg[7]
-
 
     @always(regbus.clock.posedge)
     def rtl_spi_sigs():
@@ -281,7 +278,6 @@ def m_spi(
             else:
                 spibus.ss.next = ~regfile.spss
 
-
     #if tst_pts is not None:
     #    if isinstance(tst_pts.val, intbv) and len(tst_pts) == 8:
     #        @always_comb    
@@ -296,7 +292,7 @@ def m_spi(
     #            tst_pts.next[6] = x_fifo_empty # 
     #            tst_pts.next[7] = tx_fifo_wr   # 
     #    else:
-    #        print "WARNING: SPI tst_pts is not None but is not an intbv(0)[8:]"
+    #        print("WARNING: SPI tst_pts is not None but is not an intbv(0)[8:]")
 
                 
     return instances()

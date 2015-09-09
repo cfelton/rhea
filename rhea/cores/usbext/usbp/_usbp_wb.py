@@ -2,6 +2,8 @@
 # Copyright (c) 2006-2013 Christopher L. Felton
 #
 
+from __future__ import absolute_import
+
 """
   This module is the USB interface.  It contains the FX2 slave FIFO
   interface.  This module is the bridge between the USB fifos, the internal
@@ -9,18 +11,16 @@
   
   This module is also designed to translate between 2 different clock
   domains if needed.  The FX2 slave FIFO interface runs on the IFCLK (48MHz)
-  clock.  The interal system clock can be a different clock rate.\
+  clock.  The interal system clock can be a different clock rate.
   
 """
-
-from __future__ import absolute_import
 
 from myhdl import *
 from ._wb_master import wb_master
 from ._fx2_sfifo import fx2_sfifo
 from ...fifo import fifo_two_port_sync
 
-#
+
 class usbp(object):
 
     def __init__(self, *sigs, **parameters):
@@ -40,6 +40,8 @@ class usbp(object):
         return usbp_wb(sigs, parameters)
 
 
+# @todo: this module needs to be updated to use interfaces
+# @todo: usbp(glbl, fx2intf, memmap, debug)
 # Standard HDL Function
 def usbp_wb(
     reset,             # System reset    
@@ -269,7 +271,6 @@ def usbp_wb(
                 err_rd_ififo.next = err_rd_ififo + 1
 
             # @todo add FX2 external FIFO counters, FLAGB and FLAGD
-
 
     @always(ifclk.posedge)
     def rtl_data_counters():

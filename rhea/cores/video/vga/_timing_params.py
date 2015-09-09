@@ -3,6 +3,8 @@ from __future__ import division
 from __future__ import print_function
 
 SUMMERIED = False
+
+
 def calc_timings(frequency, resolution,
                  refresh_rate=60, line_rate=31250):
     """
@@ -57,18 +59,18 @@ def calc_timings(frequency, resolution,
     vticks = (1/refresh_rate)/period
 
     # the line timing in counts of system clock
-    B = round(4e-6/period)     # horizontal pulse width
-    C = round(2e-6/period)     # the back porch time
-    E = round(1e-6/period)     # the front porch
-    D = hticks - sum([B,C,E])  # hsync active (1)
-    X = round(D/(res[0]))      # pixel clock count
-    A = sum([B,C,D,E])         # ticks for a complete line != line_rate
+    B = round(4e-6/period)       # horizontal pulse width
+    C = round(2e-6/period)       # the back porch time
+    E = round(1e-6/period)       # the front porch
+    D = hticks - sum([B, C, E])  # hsync active (1)
+    X = round(D/(res[0]))        # pixel clock count
+    A = sum([B, C, D, E])        # ticks for a complete line != line_rate
 
-    P = round(64e-6/period)    # vsync pulse width
-    R = res[1] * (B+C+D+E)     # all lines
-    S = round(340e-6/period)   # vertical front porch
-    Q = vticks - (P + S + R)   # vertical back porch
-    O = sum([P, Q, R, S])      # full screen ~= refresh_rate
+    P = round(64e-6/period)      # vsync pulse width
+    R = res[1] * (B+C+D+E)       # all lines
+    S = round(340e-6/period)     # vertical front porch
+    Q = vticks - (P + S + R)     # vertical back porch
+    O = sum([P, Q, R, S])        # full screen ~= refresh_rate
     # the pixel count (pixel clock)
     Z = res[0]*res[1]
 
@@ -77,17 +79,17 @@ def calc_timings(frequency, resolution,
         print(" Video parameters in ticks")
         print("   period ........................ %.3f, %.e" % (frequency, 
                                                                 period))
-        print("   hticks ........................ %.6f" % (hticks))
-        print("   vticks ........................ %.6f" % (vticks))
-        print("   A: full line: ................. %d, (%.2f Hz)" % (A, 
-                                                               1/(A*period)))
+        print("   hticks ........................ %.6f" % (hticks,))
+        print("   vticks ........................ %.6f" % (vticks,))
+        print("   A: full line: ................. %d, (%.2f Hz)" % (
+            A, 1/(A*period)))
         print("   B: horizontal pulse width: .... %d" % (B))
         print("   C: horizontal back porch:...... %d" % (C))
         print("   D: horizontal active: ......... %d" % (D))
         print("   E: horizontal front porch: .... %d" % (E))
         
-        print("   O: full screen ................ %d, (%.2f Hz)" % (O, 
-                                                               1/(O*period)))
+        print("   O: full screen ................ %d, (%.2f Hz)" % (
+            O, 1/(O*period)))
         print("   P: vertical pulse width ....... %d" % (P))
         print("   Q: vertical back porch ........ %d" % (Q))
         print("   R: all lines .................. %d" % (R))
@@ -97,7 +99,7 @@ def calc_timings(frequency, resolution,
 
     # @todo: create files for the other languages.
     
-    return map(int, (A,B,C,D,E,O,P,Q,R,S,X,Z,))
+    return list(map(int, (A, B, C, D, E, O, P, Q, R, S, X, Z,)))
 
 
 def get_timing_dict(frequency, resolution,

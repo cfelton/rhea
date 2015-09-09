@@ -16,7 +16,7 @@ from myhdl import *
 import rhea
 from rhea.system import Global
 from rhea.cores.video import HDMI
-from rhea.cores.video import m_hdmi
+from rhea.cores.video import hdmi
 
 # a video desplay model to check the timings
 from rhea.models.video import VideoDisplay
@@ -36,7 +36,7 @@ def test_hdmi():
 
     # this currently tests a Verilog version
     #tbdut = prep_cosim(clock, reset, args=args)
-    tbdut = m_hdmi()
+    tbdut = hdmi()
     
     def _test():
 

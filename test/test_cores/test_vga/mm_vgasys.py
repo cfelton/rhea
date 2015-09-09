@@ -8,8 +8,8 @@ from rhea.system import Global
 from rhea.cores.video import VGA
 from rhea.cores.video import VideoMemory
 
-from rhea.cores.video import m_vga_sync
-from rhea.cores.video import m_color_bars
+from rhea.cores.video import vga_sync
+from rhea.cores.video import color_bars
 
 def mm_vgasys(
 
@@ -20,8 +20,8 @@ def mm_vgasys(
     pxlen, active,
 
     # ~~~~[PARAMETERS]~~~~
-    resolution=(640,480,),
-    color_depth=(10,10,10,),
+    resolution=(640, 480,),
+    color_depth=(10, 10, 10,),
     refresh_rate=60,
     line_rate=31250
     ):
@@ -37,13 +37,13 @@ def mm_vgasys(
     vmem = VideoMemory()
         
     # instances of modules
-    gbar = m_color_bars(glbl, vmem, 
-                        resolution=resolution)
+    gbar = color_bars(glbl, vmem,
+                      resolution=resolution)
 
-    gvga = m_vga_sync(glbl, vga, vmem,
-                      resolution=resolution,
-                      refresh_rate=refresh_rate,
-                      line_rate=line_rate)
+    gvga = vga_sync(glbl, vga, vmem,
+                    resolution=resolution,
+                    refresh_rate=refresh_rate,
+                    line_rate=line_rate)
 
     return gvga, gbar
 
@@ -76,4 +76,3 @@ def convert(color_depth=(10,10,10,)):
 
 if __name__ == '__main__':
     convert()
-    

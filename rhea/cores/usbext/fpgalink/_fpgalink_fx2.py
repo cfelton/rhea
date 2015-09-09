@@ -4,8 +4,11 @@ from myhdl import *
 FX2_OUT_FIFO = int('00', base=2)
 FX2_IN_FIFO = int('01', base=2)
 
-class Bus(object): pass
-    
+
+class Bus(object):
+    pass
+
+
 def get_interfaces():
     """ Single function to get the buses
     """
@@ -35,9 +38,10 @@ def get_interfaces():
     flbus.valid_i = Signal(bool(0))       # f2h_valid_in
     flbus.ready_o = Signal(bool(0))       # f2h_ready_out
 
-    return (clock, reset, fx2bus, flbus)
+    return clock, reset, fx2bus, flbus
 
-def m_fpgalink_fx2(
+
+def fpgalink_fx2(
     clock,           # synchronous FPGA clock
     reset,           # synchronous FPGA reset
 
@@ -140,13 +144,12 @@ def m_fpgalink_fx2(
                 else:
                     count.next = count - 1
 
-                    
         elif state == States.READ_WAIT:
             if fx2bus.gotdata and flbus.ready_i:
                 state.next = States.READ
                 fifop.next = fopREAD
         
-        else: # Idle state and others
+        else:  # Idle state and others
             # The original state-machine left the 'read' control
             # signal always active until a write.
             fifop.next = fopREAD
@@ -163,7 +166,8 @@ def m_fpgalink_fx2(
         fx2bus.write.next = fifop[1]
         
     return hdl_sm, hdl_assigns
-    
+
+
 if __name__ == '__main__':
-    clock,reset,fx2bus,flbus = get_interfaces()
+    clock, reset, fx2bus, flbus = get_interfaces()
     g = fpgalink_fx2(clock, reset, fx2bus, flbus)

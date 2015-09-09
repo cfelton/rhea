@@ -1,10 +1,14 @@
 
-from myhdl import *
+from myhdl import Signal, intbv, always_seq
 
-from . import m_btn_debounce
+from . import button_debounce
 
-def m_btn_mm_ctl(glbl, regbus, btns, led_addr=0x8240):
-    """
+
+def button_controller(glbl, regbus, btns, led_addr=0x8240):
+    """ Generate bus cycles from a button input
+    This is a non-sensicle module that creates memory-mapped
+    bus cycles from a button press.  It is used in simple
+    examples and demostrations.
     """
 
     clock, reset = glbl.clock, glbl.reset
@@ -14,7 +18,7 @@ def m_btn_mm_ctl(glbl, regbus, btns, led_addr=0x8240):
     ctl = regbus.get_controller_intf()
 
     # debounce the buttons
-    gbtn = m_btn_debounce(glbl, btns, dbtns)
+    gbtn = button_debounce(glbl, btns, dbtns)
 
     # use the basic controller defined in the memmap modules
     # this basic controller is very simple, a write strobe 
@@ -44,6 +48,5 @@ def m_btn_mm_ctl(glbl, regbus, btns, led_addr=0x8240):
                 ctl.wdata.next = 3
             elif dbtns[3]:
                 ctl.wdata.next = 4
-
 
     return gbtn, gctl, rtl

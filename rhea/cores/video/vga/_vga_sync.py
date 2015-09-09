@@ -1,12 +1,14 @@
 
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
 from myhdl import *
 
-from _timing_params import calc_timings
-        
-def m_vga_sync(
+from ._timing_params import calc_timings
+
+
+def vga_sync(
     # [ports and interfaces}
     glbl,  # global bundle of signals, clock, reset
     vga,   # signals for the VGA

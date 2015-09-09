@@ -12,12 +12,16 @@ Info = {
     'vpulse': [],         
 }
 
+
 class Counters(object):
     def __init__(self):
-        self.reset()
+        self.hcnt, self.vcnt = 0, 0
+        self.hsync, self.vsync = 0, 0
+        self.hfpcnt, self.hbpcnt = 0, 0
+        self.vfpcnt, self.vbpcnt = 0, 0
 
     def reset(self):
-        self.hcnt,   self.vcnt = 0, 0
+        self.hcnt, self.vcnt = 0, 0
         self.hsync, self.vsync = 0, 0
         self.hfpcnt, self.hbpcnt = 0, 0
         self.vfpcnt, self.vbpcnt = 0, 0
@@ -63,8 +67,7 @@ class VideoDisplay(object):
             'hpusle': [],
             'vpulse': [],         
         }
-                                  
-    
+
     def _gen_image(self, framen, frame):
         """
         """
@@ -134,7 +137,6 @@ class VideoDisplay(object):
             vcnt.next = counters.vcnt
                         
         return g_capture_vga, g_monitor
-
 
     def _state_display(self, dsys, vga, counters):
         """
@@ -236,6 +238,3 @@ class VideoDisplay(object):
             yield dsys.clock.posedge
             #assert vga.porch == vga.Porch.VER_FRONT
             c.vbpcnt += 1
-    
-                        
-                    
