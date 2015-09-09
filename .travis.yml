@@ -1,0 +1,28 @@
+language: python
+python:
+  - "2.7"
+  - "pypy"
+  
+# get some stuff to install
+before_install:
+  - sudo apt-get install iverilog
+
+# command to install dependencies
+install:
+  - chmod +x ./scripts/ci/install_myhdl.sh
+  - ./scripts/ci/install_myhdl.sh
+  - pip install git+https://github.com/cfelton/gizflo
+  - pip install coverage
+  - pip install coveralls
+  - pip install Pillow
+  - pip install .
+
+# run the test, nosetests can be used
+script:
+   - cd examples
+   - py.test -s
+   - cd ../test
+   - py.test -s
+
+notifications:
+  email: false
