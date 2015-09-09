@@ -3,7 +3,7 @@
 a minor release point.  If you happen to come across this public repository
 feel free to try it out and contribute.  This repository will
 be unstable until the first minor release 0.1.  This repository is 
-a merge of the `mn` and `gizflo` projects.g
+a merge of the `mn` and `gizflo` projects.
  
 [![Documentation Status](https://readthedocs.org/projects/rhea/badge/?version=latest)](https://readthedocs.org/projects/rhea/?badge=latest) 
 [![Build Status](https://travis-ci.org/cfelton/rhea.svg)](https://travis-ci.org/cfelton/rhea) 
@@ -91,8 +91,6 @@ Dependencies:
 Install the latest myhdl.
 
 ```
-  # get the required python packages, myhdl, gizflo,
-  # and the latest minnesota package.
   >> git clone https://github.com/jandecaluwe/myhdl
   >> sudo python setup.py install
   >> cd ..
@@ -128,7 +126,7 @@ build examples can be run to generate bitstreams.
 
 ```
   # try to compile one of the examples 
-  # (requires FPGA tools installed and gizflo)
+  # (requires FPGA tools installed)
   >> cd ../examples/boards/nexys/fpgalink
   >> python test_fpgalink.py
   >> python compile_fpgalink.py
