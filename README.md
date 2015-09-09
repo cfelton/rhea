@@ -28,6 +28,8 @@ dependencies
 ------------
    - [myhdl](www.myhdl.org) 0.9 or later
    - [pytest](www.pytest.org) for the test suite
+   - [Pillow]() some video tests utilize the imaging library
+   - FPGA vendor tools, only for automated build tools.
    
    
 quick start
