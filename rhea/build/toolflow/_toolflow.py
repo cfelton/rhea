@@ -8,7 +8,6 @@ from __future__ import print_function
 import os
 
 class _toolflow(object): 
-
     def __init__(self, brd, top=None, name=None, path='.'):
         """
         Provided a myhdl top-level module and board definition
@@ -39,7 +38,6 @@ class _toolflow(object):
         self.name = brd.top_name if name is None else name
         self._hdl_file_list = set()
         self.logfn = None
-
         
     @property
     def path(self):
@@ -62,7 +60,6 @@ class _toolflow(object):
 
         return os.path.isdir(pth)
         
-
     def set_default_project_file(self, filename=None):
         self._default_project_file = filename
 
@@ -104,4 +101,9 @@ class _toolflow(object):
           use  : indicated if Verilog or VHDL should be used.
           name : user supplied name for project and top-level
         """
-        pass
+        raise NotImplemented()
+
+    def program(self):
+        """ Program the board with the bit-stream
+        """
+        raise NotImplemented()

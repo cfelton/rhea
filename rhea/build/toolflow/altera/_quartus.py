@@ -9,6 +9,7 @@ import sys
 import os
 from time import gmtime, strftime
 import subprocess
+import shlex
 from pprint import pprint
 
 from .._toolflow import _toolflow
@@ -26,10 +27,6 @@ _default_pin_attr = {
 
 
 class Quartus(_toolflow):
-    """
-    """
-
-
     def __init__(self, brd, top=None, path='./altera/'):
         """
         Given a board definition and a top-level module 
@@ -40,10 +37,8 @@ class Quartus(_toolflow):
         self._core_file_list = set()
         self._default_project_file = None
         
-
     def add_cores(self, filename):
         self._core_file_list.update(set(filename))
-
 
     def create_project(self, use='verilog', **pattr):
         """ Generate the Quartus .qsf project file
@@ -99,7 +94,6 @@ class Quartus(_toolflow):
         # @todo: log setup information
         #print(qsf)
         return
-
         
     def create_constraints(self):
         self.sdc_file = os.path.join(self.path, self.name+'.sdc')
@@ -159,7 +153,6 @@ class Quartus(_toolflow):
 
         return tcl_script
         
-
     def run(self, use='verilog', name=None):
         """ Execute the tool-flow """
 
@@ -189,7 +182,22 @@ class Quartus(_toolflow):
 
         return self.logfn
 
+    def program(self):
+        # @todo: some issue with this command or the verions
+        # @todo: of quartus tested?
+        #txt = subprocess.check_output(('quartus_pgm', '-a',))
+        # @todo: check and see if the cable is attached!
 
+        bitfile = os.path.join(self.path, self.name)
+        for cmd in self.brd.program_device_cli:
+            try:
+                ucmd = cmd.substitute(dict(bitfile=bitfile))
+                ucmd = shlex.split(ucmd)
+                txt = subprocess.check_output(ucmd)
+            except Exception as err:
+                print(err)
+                raise err
+        
     def get_utilization(self):
         fitlog = os.path.join(self.path, self.name+'.fit.rpt')
         info = get_utilization(fitlog)

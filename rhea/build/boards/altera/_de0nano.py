@@ -3,8 +3,13 @@
 # Copyright (c) 2013-2014 Jos Huisken
 #
 
+from __future__ import absolute_import
+
+from string import Template
+
 from ..._fpga import _fpga
 from ...toolflow import Quartus
+
 
 class DE0Nano(_fpga):
     vendor = 'altera'
@@ -35,5 +40,11 @@ class DE0Nano(_fpga):
                            'A4', 'B5', 'A5', 'D5', 'B6', 'A6')),
     }
 
+    program_device_cli = (
+        Template("quartus_pgm -c USB-Blaster -m jtag -o \"p;$bitfile.sof\" "),
+             )
+    # example quartus_pgm -c USB-Blaster -m jtag -o bpv:design.pof
+    program_nonvolatile_cli = (Template(""),)
+    
     def get_flow(self):
         return Quartus(brd=self)

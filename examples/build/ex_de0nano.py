@@ -12,6 +12,7 @@ def run_nano():
     flow.run()
     info = flow.get_utilization()
     pprint(info)
+    flow.program()
 
 if __name__ == '__main__':
     run_nano()
