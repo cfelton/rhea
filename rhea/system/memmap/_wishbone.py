@@ -34,8 +34,8 @@ class Wishbone(MemMap):
         # note on Wishbone signal names, since the signals
         # are not passed to the controller and peripherals
         # (the interface is passed) there isn't a need for 
-        # _o and _i on many of the signals.  Preserved the
-        # peripheral (slave) point of view names.
+        # _o and _i on many of the signals.  
+        # Preserved the peripheral (slave) point of view names.
         if glbl is not None:
             self.clock = glbl.clock
         self.clk_i = self.clock
@@ -73,6 +73,7 @@ class Wishbone(MemMap):
         self._pdat_o.append(dat)
         self._pack_o.append(ack)
 
+    # @todo: rename to "interconnect"
     def m_per_outputs(self):
         """ combine all the peripheral outputs
         """
@@ -97,9 +98,12 @@ class Wishbone(MemMap):
         """
 
         # local alias
-        wb = self    # register bus
-        rf = regfile # register file definition
-
+        wb = self     # register bus
+        rf = regfile  # register file definition
+        clock, reset = wb.clk_i, wb.rst_i
+        
+        # get the address list, regsiter list, read-only list, and the 
+        # default list.
         al, rl, rol, dl = rf.get_reglist()
         addr_list, regs_list = al, rl
         pwr, prd = rf.get_strobelist()
@@ -108,21 +112,49 @@ class Wishbone(MemMap):
         max_address = base_address + max(addr_list)
 
         lwb_do = Signal(intbv(0)[self.data_width:])
-        (lwb_sel,lwb_acc,lwb_wr,
-         lwb_wrd,lwb_ack,) = [Signal(bool(0)) for ii in range(5)]
+        (lwb_sel, lwb_acc, lwb_wr,
+         lwb_wrd, lwb_ack,) = [Signal(bool(0)) for ii in range(5)]
         wb.add_output_bus(name, lwb_do, lwb_ack)
 
-        ACNT = 1
+        ACNT = 1  # the number of cycle delays after cyc_i
         ackcnt = Signal(intbv(ACNT, min=0, max=ACNT+1))
         newcyc = Signal(bool(0))
+        
+        
+        if self._debug:
+            @instance 
+            def debug_check():
+                print("base address {:4X}, max address {:4X}".format(                
+                    int(base_address), int(max_address)))
+                while True:
+                    assert clock is wb.clk_i is self.clock
+                    assert reset is wb.rst_i is self.reset
+                    yield clock.posedge
+                    print("{:8d}: c:{}, r:{}, {} {} {} sel:{}, wr:{} n:{} acnt {}, @{:04X}, i:{:02X} o:{:02X} ({:02X})".format(
+                        now(), int(clock), int(reset), 
+                        int(wb.cyc_i), int(wb.we_i), int(wb.ack_o),
+                        int(lwb_sel), int(lwb_wr),
+                        int(newcyc), int(ackcnt), int(wb.adr_i),
+                        int(wb.dat_i), int(wb.dat_o), int(lwb_do), ))
+
         
         @always_comb
         def rtl_assign():
             lwb_acc.next = wb.cyc_i and wb.stb_i
             lwb_wr.next = wb.cyc_i and wb.stb_i and wb.we_i
-                
-        @always_seq(wb.clk_i.posedge, reset=wb.rst_i)
+
+        @always_seq(clock.posedge, reset=reset)
         def rtl_selected():
+            if (wb.cyc_i and wb.adr_i >= base_address and
+                wb.adr_i < max_address):
+                lwb_sel.next = True
+            else:
+                lwb_sel.next = False
+                
+        @always_seq(clock.posedge, reset=reset)
+        def rtl_bus_cycle():
+            # set default, only active one cycle 
+            newcyc.next = False     
             if wb.cyc_i:
                 if ackcnt > 0:
                     ackcnt.next = ackcnt - 1
@@ -131,14 +163,10 @@ class Wishbone(MemMap):
             else:
                 ackcnt.next = ACNT
 
-            if wb.cyc_i and wb.adr_i >= base_address and wb.adr_i <= max_address:
-                lwb_sel.next = True
-            else:
-                lwb_sel.next = False
-
+        @always_comb
+        def rtl_ack():
             if wb.cyc_i and newcyc:
                 lwb_ack.next = True
-                newcyc.next = False
             else:
                 lwb_ack.next = False
 
@@ -150,28 +178,30 @@ class Wishbone(MemMap):
         #     def rtl_read():
         # else:
 
-        # @todo
-        @always(wb.clk_i.posedge)
+        # Handle a bus read (transfer the addressed register to the
+        # data bus) nad generate the register read pulse (let the 
+        # peripheral know the register has been read).
+        # @always_seq(clock.posedge, reset=reset)
+        @always_comb
         def rtl_read():
-            if wb.rst_i == int(wb.rst_i.active):
+            if lwb_sel and not lwb_wr:                    
+                for ii in range(nregs):
+                    aa = addr_list[ii]
+                    aa = aa + base_address
+                    if wb.adr_i == aa:
+                        lwb_do.next = regs_list[ii]
+                        prd[ii].next = True
+            else:
+                lwb_do.next = 0
                 for ii in range(nregs):
                     prd[ii].next = False
-            else:
-                if lwb_sel and not lwb_wr:                    
-                    for ii in range(nregs):
-                        aa = addr_list[ii]
-                        aa = aa + base_address
-                        if wb.adr_i == aa:
-                            lwb_do.next = regs_list[ii]
-                            prd[ii].next = True
-                else:
-                    lwb_do.next = 0
-                    for ii in range(nregs):
-                        prd[ii].next = False
                         
-        @always(wb.clk_i.posedge)
+        # Handle a bus write (trasfer the data bus to the addressed 
+        # register) and generate a register write pulse (let the 
+        # peripheral know the register has been written).
+        @always(clock.posedge)
         def rtl_write():
-            if wb.rst_i == int(wb.rst_i.active):
+            if reset == int(reset.active):
                 for ii in range(nregs):
                     ro = rol[ii]
                     dd = dl[ii]
@@ -212,7 +242,6 @@ class Wishbone(MemMap):
             wb.adr_i.next = concat(generic.per_addr, generic.reg_addr)
 
             generic.ack = wb.ack_o
-
 
         return rtl_assign
 

@@ -26,9 +26,16 @@ from rhea.models.sdram import SDRAMModel
 from rhea.models.sdram import sdram_controller_model
 
 
-@pytest.mark.xfail
-def test_sdram(args):
-
+def test_sdram():
+    tb_sdram(Namespace())
+    
+    
+def tb_sdram(args):
+    """ SDRAM controller testbench
+    """
+    # @todo: get the number of address to test from argparse
+    num_addr = 100   # number of address to test
+    
     # internal clock
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=0, async=False)
@@ -56,9 +63,10 @@ def test_sdram(args):
         tbmdl_sdm = sdram.process()
         tbmdl_ctl = sdram_controller_model(exbus, ixbus)
 
-        # test currently only exercises the models, insert a second
-        # SDRAMInterface to test an actual controller
-        #tbdut = sdram_sdr_controller(ibus, exbus)
+        # this test currently only exercises the models, 
+        # insert a second SDRAMInterface to test an actual 
+        # controller
+        # tbdut = sdram_sdr_controller(ibus, exbus)
         tbclk = clock.gen(hticks=10*1000)
         tbclk_sdram = clock_sdram.gen(hticks=5*1000)
 
@@ -71,7 +79,7 @@ def test_sdram(args):
             # test a bunch of random addresses
             try:
                 saved_addr_data = {}
-                for ii in range(10):
+                for ii in range(num_addr):
                     # get a random address and random data, save the address and data
                     addr = randint(0, max_addr)
                     data = randint(0, max_data)
@@ -112,4 +120,4 @@ def test_sdram(args):
 
 
 if __name__ == '__main__':
-    test_sdram(Namespace())
+    tb_sdram(Namespace())

@@ -7,8 +7,8 @@ from myhdl import *
 
 import rhea.build as build
 
-from rhea.cores.misc import m_btn_mm_ctl   # memmap controller
-from rhea.cores.misc import m_led_mm_per   # memmap peripheral
+from rhea.cores.misc import button_controller   # memmap controller
+from rhea.cores.misc import led_peripheral      # memmap peripheral
 
 from rhea.system import Global
 from rhea.system import Barebone
@@ -44,9 +44,9 @@ def m_btn_led_mm(clock, reset, leds, btns, bus_type='W'):
     #elif bus_type == 'X':
     #    regbus = AXI4(glbl, data_wdith=8, address_width=16)
 
-    gbtn = m_btn_mm_ctl(glbl, regbus, btns)  # memmap controller
-    gled = m_led_mm_per(glbl, regbus, leds)  # memmap peripheral
-    gmap = regbus.m_per_outputs()            # bus combiner
+    gbtn = button_controller(glbl, regbus, btns)  # memmap controller
+    gled = led_peripheral(glbl, regbus, leds)     # memmap peripheral
+    gmap = regbus.m_per_outputs()                 # bus combiner
 
     print(vars(regbus.regfiles['LED_000']))
 

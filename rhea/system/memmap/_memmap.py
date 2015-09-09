@@ -40,6 +40,9 @@ class MemMap(object):
 
         # bus transaction timeout in clock ticks
         self.timeout = 100
+        
+        # _debug is used to enable bus tracing prints etc.
+        self._debug = False
 
     @property
     def is_write(self):
@@ -69,7 +72,7 @@ class MemMap(object):
 
     def _end_transaction(self, data=None):
         if self._read and data is not None:
-            self._read_data = data
+            self._read_data = int(data)
         self._write = False
         self._read = False
 

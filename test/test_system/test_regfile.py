@@ -31,6 +31,7 @@ def _create_mask(n):
 
 def _create_test_regfile():
     global regdef
+    print("creating test register file")
     regdef = collections.OrderedDict()
     # --register 0--
     reg = Register('control', 0x0018, 8, 'rw', 0)
@@ -129,7 +130,7 @@ def test_register_file():
     def _test_rf():
         tb_dut = m_per(glbl, regbus, 0xAA)
         tb_or = regbus.m_per_outputs()
-        tb_mclk = clock.gen()
+        tb_mclk = clock.gen(hticks=5)
         #tb_rclk = regbus.clk_i.gen()
         asserr = Signal(bool(0))
 
@@ -143,8 +144,9 @@ def test_register_file():
         def tb_stim():
             try:
                 yield delay(100)
-                yield reset.pulse(111)
-
+                yield reset.pulse(110)
+                yield clock.posedge
+                
                 for k, reg in regdef.items():
                     if reg.access == 'ro':
                         yield regbus.read(reg.addr)
@@ -159,7 +161,8 @@ def test_register_file():
                         yield regbus.read(reg.addr)
                         rval = regbus.get_read_data()
                         assert rval == wval, \
-                            "rw: {:02x} != {:02x}".format(rval, wval)
+                            "rw: {:02x} != {:02x} @ {:04X}".format(
+                                rval, wval, reg.addr)
                 yield delay(100)
             except AssertionError as err:
                 print("@E: %s".format(err))
@@ -207,8 +210,8 @@ def test_register_file_bits():
                     assert regfile.enable == truefalse
                     assert regfile.loop == (not truefalse)
                     yield regbus.read(regfile.control.addr)
-                    yield regbus.write(regfile.control.addr,
-                                       ~regbus.get_read_data())
+                    invertbits = ~intbv(regbus.get_read_data())[8:]
+                    yield regbus.write(regfile.control.addr, invertbits)
                     truefalse = not truefalse
                     yield clock.posedge
             except AssertionError as err:

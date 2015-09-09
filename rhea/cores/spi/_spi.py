@@ -25,7 +25,7 @@ from ...system import FIFOBus
 
 from ._regfile_def import regfile
 
-def m_spi(
+def spi_controller(
     # ---[ Module Ports]---
     glbl,    # global interface, clock, reset, etc.
     regbus,  # memory-mapped register bus
@@ -42,7 +42,7 @@ def m_spi(
     """ SPI (Serial Peripheral Interface) module
 
     This is a generic SPI implementation, the register layout
-    is similar to outher SPI controller.
+    is similar to other SPI controller.
     """
     clock, reset = glbl.clock, glbl.reset
     # -- local signals --
@@ -57,9 +57,11 @@ def m_spi(
     x_mosi = Signal(False)
     x_miso = Signal(False)
 
-    # internal FIFO bus
+    # internal FIFO bus interfaces
+    #   external FIFO side (FIFO to external SPI bus)
     xfb = FIFOBus(size=txfb.size, width=txfb.width)  
-    fb = FIFOBus(size=rxfb.size, width=rxfb.width)  
+    #   internal FIFO side (FIFO to internal bus)
+    ifb = FIFOBus(size=rxfb.size, width=rxfb.width)  
     
     States = enum('IDLE', 'WAIT_HCLK', 'DATA_IN', 'DATA_CHANGE',
                   'WRITE_FIFO', 'END')
@@ -72,8 +74,8 @@ def m_spi(
 
     # FIFO for the wishbone data transfer
     if include_fifo:
-        g_rx_fifo = fifo_fast(clock, reset, rxfb)
         g_tx_fifo = fifo_fast(clock, reset, txfb)
+        g_rx_fifo = fifo_fast(clock, reset, rxfb)
 
     @always_comb
     def rtl_assign():
@@ -158,7 +160,7 @@ def m_spi(
                         xfb.rd.next = False
                         xfb.wr.next = False
 
-                # ~~~~ Clock Data In State ~~~~
+                # ~~~~ Clock data in (and out) ~~~~
                 elif state == States.DATA_IN:
                     if ena: # clk div
                         x_sck.next  = not x_sck
@@ -179,8 +181,10 @@ def m_spi(
                         xfb.rd.next = False
                         xfb.wr.next = False
                         
-                # ~~~~ Change Data State ~~~~
+                # ~~~~ Get ready for next byte out/in ~~~~
                 elif state == States.DATA_CHANGE:
+                    xfb.rd.next = False                    
+                    xfb.wr.next = False                    
                     if ena:
                         x_sck.next  = not x_sck
                         if bcnt == 0:  
@@ -194,55 +198,49 @@ def m_spi(
                                 state.next = States.DATA_IN
                                 xfb.rd.next = True
                                 treg.next = xfb.rdata
-                                    
                         else:
                             treg.next = concat(treg[7:0], intbv(0)[1:])
                             bcnt.next = bcnt - 1                        
                             state.next = States.DATA_IN
-                    else:
-                        xfb.rd.next = False
-                        xfb.wr.next = False
 
-                # ~~~~ End State ~~~~
+                # ~~~~ End state ~~~~
                 elif state == States.END:
-                    if ena: # Wait half clock cycle go idle
+                    xfb.rd.next = False
+                    xfb.wr.next = False                    
+                    if ena:  # Wait half clock cycle go idle
                         state.next = States.IDLE
-                    else:
-                        xfb.rd.next = False
-                        xfb.wr.next = False
-                
+
                 # Shouldn't happen, error in logic
                 else:
                     state.next = States.IDLE
                     assert False, "SPI Invalid State"
 
     @always_comb
-    def rtl_fifo_sigs():
-        txfb.wdata.next = regfile.sptx
-        regfile.sprx.next = rxfb.rdata
-
-    @always_comb
     def rtl_fifo_sel():
-        # data comes from the register file
         if regfile.spst.rdata:
+            # data comes from the register file
             xfb.empty.next = txfb.empty
             xfb.full.next  = rxfb.full
             xfb.rdata.next = txfb.rdata
             
             txfb.rd.next = xfb.rd
+            txfb.wr.next = regfile.sptx.wr
+            txfb.wdata.next = regfile.sptx            
+            
             rxfb.wr.next = xfb.wr            
             rxfb.wdata.next = rreg
-            txfb.wr.next = regfile.sptx.wr
-            rxfb.rd.next = regfile.sprx.rd      
+            rxfb.rd.next = regfile.sprx.rd    
+            regfile.sprx.next = rxfb.rdata
             
-            fb.rd.next = False
-            fb.wr.next = False
-            fb.wdata.next = 0  # or'd bus must be 0
-        # data comes from external FIFO bus interface
+            ifb.rd.next = False
+            ifb.wr.next = False
+            ifb.wdata.next = 0  # or'd bus must be 0
+
         else:
-            xfb.empty.next = fb.empty
-            xfb.full.next  = fb.full
-            xfb.rdata.next = fb.rdata
+            # data comes from external FIFO bus interface            
+            xfb.empty.next = ifb.empty
+            xfb.full.next  = ifb.full
+            xfb.rdata.next = ifb.rdata
             
             txfb.rd.next = False
             rxfb.wr.next = False
@@ -250,9 +248,9 @@ def m_spi(
             txfb.wr.next = False
             rxfb.rd.next = False
 
-            fb.rd.next = xfb.rd
-            fb.wr.next = xfb.wr
-            fb.wdata.next = treg
+            ifb.rd.next = xfb.rd
+            ifb.wr.next = xfb.wr
+            ifb.wdata.next = treg
 
     @always_comb
     def rtl_x_mosi():
@@ -278,21 +276,65 @@ def m_spi(
             else:
                 spibus.ss.next = ~regfile.spss
 
-    #if tst_pts is not None:
-    #    if isinstance(tst_pts.val, intbv) and len(tst_pts) == 8:
-    #        @always_comb    
-    #        def rtl_tst_pts():
-    #            tst_pts.next[0] = SS[0]
-    #            tst_pts.next[1] = SCK
-    #            tst_pts.next[2] = MOSI
-    #            tst_pts.next[3] = MISO
-    #            
-    #            tst_pts.next[4] = cr_wb_sel    # wishbone feeds Tx/Rx fifos
-    #            tst_pts.next[5] = cr_spe       # SPI enable
-    #            tst_pts.next[6] = x_fifo_empty # 
-    #            tst_pts.next[7] = tx_fifo_wr   # 
-    #    else:
-    #        print("WARNING: SPI tst_pts is not None but is not an intbv(0)[8:]")
+    # myhdl generators in the __debug__ conditionals is not 
+    # converted.
+    if __debug__:
+        @instance
+        def mon_state():
+            print("  :{:8d}: initial state {}".format(
+                now(), str(state)))
+                
+            while True:
+                yield state
+                print("  :{:8d}: state trasition --> {}".format(
+                    now(), str(state)))
+                
+        fbidle = intbv('0000')[4:]    
+        @instance
+        def mon_trace():
+            while True:
+                yield clock.posedge
+                ccfb = concat(txfb.wr, txfb.rd, rxfb.wr, rxfb.rd)
+                if ccfb != fbidle:
+                    print("  :{:8d}: tx: w{} r{}, f{} e{}, rx: w{} r{} f{} e{}".format(
+                        now(), 
+                        int(txfb.wr), int(txfb.rd), int(txfb.full), int(txfb.empty),
+                        int(rxfb.wr), int(rxfb.rd), int(rxfb.full), int(rxfb.empty),))
+                    
+        @always(clock.posedge)
+        def mon_tx_fifo_write():
+            if txfb.wr:
+                print("  !WRITE tx fifo {:02X}".format(int(txfb.wdata)))
+            if txfb.rd:
+                print("  !READ tx fifo {:02X}".format(int(txfb.rdata)))
+                
+        @always(clock.posedge)
+        def mon_rx_fifo_write():
+            if rxfb.wr:
+                print("  !WRITE rx fifo {:02X}".format(int(rxfb.wdata)))
+                
+            if rxfb.rd:
+                print("  !READ rx fifo {:02X}".format(int(rxfb.rdata)))
+
+
+    if tstpts is not None:
+        if isinstance(tstpts.val, intbv) and len(tstpts) == 8:
+            @always_comb    
+            def rtl_tst_pts():
+                tstpts.next[0] = SS[0]
+                tstpts.next[1] = SCK
+                tstpts.next[2] = MOSI
+                tstpts.next[3] = MISO
+                
+                tstpts.next[4] = cr_wb_sel    # wishbone feeds Tx/Rx fifos
+                tstpts.next[5] = cr_spe       # SPI enable
+                tstpts.next[6] = x_fifo_empty # 
+                tstpts.next[7] = tx_fifo_wr   # 
+        else:
+            print("WARNING: SPI tst_pts is not None but is not an intbv(0)[8:]")
 
                 
-    return instances()
+    # return the myhdl generators
+    gens = instances()
+    
+    return gens
