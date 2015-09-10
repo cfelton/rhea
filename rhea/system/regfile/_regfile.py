@@ -35,6 +35,8 @@ class Register(_Signal):
 
     def __init__(self, name, addr, width, access='rw', default=0, comment=""):
         global _width
+        # @todo: move addr to the end and add default addr=None, an address 
+        # @todo: is not required, the regfile builder will assign registers. 
         _Signal.__init__(self, intbv(default)[width:])
 
         self._nmb = [None for _ in range(width)]  # hold the named-bits
