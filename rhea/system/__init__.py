@@ -21,5 +21,5 @@ from .memmap._wishbone import Wishbone
 from .memmap._avalonmm import AvalonMM
 from .memmap._axi4 import AXI4
 
-# various other buses
+# streaming interfaces
 from .fifobus._fifobus import FIFOBus

@@ -2,11 +2,7 @@
 # Copyright (c) 2013-2015 Christopher L. Felton
 #
 
-from argparse import Namespace
-
-from myhdl import *
-
-from ...cores.fifo._fifo_async import fifo_async
+from myhdl import Signal, intbv
 
 
 _fb_num = 0
@@ -14,7 +10,7 @@ _fb_list = {}
 
 
 def _add_bus(fb, name=''):
-    """ globally keep track of all the busses added.
+    """ globally keep track of all the buses added.
     """
     global _fb_num, _fb_list
     _fb_num += 1

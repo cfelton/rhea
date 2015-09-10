@@ -20,20 +20,16 @@ class RegisterBits(object):
         return self.__dict__[k]
 
 
-# a register should be a list of signals (specifically a list
-# of Signal(bool).  If a subset of the register is an int or
-# the full is an int it needs to be casted to an integer before
-# using.
 class Register(_Signal):
-    """
-    This class contains all the information about a register in a 
-    register file.  There are two types are registers: read-write
-    'rw' and read-only 'ro'.  The 'rw' registers can only be modified
-    by the memory-map (memmap) interface and can have read named bits.
-    The 'ro' registers can only be modified by the peripheral.
-    """
+    def __init__(self, name, width, access='rw', default=0, addr=None, comment=""):
+        """
+        This class contains all the information about a register in a 
+        register file.  There are two types are registers: read-write
+        'rw' and read-only 'ro'.  The 'rw' registers can only be modified
+        by the memory-map (memmap) interface and can have read named bits.
+        The 'ro' registers can only be modified by the peripheral.
+        """
 
-    def __init__(self, name, addr, width, access='rw', default=0, comment=""):
         global _width
         # @todo: move addr to the end and add default addr=None, an address 
         # @todo: is not required, the regfile builder will assign registers. 
@@ -71,7 +67,7 @@ class Register(_Signal):
     def __deepcopy__(self, memo):
         return self.__copy__()
 
-    def add_named_bits(self, name, slc, comment=""):
+    def add_named_bits(self, name, bits, comment=""):
         """ Add a named bit
         A named bit allows named access to a bit
 
@@ -91,7 +87,7 @@ class Register(_Signal):
         :param comment:
         :return:
         """
-        bits = RegisterBits(name, slc, comment)
+        bits = RegisterBits(name, bits, comment)
         self.bits[bits.name] = bits
 
         if self.access == 'rw':
@@ -135,7 +131,6 @@ class Register(_Signal):
 
 
 class RegisterFile(object):
-
     def __init__(self, regdef=None):
         """
         Arguments
@@ -215,7 +210,7 @@ class RegisterFile(object):
         dl = [rr.default for aa,rr in self._rwregs+self._roregs]
         #@todo: order the list from low address to high address
         #@todo: set flag if addresses are contiguous
-        return (tuple(rwa+roa),rwr+ror,tuple(_rrw+_rro),tuple(dl))
+        return (tuple(rwa+roa), rwr+ror, tuple(_rrw+_rro), tuple(dl))
 
     def get_strobelist(self):
         assert self._allregs is not None

@@ -34,18 +34,24 @@ The following is a short example building a simple register file.
     regfile = RegisterFile()
     
     # create a status register and add it to the register file
-    reg = Register(name='status', access='ro', default=0)
+    reg = Register(name='status', width=8, access='ro', default=0)
     regfile.add_register(reg)
     
     # create a control register with named bits and add
-    reg = Register(name='control', access='rw', default=1)
+    reg = Register(name='control', width=8, access='rw', default=1)
     reg.add_named_bits('enable', bits=0, comment="enable the compoent")
     reg.add_named_bits('pause', bits=1, comment="pause current operation")
     reg.add_named_bits('mode', bits=(4,2), comment="select mode")
     regfile.add_register(reg)
     
     
-The previous exmaple defines a register file to be used.  This can be 
+.. Note::
+
+     The current implrementation requires all the register in a 
+     register file to be the same width.  
+     
+     
+The above example defines a register file to be used.  This can be 
 used in a new component/peripheral.  
 
 .. code-block::python
