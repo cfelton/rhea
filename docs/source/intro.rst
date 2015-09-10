@@ -3,15 +3,15 @@
 Introduction
 ##############
 
-The ``mn`` package is a collection of HDL cores written in
-`myhdl`_.  The ``mn`` package is more than just a collection of
+The ``rhea`` package is a collection of HDL cores written in
+`myhdl`_.  The ``rhea`` package is more than just a collection of
 cores it is also a framework for creating complex digital
-circuits.  The ``mn`` package also includes a complete test
+circuits.  The ``rhea`` package includes a complete test
 suite.
 
 .. _myhdl : http://www.myhdl.org
 
-The ``mn`` package is divided into three main subpackages:
+The ``rhea`` package is divided into three main subpackages:
 
    * system
    * models
