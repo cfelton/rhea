@@ -12,7 +12,6 @@ from rhea.system import Reset
 from rhea.utils.test import tb_clean_vcd
 
 
-@pytest.mark.xfail
 def test_btn_led():
 
     clock = Clock(0, frequency=500e3)
@@ -30,8 +29,8 @@ def test_btn_led():
                 if isinstance(gg, (list,tuple)):
                     dumpg(gg)
                 elif gg is not None:
-                    print("{:16}:  {}".format(gg.func.func_name, 
-                                              gg.func.func_code.co_filename))
+                    print("{:16}:  {}".format(gg.func.__name__,
+                                              gg.func.__module__))
         dumpg(tbdut)
 
         tbclk = clock.gen()
@@ -62,7 +61,7 @@ def test_btn_led():
 
         return tbdut, tbclk, tbstim
 
-    tb_clean_vcd(_test.func_name)
+    tb_clean_vcd(_test.__name__)
     Simulation(traceSignals(_test)).run()
     #Simulation(_test()).run()
     # currently an error when converting to both at once,

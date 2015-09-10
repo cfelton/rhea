@@ -43,6 +43,8 @@ def m_btn_led_mm(clock, reset, leds, btns, bus_type='W'):
         regbus = AvalonMM(glbl, data_width=8, address_width=16)
     #elif bus_type == 'X':
     #    regbus = AXI4(glbl, data_wdith=8, address_width=16)
+    else:
+        raise Exception("Invalid bus type {}".format(bus_type))
 
     gbtn = button_controller(glbl, regbus, btns)  # memmap controller
     gled = led_peripheral(glbl, regbus, leds)     # memmap peripheral
@@ -68,7 +70,3 @@ def getargs():
 if __name__ == '__main__':
     args = getargs()
     build(args)
-
-    
-
-    

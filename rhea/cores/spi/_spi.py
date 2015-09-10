@@ -25,6 +25,7 @@ from ...system import FIFOBus
 
 from ._regfile_def import regfile
 
+
 def spi_controller(
     # ---[ Module Ports]---
     glbl,    # global interface, clock, reset, etc.
@@ -49,8 +50,9 @@ def spi_controller(
     ena = Signal(False)
     clkcnt = Signal(modbv(0, min=0, max=2**12))
     bcnt = Signal(intbv(0, min=0, max=8))
-    treg = Signal(intbv(0)[8:])
-    rreg = Signal(intbv(0)[8:])
+    # separate tx and rx shift-registers (could be one in the same)
+    treg = Signal(intbv(0)[8:])  # tx shift register
+    rreg = Signal(intbv(0)[8:])  # rx shift register
     
     x_sck = Signal(False)
     x_ss = Signal(False)
@@ -67,7 +69,7 @@ def spi_controller(
                   'WRITE_FIFO', 'END')
     state = Signal(States.IDLE)
 
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # memory- mapped registers
     # add the peripheral's regfile to the bus (informational only)
     g_regbus = regbus.add(glbl, regfile, 'spi', base_address)
@@ -121,14 +123,14 @@ def spi_controller(
         """
         if not regfile.spcr.spe:
             state.next = States.IDLE
-            bcnt.next  = 0
-            treg.next  = 0
+            bcnt.next = 0
+            treg.next = 0
             
-            xfb.rd.next  = False
-            xfb.wr.next  = False
+            xfb.rd.next = False
+            xfb.wr.next = False
 
             x_sck.next = False
-            x_ss.next  = False
+            x_ss.next = False
         else:
             if not regfile.freeze:
                 # ~~~~ Idle state ~~~~
@@ -143,7 +145,7 @@ def spi_controller(
                         x_ss.next = False
                         if regfile.spcr.cpha: # Clock in on second phase 
                             state.next = States.WAIT_HCLK
-                        else: # Clock in on first phase
+                        else:  # Clock in on first phase
                             state.next = States.DATA_IN
                     else:
                         xfb.rd.next = False
@@ -151,20 +153,19 @@ def spi_controller(
 
                 # ~~~~ Wait half clock period for cpha=1 ~~~~
                 elif state == States.WAIT_HCLK:
+                    xfb.rd.next = False
+                    xfb.wr.next = False
                     if ena:
-                        x_sck.next  = not x_sck
+                        x_sck.next = not x_sck
                         state.next = States.DATA_IN
-                        xfb.rd.next = False
-                        xfb.wr.next = False
-                    else:
-                        xfb.rd.next = False
-                        xfb.wr.next = False
 
                 # ~~~~ Clock data in (and out) ~~~~
                 elif state == States.DATA_IN:
-                    if ena: # clk div
-                        x_sck.next  = not x_sck
-                        rreg.next  = concat(rreg[7:0], x_miso)
+                    xfb.rd.next = False
+                    xfb.wr.next = False
+                    if ena:  # clk div
+                        x_sck.next = not x_sck
+                        rreg.next = concat(rreg[7:0], x_miso)
                         
                         if regfile.spcr.cpha and bcnt == 0:
                             xfb.wr.next = True
@@ -177,23 +178,20 @@ def spi_controller(
                                 #treg.next = x_fifo_do
                         else:                            
                             state.next = States.DATA_CHANGE
-                    else:
-                        xfb.rd.next = False
-                        xfb.wr.next = False
-                        
+
                 # ~~~~ Get ready for next byte out/in ~~~~
                 elif state == States.DATA_CHANGE:
                     xfb.rd.next = False                    
                     xfb.wr.next = False                    
                     if ena:
-                        x_sck.next  = not x_sck
+                        x_sck.next = not x_sck
                         if bcnt == 0:  
                             if not regfile.spcr.cpha:
                                 xfb.wr.next = True
                                 
                             if xfb.empty or xfb.full:
                                 state.next = States.END
-                            else: # more data to transfer
+                            else:  # more data to transfer
                                 bcnt.next = 7
                                 state.next = States.DATA_IN
                                 xfb.rd.next = True
@@ -220,7 +218,7 @@ def spi_controller(
         if regfile.spst.rdata:
             # data comes from the register file
             xfb.empty.next = txfb.empty
-            xfb.full.next  = rxfb.full
+            xfb.full.next = rxfb.full
             xfb.rdata.next = txfb.rdata
             
             txfb.rd.next = xfb.rd
@@ -239,7 +237,7 @@ def spi_controller(
         else:
             # data comes from external FIFO bus interface            
             xfb.empty.next = ifb.empty
-            xfb.full.next  = ifb.full
+            xfb.full.next = ifb.full
             xfb.rdata.next = ifb.rdata
             
             txfb.rd.next = False
@@ -255,17 +253,17 @@ def spi_controller(
     @always_comb
     def rtl_x_mosi():
         # @todo lsbf control signal
-        x_mosi.next  = treg[7]
+        x_mosi.next = treg[7]
 
     @always(regbus.clock.posedge)
     def rtl_spi_sigs():
-        spibus.sck.next   = x_sck
+        spibus.sck.next = x_sck
 
         if regfile.spcr.loop:
-            spibus.mosi.next  = False
+            spibus.mosi.next = False
             x_miso.next = x_mosi
         else:
-            spibus.mosi.next  = x_mosi
+            spibus.mosi.next = x_mosi
             x_miso.next = spibus.mosi
 
         if regfile.spcr.msse:
@@ -278,7 +276,7 @@ def spi_controller(
 
     # myhdl generators in the __debug__ conditionals is not 
     # converted.
-    if __debug__:
+    if spi_controller._debug:
         @instance
         def mon_state():
             print("  :{:8d}: initial state {}".format(
@@ -304,37 +302,37 @@ def spi_controller(
         @always(clock.posedge)
         def mon_tx_fifo_write():
             if txfb.wr:
-                print("  !WRITE tx fifo {:02X}".format(int(txfb.wdata)))
+                print("   WRITE tx fifo {:02X}".format(int(txfb.wdata)))
             if txfb.rd:
-                print("  !READ tx fifo {:02X}".format(int(txfb.rdata)))
+                print("   READ tx fifo {:02X}".format(int(txfb.rdata)))
                 
         @always(clock.posedge)
         def mon_rx_fifo_write():
             if rxfb.wr:
-                print("  !WRITE rx fifo {:02X}".format(int(rxfb.wdata)))
+                print("   WRITE rx fifo {:02X}".format(int(rxfb.wdata)))
                 
             if rxfb.rd:
-                print("  !READ rx fifo {:02X}".format(int(rxfb.rdata)))
-
+                print("   READ rx fifo {:02X}".format(int(rxfb.rdata)))
 
     if tstpts is not None:
         if isinstance(tstpts.val, intbv) and len(tstpts) == 8:
             @always_comb    
             def rtl_tst_pts():
-                tstpts.next[0] = SS[0]
-                tstpts.next[1] = SCK
-                tstpts.next[2] = MOSI
-                tstpts.next[3] = MISO
+                tstpts.next[0] = spibus.ss[0]
+                tstpts.next[1] = spibus.sck
+                tstpts.next[2] = spibus.mosi
+                tstpts.next[3] = spibus.miso
                 
-                tstpts.next[4] = cr_wb_sel    # wishbone feeds Tx/Rx fifos
-                tstpts.next[5] = cr_spe       # SPI enable
-                tstpts.next[6] = x_fifo_empty # 
-                tstpts.next[7] = tx_fifo_wr   # 
+                tstpts.next[4] = txfb.wr
+                tstpts.next[5] = txfb.rd
+                tstpts.next[6] = rxfb.wr
+                tstpts.next[7] = rxfb.rd
         else:
             print("WARNING: SPI tst_pts is not None but is not an intbv(0)[8:]")
 
-                
     # return the myhdl generators
     gens = instances()
     
     return gens
+
+spi_controller._debug = True

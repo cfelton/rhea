@@ -70,7 +70,7 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
         def rtl_srl_in():
             if srlce:
                 mem[0].next = fbus.wdata
-                for ii in range(1,N):
+                for ii in range(1, N):
                     mem[ii].next = mem[ii-1]
 
     @always_comb
@@ -113,7 +113,7 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     ntenant = Signal(intbv(0, min=0, max=N+1))  # # filled slots
 
     @always_seq(clock.posedge, reset=reset)
-    def dbg_occupancy():
+    def rtl_occupancy():
         if fbus.clear:
             nvacant.next = N
             ntenant.next = 0
@@ -124,7 +124,13 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
             nvacant.next = nvacant - 1
             ntenant.next = ntenant + 1
 
-    return rtl_srl_in, rtl_srl_out, rtl_vld, rtl_fifo, dbg_occupancy
+    @always_comb
+    def rtl_count():
+        fbus.count.next = ntenant
+
+    gens = (rtl_srl_in, rtl_srl_out, rtl_vld, rtl_fifo,
+            rtl_occupancy, rtl_count,)
+    return gens
 
 # attached a generic fifo bus object to the module
 fifo_fast.fbus_intf = _fifobus

@@ -139,6 +139,7 @@ class MemMap(object):
         """
         raise NotImplementedError
 
+    # @todo: rename to peripheral_regfile
     def m_per_regfile(self, glbl, regfile, name, base_address=0):
         """ override
         :param glbl: global signals, clock and reset
@@ -149,6 +150,7 @@ class MemMap(object):
         """
         raise NotImplementedError
 
+    # @todo: rename to controller
     def m_controller(self, generic):
         """
         Bus controllers (masters) are typically custom and
@@ -164,5 +166,6 @@ class MemMap(object):
         """
         raise NotImplementedError
 
-    def m_peripherial(self, generic):
+    # @todo: rename to peripheral
+    def m_peripheral(self, generic):
         raise NotImplementedError

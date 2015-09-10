@@ -103,6 +103,6 @@ sprc = Register('sprc', 0x78, 8, 'rw', 0)
 sprc.comment = "receive FIFO count"
 regfile.add_register(sprc)
 
-spxx = Register('spxx', 0x78, 8, 'rw', 0)
+spxx = Register('spxx', 0x7C, 8, 'rw', 0)
 spxx.comment = "clock divisor register, sets sck period"
 regfile.add_register(spxx)

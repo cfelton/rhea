@@ -44,7 +44,7 @@ class FIFOBus(object):
         self.rvld = Signal(bool(0))
         self.empty = Signal(bool(1))           # fifo empty
         self.full = Signal(bool(0))            # fifo full
-        self.count = Signal(intbv(0, min=0, max=size))
+        self.count = Signal(intbv(0, min=0, max=size+1))
 
         self.width = width
         self.size = size

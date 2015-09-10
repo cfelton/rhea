@@ -40,7 +40,6 @@ def convert():
     toVHDL(m_test_top, clock, reset, sck, mosi, miso, ss)
 
 
-@pytest.mark.xfail
 def test_spi():
     
     base_address = ba = 0x400
@@ -82,7 +81,8 @@ def test_spi():
                 # values, these are the offset values.
                 for addr, sig in rf.roregs:
                     yield regbus.read(addr+ba)
-                    assert regbus.get_read_data() == int(sig), "Invalid read-only value"
+                    assert regbus.get_read_data() == int(sig), \
+                        "Invalid read-only value"
 
                 for addr, sig in rf.rwregs:
                     # need to skip the FIFO read / write
@@ -90,8 +90,8 @@ def test_spi():
                         pass
                     else:
                         yield regbus.read(addr+ba)
-                        assert regbus.get_read_data() == int(sig), "Invalid default value"
-
+                        assert regbus.get_read_data() == int(sig), \
+                            "Invalid default value"
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # enable the system         
@@ -106,10 +106,10 @@ def test_spi():
 
                 print("")
                 yield regbus.read(rf.sptc.addr)
-                print(regbus.get_read_data())
+                print("TX FIFO count {}".format(regbus.get_read_data()))
 
                 yield regbus.read(rf.sprc.addr)
-                print(regbus.get_read_data())
+                print("RX FIFO count {}".format(regbus.get_read_data()))
 
                 yield delay(1000)
 
@@ -118,10 +118,11 @@ def test_spi():
                     yield regbus.read(rf.sprc.addr)
                     if regbus.get_read_data() == 5:
                         break
-                    yield delay(1000)
+                    yield delay(10)
                 
                 # verify bytes received and not timeout
-                assert regbus.read(rf.sprc.addr) == 5
+                print("RX FIFO count {}".format(regbus.get_read_data()))
+                assert regbus.get_read_data() == 5
                 
                 print("read the returned bytes")
                 for ii in range(5):

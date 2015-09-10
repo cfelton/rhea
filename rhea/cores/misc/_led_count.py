@@ -22,7 +22,7 @@ def led_count(
     rled = Signal(modbv(0)[len(leds):])
 
     # assign the port LED to the internal register led
-    gens += assign(leds, rled)
+    gas = assign(leds, rled)
 
     # @todo: create a module to select a rate strobe,
     #    the module will return a signal that is from
@@ -34,4 +34,4 @@ def led_count(
         clk_cnt.next = clk_cnt + 1
 
     gens += (rtl,)
-    return gens
+    return gas, rtl

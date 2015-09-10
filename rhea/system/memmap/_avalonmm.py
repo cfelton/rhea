@@ -5,7 +5,7 @@
 from __future__ import absolute_import
 
 from myhdl import (Signal, intbv, always_seq, always, always_comb,
-                   instances, enum,)
+                   instances, enum, delay, concat)
 
 from .. import Clock
 from .. import Reset
@@ -54,9 +54,10 @@ class AvalonMM(MemMap):
 
     def add_output_bus(self, name, readdata, readdatavalid, waitrequest):
         self._readdata.append(readdata)
-        self._readatavalid.append(readdatavalid)
+        self._readdatavalid.append(readdatavalid)
         self._waitrequest.append(waitrequest)
 
+    # @todo: rename to "interconnect"
     def m_per_outputs(self):
         """ combine all the peripheral outputs
         """
@@ -104,9 +105,10 @@ class AvalonMM(MemMap):
         # determine if this register-file is selected, this check
         # adds an extra clock cycle to the transaction
         selected = Signal(bool(0))
+
         @always_seq(clock.posedge, reset=reset)
         def rtl_selected():
-            if av.address >= base_address and av.address <= max_address:
+            if av.address >= base_address and av.address < max_address:
                 selected.next = True
             else:
                 selected.next = False
@@ -166,10 +168,11 @@ class AvalonMM(MemMap):
         return instances()
 
     def get_controller_intf(self):
-        return MemMapController(self.data_width, self.address_width)
+        return Barebone(self.data_width, self.address_width)
             
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def m_controller_basic(self, ctl):
+    # @todo: remove the following and use translation function
+    def m_controller(self, ctl):
         """
         Bus controllers (master) are typically custom and
         built into whatever the controller is (e.g. a processor).
@@ -189,9 +192,9 @@ class AvalonMM(MemMap):
 
         @always_comb
         def assign():
-            av.address.next = ctl.addr
-            av.writedata.next = ctl.wdata
-            ctl.rdata.next = av.readdata
+            av.address.next = concat(ctl.per_addr, ctl.reg_addr)
+            av.writedata.next = ctl.write_data
+            ctl.read_data.next = av.readdata
 
         @always_seq(clock.posedge, reset=reset)
         def rtl():
@@ -264,36 +267,44 @@ class AvalonMM(MemMap):
         :param val: value to write to the address
         :return: yields
         """
-        self.wval = val
-        yield self.clk.posedge
+        self._start_transaction(write=True, address=addr, data=val)
         self.address.next = addr
         self.writedata.next = val
         self.write.next = True
         to = 0
-        while self.waitrequest and to < self.TIMEOUT:
-            yield self.clk.posedge
+        while self.waitrequest and to < self.timeout:
+            yield self.clock.posedge
             to += 1
-        yield self.clk.posedge
+        yield self.clock.posedge
         self.write.next = False
-        yield self.clk.posedge
+        self.writedata.next = 0
+        self._end_transaction(self.writedata)
                       
     def read(self, addr):
         """ read accessor for testbenches
         :param addr:
         :return:
         """
-        yield self.clk.posedge
+        self._start_transaction(write=False, address=addr)
         self.address.next = addr
         self.read.next = True
         to = 0
-        while self.waitrequest and to < self.TIMEOUT:
-            yield delay(1)
+        while self.waitrequest and to < self.timeout:
+            yield self.clock.posedge
         self.read.next = False
-        self.rval = self.readdata
+        self._end_transaction(self.readdata)
 
-    @property
-    def readval(self):
-        return self.rval
+    def ack(self, data=None):
+        self.readdatavalid.next = True
+        if data is not None:
+            self.readdata.next = data
+        yield self.clock.posedge
+        self.readdatavalid.next = False
+
+    # @todo: map_generic(self, generic)
+    # @todo: peripheral_regfile(self, glbl, regfile, name, base_address)
+    # @todo: controller(self, generic)
+    # @todo: peripheral(self, generic)
 
 
 # -----------------------------------------------------------------------------
