@@ -17,6 +17,8 @@ a merge of the `mn` and `gizflo` projects.
 rhea 
 ====
 
+[![Join the chat at https://gitter.im/cfelton/rhea](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cfelton/rhea?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 The `rhea` python package is a collection of HDL cores written 
 in MyHDL.  The myhdl package can be retrieved from http://www.myhdl.org
 
