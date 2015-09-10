@@ -5,12 +5,15 @@ feel free to try it out and contribute.  This repository will
 be unstable until the first minor release 0.1.  This repository is 
 a merge of the `mn` and `gizflo` projects.
 
+<!-- badges -->
 
-[![Documentation Status](https://readthedocs.org/projects/rhearay/badge/?version=latest)](https://readthedocs.org/projects/rhearay/?badge=latest) 
+[![Documentation Status](https://readthedocs.org/projects/rhearay/badge/?version=latest)](http://rhearay.readthedocs.org/en/latest/) 
 [![Build Status](https://travis-ci.org/cfelton/rhea.svg)](https://travis-ci.org/cfelton/rhea) 
 [![Join the chat at https://gitter.im/cfelton/rhea](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cfelton/rhea?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+
 <!-- banner -->
+ 
  
 rhea 
 ====
