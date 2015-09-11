@@ -31,8 +31,6 @@ class Register(_Signal):
         """
 
         global _width
-        # @todo: move addr to the end and add default addr=None, an address 
-        # @todo: is not required, the regfile builder will assign registers. 
         _Signal.__init__(self, intbv(default)[width:])
 
         self._nmb = [None for _ in range(width)]  # hold the named-bits
@@ -52,6 +50,7 @@ class Register(_Signal):
         self.wr = Signal(bool(0))
         self.rd = Signal(bool(0))
 
+        # @todo: current limitation, future enhancement
         if _width is None:
             _width = width
         else:
