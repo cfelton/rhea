@@ -37,9 +37,9 @@ The following is a example defining a couple registers:
 .. code-block::python
 
     regfile = RegisterFile(width=8)
-    reg0 = Register('status', 0x0020, 8, 'ro', 0)
+    reg0 = Register('status', width=8, access='ro', default=0)
     regfile.add_register(reg0)
-    reg1 = Register('control', 0x0024, 8, 'rw', 0)
+    reg1 = Register('control', width=8, access='rw', default=0)
     regfile.add_register(reg1)
 
 .. regfile needs to be enhanced to automatically determine

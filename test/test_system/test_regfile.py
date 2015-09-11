@@ -34,7 +34,7 @@ def _create_test_regfile():
     print("creating test register file")
     regdef = collections.OrderedDict()
     # --register 0--
-    reg = Register('control', 0x0018, 8, 'rw', 0)
+    reg = Register('control', width=8, access='rw', default=0, addr=0x0018)
     reg.comment = "register 0"
     reg.add_named_bits('enable', slice(1, 0))  # read-only namedbit
     reg.add_named_bits('loop', slice(2, 1))    # read-only namedbit
@@ -43,15 +43,15 @@ def _create_test_regfile():
     # -- more registers register --
     for addr, default in zip((0x20, 0x40, 0x80),
                              (0xDE, 0xCA, 0xFB)):
-        reg = Register('reg%s' % (addr,), addr, 8, 'rw', default)
+        reg = Register('reg%s' % (addr,), 8, 'rw', default, addr)
         regdef[reg.name] = reg
 
     # -- read only register --
-    reg = Register('regro', 0x100, 8, 'ro', 0xAA)
+    reg = Register('regro', 8, 'ro', 0xAA, 0x100)
     regdef[reg.name] = reg
 
     # another read only register, with named bits
-    reg = Register('status', 0x200, 8, 'ro', 0)
+    reg = Register('status', 8, 'ro', 0, 0x200)
     reg.add_named_bits('error', slice(1, 0))  # bit 0, read-write namedbit
     reg.add_named_bits('ok', slice(2, 1))     # bit 1, read-write namedbit
     reg.add_named_bits('cnt', slice(8, 2))    # bits 7-2, read-write namedbit

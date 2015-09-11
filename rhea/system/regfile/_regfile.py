@@ -87,7 +87,17 @@ class Register(_Signal):
         :param comment:
         :return:
         """
-        bits = RegisterBits(name, bits, comment)
+        if isinstance(bits, int):
+            slc = slice(bits+1, bits)
+        elif isinstance(bits, tuple):
+            slc = slice(bits[0], bits[1])
+        elif isinstance(bits, slice):
+            slc = bits
+        else:
+            raise ValueError("Incorrect bits argument: {} {}".format(
+                type(bits), bits))
+
+        bits = RegisterBits(name, slc, comment)
         self.bits[bits.name] = bits
 
         if self.access == 'rw':
@@ -138,6 +148,7 @@ class RegisterFile(object):
         regdef : register file dictionary definition        
         
         """
+        self._offset = 0
         self._rwregs = []  # read-write registers
         self._roregs = []  # read-only registers
         self.registers = {}
@@ -145,7 +156,7 @@ class RegisterFile(object):
         # @todo: if the regdef is dict-of-dict definiton, first
         #    build the registers
         if regdef is not None:
-            for k,v in regdef.items():
+            for k, v in regdef.items():
                 if isinstance(v, Register):
                     self.registers[k] = v
             
@@ -171,6 +182,12 @@ class RegisterFile(object):
     def _append_register(self, name, reg):
         """ append a register to the list 
         """
+        # if an address is given generate one, this will be adjusted
+        # when all the register files are combined on a bus
+        if reg.addr is None:
+            reg.addr = self._offset
+            self._offset += 4
+
         if isinstance(reg, dict):
             # @todo: _check_register_def
             # reg = Register(reg['name'],...)

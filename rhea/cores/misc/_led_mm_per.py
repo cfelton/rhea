@@ -14,7 +14,7 @@ from . import led_dance
 
 # create a simple register file for the "core"
 regfile = RegisterFile()
-select = Register("select", 0x00, 8, 'rw')
+select = Register("select", width=8, access='rw')
 regfile.add_register(select)
 
 
