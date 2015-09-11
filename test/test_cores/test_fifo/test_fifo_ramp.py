@@ -48,8 +48,8 @@ def test_fifo_ramp():
                 assert 1 == regbus.get_read_data(), "cfg reg write failed"
 
                 # monitor the bus until ?? ramps
-                Nramps, rr = 128, 0
-                while rr < Nramps:
+                nramps, rr = 128, 0
+                while rr < nramps:
                     cnt = 0
                     for ii, sh in enumerate((24, 16, 8, 0,)):
                         yield regbus.read(0x08+ii)

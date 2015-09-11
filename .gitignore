@@ -24,6 +24,7 @@ lib64
 *.vhd
 *.png
 *.vcd
+*.vcd.*
 *.txt
 vcd
 
