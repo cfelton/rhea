@@ -7,9 +7,9 @@ python:
 # get some stuff to install
 before_install:
   - sudo apt-get install iverilog
-# not available on travic ubuntu version, need
+# not available on travis ubuntu version, need
 # to build from source??
-#  - sudo add-apt-repository ppa:saltmakrell/ppa
+#  - sudo add-apt-repository -y ppa:saltmakrell/ppa
 #  - sudo apt-get update
 #  - sudo apt-get install yosys
 
