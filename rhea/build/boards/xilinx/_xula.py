@@ -3,8 +3,7 @@
 #
 
 from ..._fpga import _fpga
-from ...extintf._extintf import _extintf
-from ...extintf._port import Port
+from ...extintf import Port
 # @todo: get SDRAM interface from rhea.cores.sdram
 # from ...extintf._sdram import SDRAM
 from ...toolflow import ISE

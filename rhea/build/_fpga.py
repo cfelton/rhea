@@ -92,7 +92,7 @@ class _fpga(object):
         if isinstance(pins, (list,tuple)):
             pins = pins[0]
         assert isinstance(pins, (str,int)), "pins type %s" % (type(pins))
-        p = Port(name, pins, stype=Clock(0, frequency=frequency), **pattr)
+        p = Port(name, pins, sigtype=Clock(0, frequency=frequency), **pattr)
         self._clocks[name] = p
         self._ports[name] = p
 
@@ -101,7 +101,7 @@ class _fpga(object):
         assert isinstance(async, bool)
         assert active in (0,1,)
         p = Port(name, pins, 
-                 stype=Reset(0, active=active, async=async), **pattr)
+                 sigtype=Reset(0, active=active, async=async), **pattr)
         # add to the reset and port dicts
         self._resets[name] = p
         self._ports[name] = p

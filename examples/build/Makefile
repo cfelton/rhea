@@ -14,6 +14,12 @@ xula: #xilinx/xula.bit
 pone: #xilinx/pone.bit
 	time $(PYTHON) ex_pone.py
 
+anvyl: #xilinx/anvyl.bit
+	time $(PYTHON) ex_anvyl.py
+
+mojo: #xilinx/anvyl.bit
+	time $(PYTHON) ex_mojo.py
+
 #atlys: #xilinx/atlys.bit
 #	$(PYTHON) ex_atlys.py
 

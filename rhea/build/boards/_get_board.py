@@ -6,6 +6,8 @@ from __future__ import print_function
 
 from .xilinx._xula import Xula, Xula2
 from .xilinx._papilio import Pone
+from .xilinx._anvyl import Anvyl
+from .xilinx._mojo import Mojo
 
 from .altera._de0nano import DE0Nano
 from .altera._de0nano_soc import DE0NanoSOC
@@ -14,6 +16,8 @@ xbrd = {
     'xula': Xula,
     'xula2': Xula2,
     'pone': Pone,
+    'anvyl': Anvyl,
+    'mojo': Mojo
 }
 
 abrd = {
