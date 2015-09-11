@@ -5,6 +5,8 @@ definitions.  Each board has a mapping to the designs
 ports, the board_table contains the mappings
 """
 
+import pytest
+
 import rhea.build as build
 from rhea.build.boards import get_board
 from rhea.build.boards import get_all_board_names
@@ -22,6 +24,7 @@ brd_table = {
 }
 
 
+@pytest.mark.xfail
 def test_boards():
     for brd, pmap in brd_table.items():
         brd = get_board(brd)

@@ -7,9 +7,11 @@ python:
 # get some stuff to install
 before_install:
   - sudo apt-get install iverilog
-  - sudo add-apt-repository ppa:saltmakrell/ppa
-  - sudo apt-get update
-  - sudo apt-get install yosys
+# not available on travic ubuntu version, need
+# to build from source??
+#  - sudo add-apt-repository ppa:saltmakrell/ppa
+#  - sudo apt-get update
+#  - sudo apt-get install yosys
 
 # command to install dependencies
 install:
