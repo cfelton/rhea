@@ -50,6 +50,12 @@ class FIFOBus(object):
         self.size = size
 
         _add_bus(self, self.name)
+        
+    def __str__(self):
+        s = "wr: {} {:04X}, rd: {} {:04X}, empty {}, full {}".format(
+            int(self.wr), int(self.wdata), int(self.rd), int(self.rdata),
+            int(self.empty), int(self.full))
+        return s
 
     # @todo: waffling if this should be included or not???
     #def m_fifo(self, reset, wclk, rclk):
