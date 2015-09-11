@@ -7,7 +7,7 @@ python:
 # get some stuff to install
 before_install:
   - sudo apt-get install iverilog
-  - add-apt-repository ppa:saltmakrell/ppa
+  - sudo add-apt-repository ppa:saltmakrell/ppa
   - sudo apt-get update
   - sudo apt-get install yosys
 
