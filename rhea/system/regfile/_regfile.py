@@ -58,9 +58,9 @@ class Register(_Signal):
             assert width == _width, "All registers must be the same width"
 
     def __copy__(self):
-        reg = Register(self.name, self.addr, self.width, self.access,
-                       self.default, self.comment)
-        for k,v in self.bits.items():
+        reg = Register(self.name, self.width, self.access,
+                       self.default, self.addr,  self.comment)
+        for k, v in self.bits.items():
             reg.add_named_bits(k, v.b, v.comment)
         return reg
 

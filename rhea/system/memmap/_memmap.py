@@ -105,6 +105,7 @@ class MemMap(object):
     def add(self, glbl, regfile, name='', base_address=0):
         """ add a peripheral register-file to the bus
         """
+
         # want a copy of the register-file so that the
         # address can be adjusted.
         arf = deepcopy(regfile)

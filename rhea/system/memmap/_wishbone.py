@@ -102,7 +102,7 @@ class Wishbone(MemMap):
         rf = regfile  # register file definition
         clock, reset = wb.clk_i, wb.rst_i
         
-        # get the address list, regsiter list, read-only list, and the 
+        # get the address list, regisiter list, read-only list, and the
         # default list.
         al, rl, rol, dl = rf.get_reglist()
         addr_list, regs_list = al, rl
