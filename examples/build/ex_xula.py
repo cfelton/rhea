@@ -23,5 +23,6 @@ def run_xula():
     info = flow.get_utilization()
     pprint(info)
 
+
 if __name__ == '__main__':
     run_xula()

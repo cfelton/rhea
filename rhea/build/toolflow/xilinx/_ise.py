@@ -25,10 +25,9 @@ _default_pin_attr = {
     'DRIVE': None
 }
 
-class ISE(_toolflow):
-    """
-    """
 
+class ISE(_toolflow):
+    _name = "Xilinx ISE"
     def __init__(self, brd, top=None, path='./xilinx/'):
         """
         Given a top-level module (function) and a board definition
@@ -198,15 +197,7 @@ class ISE(_toolflow):
 
         cmd = ['xtclsh', tcl_name]
         self.logfn = 'build_ise.log'
-        try:
-            logfile = open(self.logfn, 'w')
-            subprocess.check_call(cmd,  #shell=True,
-                                  stderr=subprocess.STDOUT,
-                                  stdout=logfile)
-            logfile.close()
-        except Exception as err:
-            print(err)
-            raise err
+        self._execute_flow(cmd)
 
         return self.logfn
 

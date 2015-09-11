@@ -25,6 +25,7 @@ abrd = {
     'de0nano_soc': DE0NanoSOC,
 }
 
+
 def get_board(name):
     """ retrieve a board definition from the name provided.
     """
@@ -38,3 +39,7 @@ def get_board(name):
         raise ValueError("Invalid board %s"%(name,))
     
     return brd
+
+
+def get_all_board_names():
+    return xbrd.keys() + abrd.keys()
