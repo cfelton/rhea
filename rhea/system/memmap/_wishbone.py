@@ -119,8 +119,7 @@ class Wishbone(MemMap):
         ACNT = 1  # the number of cycle delays after cyc_i
         ackcnt = Signal(intbv(ACNT, min=0, max=ACNT+1))
         newcyc = Signal(bool(0))
-        
-        
+
         if self._debug:
             @instance 
             def debug_check():
@@ -130,14 +129,14 @@ class Wishbone(MemMap):
                     assert clock is wb.clk_i is self.clock
                     assert reset is wb.rst_i is self.reset
                     yield clock.posedge
-                    print("{:8d}: c:{}, r:{}, {} {} {} sel:{}, wr:{} n:{} acnt {}, @{:04X}, i:{:02X} o:{:02X} ({:02X})".format(
-                        now(), int(clock), int(reset), 
-                        int(wb.cyc_i), int(wb.we_i), int(wb.ack_o),
-                        int(lwb_sel), int(lwb_wr),
-                        int(newcyc), int(ackcnt), int(wb.adr_i),
-                        int(wb.dat_i), int(wb.dat_o), int(lwb_do), ))
+                    print("{:8d}: c:{}, r:{}, {} {} {} sel:{}, wr:{} n:{} "
+                          "acnt {}, @{:04X}, i:{:02X} o:{:02X} ({:02X})".format(
+                          now(), int(clock), int(reset),
+                          int(wb.cyc_i), int(wb.we_i), int(wb.ack_o),
+                          int(lwb_sel), int(lwb_wr),
+                          int(newcyc), int(ackcnt), int(wb.adr_i),
+                          int(wb.dat_i), int(wb.dat_o), int(lwb_do), ))
 
-        
         @always_comb
         def rtl_assign():
             lwb_acc.next = wb.cyc_i and wb.stb_i
@@ -184,7 +183,7 @@ class Wishbone(MemMap):
         # @always_seq(clock.posedge, reset=reset)
         @always_comb
         def rtl_read():
-            if lwb_sel and not lwb_wr:                    
+            if lwb_sel and not lwb_wr and newcyc:
                 for ii in range(nregs):
                     aa = addr_list[ii]
                     aa = aa + base_address
@@ -209,7 +208,7 @@ class Wishbone(MemMap):
                         regs_list[ii].next = dd
                     pwr[ii].next = False
             else:
-                if lwb_wr and lwb_sel and not lwb_ack:                
+                if lwb_wr and lwb_sel and newcyc:
                     for ii in range(nregs):
                         aa = addr_list[ii]
                         aa = aa + base_address
@@ -261,9 +260,9 @@ class Wishbone(MemMap):
 
         @always(wb.clock.posedge)
         def assign():
-            wb.adr_i.next = ctl.addr
-            wb.dat_i.next = ctl.wdata
-            ctl.rdata.next = wb.dat_o
+            wb.adr_i.next = concat(ctl.per_addr, ctl.reg_addr)
+            wb.dat_i.next = ctl.write_data
+            ctl.read_data.next = wb.dat_o
 
         @always_seq(wb.clock.posedge, reset=wb.reset)
         def rtl():

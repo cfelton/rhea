@@ -8,6 +8,7 @@ from math import log, ceil
 from myhdl import Signal, intbv
 from ._memmap import MemMap
 
+
 class Barebone(MemMap):
     """ Generic memory-mapped interface.
 
@@ -33,7 +34,9 @@ class Barebone(MemMap):
     def __init__(self, num_peripherals=16, data_width=8, address_width=8):
         self.write = Signal(bool(0))
         self.read = Signal(bool(0))
+        # @todo: replace "ack" with "done" (?)
         self.ack = Signal(bool(0))
+        self.done = Signal(bool(0))
         self.read_data = Signal(intbv(0)[data_width:])
         self.write_data = Signal(intbv(0)[data_width:])
 
@@ -104,7 +107,7 @@ class Barebone(MemMap):
 
         return []
 
-    def m_peripherial(self, generic):
+    def m_peripheral(self, generic):
         self.write = generic.write
         self.read = generic.read
         self.wdata = generic.wdata

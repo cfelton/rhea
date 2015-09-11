@@ -20,7 +20,7 @@ a design:
 
 .. code-block::python
 
-    from mn.cores.usbext import m_fpgalink_fx2
+    from rhea.cores.usbext import m_fpgalink_fx2
 
     # ...
     # fpgalink interface
@@ -33,9 +33,9 @@ stimulated using the FX2 model and high-level access functions:
 
 .. code-block::python
 
-   from mn.models.usbext import fpgalink_host
-   from mn.cores.usbext import fpgalink
-   from mn.cores.usbext import m_fpgalink_fx2
+   from rhea.models.usbext import fpgalink_host
+   from rhea.cores.usbext import fpgalink
+   from rhea.cores.usbext import m_fpgalink_fx2
 
    # instantiate the components, etc (see examples in example dir)
    # ...

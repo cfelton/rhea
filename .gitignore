@@ -19,6 +19,14 @@ lib
 lib64
 .backups
 
+# generated files, typically these are not added 
+*.v
+*.vhd
+*.png
+*.vcd
+*.txt
+vcd
+
 # Installer logs
 pip-log.txt
 
