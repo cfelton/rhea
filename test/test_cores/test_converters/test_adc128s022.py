@@ -20,7 +20,7 @@ def test_adc128s022():
     fifobus = FIFOBus(width=16, size=16)
     spibus = SPIBus()
     channel = Signal(intbv(0, min=0, max=8))
-    step = 3.3/8
+    step = 3.3/7
     analog_channels = [Signal(3.3 - step*ii) for ii in range(0, 8)]
     print(analog_channels)
     assert len(analog_channels) == 8
@@ -45,7 +45,7 @@ def test_adc128s022():
             # check the cocversion value for each channel, should  get 
             # smaller and smaller 
             for ch in range(0, 8):
-                channel.next = ch
+                channel.next = (ch+1) % 8  # next channel
                 yield check_empty(clock, fifobus)
                 # should have a new sample
                 if not fifobus.empty:
@@ -54,8 +54,8 @@ def test_adc128s022():
                     yield clock.posedge
                     fifobus.rd.next = False
                     yield clock.posedge
-                    print"sample {:1X}:{:4d}, fifobus {}".format(
-                        int(sample[16:12]), int(sample[12:0]), str(fifobus))
+                    print("sample {:1X}:{:4d}, fifobus {} \n".format(
+                        int(sample[16:12]), int(sample[12:0]), str(fifobus)))
                     assert fifobus.empty 
                 else:
                     print("No sample!")

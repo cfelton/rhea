@@ -40,15 +40,15 @@ def adc128s022(glbl, fifobus, spibus, channel):
     max_frequency = 3.2e6  
     ndiv = int(ceil(clock.frequency / max_frequency))
     sample_rate = (clock.frequency / ndiv) / 16
-    print("the derived sample rate is {} given a {} MHz clock".format(
-          sample_rate, clock.frequency/1e6))
+    hightick = ndiv // 2
+    lowtick = ndiv - hightick
+    print("derived sample rate: {} ({}, {}) given a {} MHz clock".format(
+          sample_rate, hightick, lowtick, clock.frequency/1e6))
         
     # depending on the system (global) clock frequency the sclk 
     # might not have 50% duty cycle (should be ok)
     # the datasheet indicates it requires at least a 40% cycle
     # for the high, @todo: add a check 
-    hightick = ndiv // 2
-    lowtick = ndiv - hightick
     clkcnt = Signal(intbv(hightick, min=0, max=ndiv))
     sclkpos, sclkneg = [Signal(bool(0)) for _ in range(2)]    
     
@@ -92,7 +92,7 @@ def adc128s022(glbl, fifobus, spibus, channel):
         if state == states.start:
             # @todo: wait some amount of time
             if sclkneg:
-                bitcnt.next = 1 
+                bitcnt.next = 0
                 state.next = states.capture
                 csn.next = False
                 sregout.next[14:11] = channel
