@@ -27,6 +27,7 @@ cache:
   - $HOME/iverilog
 
 before_install:
+  - export PATH=$PATH:$PWD/iverilog/bin/:$PWD/yosys/bin/
   - chmod +x ./scripts/ci/install_iverilog.sh
   - ./scripts/ci/install_iverilog.sh
   - chmod +x ./scripts/ci/install_yosys.sh
@@ -41,9 +42,6 @@ install:
   - pip install Pillow
   - pip install .
 
-before_script:
- - export PATH=$PATH:$PWD/iverilog/bin/:$PWD/yosys/bin/
- 
 # run the test, nosetests can be used
 script:
    - cd examples
