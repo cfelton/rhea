@@ -30,10 +30,9 @@ def de0nano_converters(clock, reset, led,
     (names in the user manual) for automatic mapping by the 
     rhea.build automation.
     """
+    # signals and interfaces
     glbl = Global(clock, reset)
     adcbus = SPIBus()
-    #adc_saddr, adc_sdat, adc_cs_n, adc_sclk = (
-    #    adcbus.mosi, adcbus.miso, adcbus.cns, adcbus.sck)
     adcbus.mosi, adcbus.miso, adcbus.csn, adcbus.sck = (
         adc_saddr, adc_sdat, adc_cs_n, adc_sclk)
     fifobus = FIFOBus(width=16, size=16)
@@ -52,7 +51,8 @@ def de0nano_converters(clock, reset, led,
     def rtl_leds():
         led.next = fifobus.rdata[12:4]
 
-    return instances()
+    gens = gconv, rtl_read, rtl_leds
+    return gens
 
 
 # the default port map
