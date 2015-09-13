@@ -4,11 +4,17 @@ python:
   - "3.4"
   - "2.7"
   - "pypy"
-  
+ 
+addons:
+  apt:
+    packages:
+    - iverilog
+    - yosys
+    
 # get some stuff to install
 before_install:
-  - apt-get update -qq
-  - apt-get install -y iverilog
+#  - apt-get update -qq
+#  - apt-get install -y iverilog
 # not available on travis ubuntu version, need
 # to build from source??
 #  - sudo add-apt-repository -y ppa:saltmakrell/ppa
