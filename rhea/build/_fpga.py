@@ -42,13 +42,13 @@ class _fpga(object):
         self._extintfs = {}
 
         # walk through the default settings
-        for k,v in self.default_clocks.iteritems():
+        for k,v in self.default_clocks.items():
             self.add_clock(k, **v)
-        for k,v in self.default_resets.iteritems():
+        for k,v in self.default_resets.items():
             self.add_reset(k, **v)
-        for k,v in self.default_ports.iteritems():
+        for k,v in self.default_ports.items():
             self.add_port(k, **v)
-        for k,v in self.default_extintf.iteritems():
+        for k,v in self.default_extintf.items():
             self.add_extintf(k, v)
 
 
@@ -218,10 +218,10 @@ class _fpga(object):
 
         # see if any of the ports or parameters have been overridden
         if self.top_params is not None:
-            for k, v in self.top_params.iteritems():
+            for k, v in self.top_params.items():
                 if k in hdlports:
                     hdlports[k] = v
-            for k, v in self.top_params.iteritems():
+            for k, v in self.top_params.items():
                 if k in params:
                     params[k] = v
 
