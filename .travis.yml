@@ -9,8 +9,11 @@ addons:
   apt:
     packages:
     - iverilog
-    - yosys
-    
+
+cache:
+  directories:
+  - $HOME/yosys
+  
 # command to install dependencies
 install:
   - chmod +x ./scripts/ci/install_myhdl.sh
