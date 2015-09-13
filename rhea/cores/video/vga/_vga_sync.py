@@ -15,9 +15,9 @@ def vga_sync(
     vmem,  # the video memory interface
 
     # [parameters]
-    resolution = (640, 480,),  # resolution in pixels
-    refresh_rate = 60,         # refresh rate in Hz (vertical rate)
-    line_rate = 31250          # line rate in Hz (horizontal rate)
+    resolution=(640, 480,),  # resolution in pixels
+    refresh_rate=60,         # refresh rate in Hz (vertical rate)
+    line_rate=31250          # line rate in Hz (horizontal rate)
     ):
     """
     The following is the generation of the signals required 
@@ -115,7 +115,7 @@ def vga_sync(
         else:
             vga.pxlen.next = False
 
-        # genrate the VGA strobes
+        # generate the VGA strobes
         if hcnt >= (D+E) and hcnt < (D+E+B):
             vga.hsync.next = False
         else:
@@ -141,7 +141,6 @@ def vga_sync(
         hcd.next = hcnt
         vcd.next = vcnt
         # end debug stuff
-
 
     # logically define which VGA state currently in.  This is 
     # required for (simplified) verification but will be removed
@@ -172,19 +171,16 @@ def vga_sync(
         else:
             vga.active.next = False
 
-
     #_state = Signal(intbv(0)[8:])
     #@always_comb
     #def tmon():
     #    _state.next = int(vga.state._val._index)
 
-    
     # map the video memory pixels to the VGA bus
     @always_comb
     def rtl_map():
         vga.red.next = vmem.red
         vga.green.next = vmem.green
         vga.blue.next = vmem.blue
-
 
     return rtl_sync, rtl_state, rtl_map
