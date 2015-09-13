@@ -1,4 +1,6 @@
+# http://docs.travis-ci.com/user/workers/container-based-infrastructure/
 sudo: false
+
 language: python
 python:
   - "3.4"
@@ -39,6 +41,9 @@ install:
   - pip install Pillow
   - pip install .
 
+before_script:
+ - export PATH=$PATH:$PWD/iverilog/bin/:$PWD/yosys/bin/
+ 
 # run the test, nosetests can be used
 script:
    - cd examples
