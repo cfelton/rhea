@@ -7,7 +7,15 @@ python:
  
 addons:
   apt:
+    sources:
+    - tcl
+    
+addons:
+  apt:
     packages:
+    - clang
+    - gawk
+    - tcl
     - iverilog
 
 cache:
@@ -16,6 +24,8 @@ cache:
   
 # command to install dependencies
 install:
+  - chmod +x ./scripts/ci/install_yosys.sh
+  - ./scripts/ci/install_yosys.sh
   - chmod +x ./scripts/ci/install_myhdl.sh
   - ./scripts/ci/install_myhdl.sh
   - pip install coverage
