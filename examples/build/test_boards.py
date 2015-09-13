@@ -24,7 +24,6 @@ brd_table = {
 }
 
 
-@pytest.mark.xfail
 def test_boards():
     for brd, pmap in brd_table.items():
         brd = get_board(brd)
