@@ -22,7 +22,7 @@ class VideoMemory:
 
         # the memory, if large, eternal required
         # @todo: check the size, if larger than ??
-        self.mem = [Signal(intbv(0)[width:]) for _ in range(size)]
+        self.mem = [Signal(intbv(0)[self.width:]) for _ in range(self.size)]
 
         # @todo: create an actual memory (dual port
         # def memory(self):

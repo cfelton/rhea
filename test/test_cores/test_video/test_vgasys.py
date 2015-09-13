@@ -30,7 +30,13 @@ from mm_vgasys import mm_vgasys
 from mm_vgasys import convert
 
 
-def test_vgasys(args=None):
+def test_vgasys():
+    args = Namespace(res=(80, 60), line_rate=4000,
+                     refresh_rate=60)
+    tb_vgasys(args)
+
+
+def tb_vgasys(args=None):
 
     if args is None:
         args = Namespace()
@@ -102,6 +108,6 @@ def test_vgasys_conversion():
 
 
 if __name__ == '__main__':
-    args = Namespace(res=(80,60), line_rate=4000,
+    args = Namespace(res=(80, 60), line_rate=4000,
                      refresh_rate=60)
     test_vgasys(args)

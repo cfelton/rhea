@@ -33,7 +33,7 @@ class VideoDisplay(object):
                  resolution=(640,480,), 
                  refresh_rate = 60,
                  line_rate = 31250,
-                 color_depth=(10,10,10,)
+                 color_depth=(10, 10, 10,)
              ):
 
         res = resolution
@@ -78,7 +78,7 @@ class VideoDisplay(object):
 
         im.save('test_vgasys_frame_%d.png' % (framen))
 
-    def process(self, dsys, vga):
+    def process(self, glbl, vga):
         """
         """
         # keep track of the number of updates
@@ -127,10 +127,10 @@ class VideoDisplay(object):
                     self.update_cnt += 1
                     self._gen_image(self.update_cnt, self.uvmem)
                 else:
-                    yield self.StateFuncs[self.state](dsys, vga, counters)
+                    yield self.StateFuncs[self.state](glbl, vga, counters)
 
         # monitor, sample each variable at each clock
-        @always(dsys.clock.posedge)
+        @always(glbl.clock.posedge)
         def g_monitor():
             _state.next = self.state._name
             hcnt.next = counters.hcnt
@@ -138,7 +138,7 @@ class VideoDisplay(object):
                         
         return g_capture_vga, g_monitor
 
-    def _state_display(self, dsys, vga, counters):
+    def _state_display(self, glbl, vga, counters):
         """
         """
         c = counters
@@ -152,7 +152,7 @@ class VideoDisplay(object):
                 c.hcnt += 1
         else:
             c.vcnt += 1
-            #yield dsys.clock.posedge
+            #yield glbl.clock.posedge
             #yield delay(int(self.td['X']/2))
             if c.vcnt == self.VPXL:
                 self.state = self.States.VFP
@@ -161,7 +161,7 @@ class VideoDisplay(object):
                 c.hfpcnt = 0
         #end
 
-    def _state_hor_front_porch(self, dsys, vga, counters):
+    def _state_hor_front_porch(self, glbl, vga, counters):
         """
         """
         c = counters
@@ -173,11 +173,11 @@ class VideoDisplay(object):
             # active area the front-porch could be slightly longer
             # the calculations need to be udpated to adjust for this
             #assert vga.state == vga.States.HOR_FRONT_PORCH
-            yield dsys.clock.posedge
+            yield glbl.clock.posedge
             c.hfpcnt += 1
         #end
 
-    def _state_hor_sync(self, dsys, vga, counters):
+    def _state_hor_sync(self, glbl, vga, counters):
         """
         """
         c = counters
@@ -185,11 +185,11 @@ class VideoDisplay(object):
             self.state = self.States.HBP
             c.hbpcnt = 0
         else:
-            yield dsys.clock.posedge
+            yield glbl.clock.posedge
             c.hsync += 1
         #end
 
-    def _state_hor_back_porch(self, dsys, vga, counters):
+    def _state_hor_back_porch(self, glbl, vga, counters):
         """
         """
         c = counters
@@ -200,33 +200,33 @@ class VideoDisplay(object):
                 c.hcnt = 0
                 self.state = self.States.DISPLAY
         else:                
-            yield dsys.clock.posedge
+            yield glbl.clock.posedge
             #assert vga.state == vga.States.HOR_BACK_PORCH
             c.hbpcnt += 1
         #end
 
-    def _state_ver_front_porch(self, dsys, vga, counters):
+    def _state_ver_front_porch(self, glbl, vga, counters):
         """
         """
         c = counters
         if not vga.vsync:
             self.state = self.States.VSYNC
         else:
-            yield dsys.clock.posedge
+            yield glbl.clock.posedge
             #assert vga.porch == vga.Porch.VER_FRONT
             c.vfpcnt += 1
 
-    def _state_ver_sync(self, dsys, vga, counters):
+    def _state_ver_sync(self, glbl, vga, counters):
         """
         """
         c = counters
         if vga.vsync:
             self.state = self.States.VBP
         else:
-            yield dsys.clock.posedge
+            yield glbl.clock.posedge
             c.vsync += 1
 
-    def _state_ver_back_porch(self, dsys, vga, counters):
+    def _state_ver_back_porch(self, glbl, vga, counters):
         """
         """
         c = counters
@@ -235,6 +235,6 @@ class VideoDisplay(object):
             #self.state = self.States.INIT
             self.state = self.States.END
         else:
-            yield dsys.clock.posedge
+            yield glbl.clock.posedge
             #assert vga.porch == vga.Porch.VER_FRONT
             c.vbpcnt += 1
