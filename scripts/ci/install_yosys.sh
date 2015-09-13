@@ -7,7 +7,6 @@ if [ ! -d "$HOME/yosys/libs/" ]; then
   make config-clang
   make
   make test
-  make install
   cd ..
 else
   echo 'Using cached directory.';
