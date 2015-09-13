@@ -9,9 +9,7 @@ from myhdl import *
 
 from rhea.cores.fifo import fifo_ramp
 
-from rhea.system import Clock
-from rhea.system import Reset
-from rhea.system import Global
+from rhea.system import Clock, Reset, Global
 from rhea.system import Wishbone
 from rhea.system import FIFOBus
 
@@ -41,8 +39,7 @@ def test_fifo_ramp():
                 yield reset.pulse(111)
 
                 # simply enable, enable the module and then
-                # verify an incrementing pattern over the
-                # fifobus
+                # verify an incrementing pattern over the fifobus
                 yield regbus.write(0x00, 1)
                 yield regbus.read(0x00)
                 assert 1 == regbus.get_read_data(), "cfg reg write failed"
