@@ -51,7 +51,6 @@ class _fpga(object):
         for k, v in self.default_extintf.items():
             self.add_extintf(k, v)
 
-
     @property
     def ports(self):
         return self._ports
@@ -66,13 +65,11 @@ class _fpga(object):
         """ a top-level is set """
         return self.top is not None
 
-
     def set_top(self, top, **params):
         self.top = top
         self.top_params = params
         if self.top_name is None:
             self.top_name = top.func_name
-
 
     def get_flow(self):
         raise NotImplemented
@@ -87,7 +84,6 @@ class _fpga(object):
                 break
         return pattr
 
-
     def add_clock(self, name, frequency=1, pins=None, **pattr):
         if isinstance(pins, (list,tuple)):
             pins = pins[0]
@@ -96,7 +92,6 @@ class _fpga(object):
         self._clocks[name] = p
         self._ports[name] = p
 
-        
     def add_reset(self, name, active, async, pins, **pattr):
         assert isinstance(async, bool)
         assert active in (0,1,)
@@ -105,7 +100,6 @@ class _fpga(object):
         # add to the reset and port dicts
         self._resets[name] = p
         self._ports[name] = p
-
 
     def add_port(self, name, pins, **pattr):
         """ add a port definition
@@ -131,7 +125,6 @@ class _fpga(object):
         # @todo: raise an error vs. 
         assert name not in self._ports
         self._ports[name] = Port(name, pins, **pattr)
-
 
     def add_port_name(self, name, port, slc=None, **pattr):
         """ add a new name, *name*, to an existing port, *port*.
@@ -159,7 +152,6 @@ class _fpga(object):
         kws.update(pattr)
         self.add_port(name, pins, **kws)
 
-        
     def rename_port(self, port, name, slc=None, **pattr):
         """ rename a *port* to a new *name*
         This function is useful for *bootstrapping*, bootstrapping
@@ -169,7 +161,6 @@ class _fpga(object):
         """        
         pass
 
-        
     def add_extintf(self, name, extintf):
         """
         """
@@ -177,7 +168,6 @@ class _fpga(object):
         # @todo: extract all the ports from the extintf and 
         #    add them to the global port dict
         pass
-
 
     def get_portmap(self, top=None, **kwargs):
         """ given a top-level map the port definitions 
@@ -215,7 +205,6 @@ class _fpga(object):
         for ii, kw in enumerate(pp.args[pl:]):
             params[kw] = pp.defaults[ii]
 
-
         # see if any of the ports or parameters have been overridden
         if self.top_params is not None:
             for k, v in self.top_params.items():
@@ -233,7 +222,7 @@ class _fpga(object):
                 params[k] = v
 
         # @todo: log this information, some parameters can be too large
-        #    to be useful dumpin to scree (print).
+        #    to be useful dumping to screen (print).
         # log.write("HDL PORTS   %s" % (hdlports,))
         # log.write("HDL PARAMS  %s" % (params,))
 
@@ -246,7 +235,7 @@ class _fpga(object):
                 hdlports[port_name] = port.sig
                 port.inuse = True
 
-        for k,v in hdlports.items():
+        for k, v in hdlports.items():
             assert v is not None, "Error unspecified port %s"%(k)
         
         # combine the ports and params
