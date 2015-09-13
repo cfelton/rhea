@@ -30,9 +30,9 @@ def get_board(name):
     """ retrieve a board definition from the name provided.
     """
     brd = None
-    if xbrd.has_key(name):
+    if name in xbrd:
         brd = xbrd[name]()
-    elif abrd.has_key(name):
+    elif name in abrd:
         brd = abrd[name]()
     else:
         # @todo: print out a list of boards and descriptions
