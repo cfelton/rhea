@@ -30,6 +30,7 @@ before_install:
   - export PATH=$PATH:$PWD/iverilog/bin/:$PWD/yosys/
   - chmod +x ./scripts/ci/install_iverilog.sh
   - ./scripts/ci/install_iverilog.sh
+  - iverilog -h
   - chmod +x ./scripts/ci/install_yosys.sh
   - ./scripts/ci/install_yosys.sh
   
