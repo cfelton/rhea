@@ -5,7 +5,7 @@ if [ ! -d "$HOME/iverilog/bin/" ]; then
     git clone git://github.com/steveicarus/iverilog.git
     cd iverilog
     sh autoconf.sh
-    ./configure --prefix=$HOME/iverilog
+    ./configure --prefix=$HOME/iverilog/
     make
     make check
     make install
