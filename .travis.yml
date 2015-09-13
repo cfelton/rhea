@@ -1,18 +1,38 @@
+# http://docs.travis-ci.com/user/workers/container-based-infrastructure/
+sudo: false
+
 language: python
 python:
   - "3.4"
   - "2.7"
   - "pypy"
-  
-# get some stuff to install
-before_install:
-  - sudo apt-get install iverilog
-# not available on travis ubuntu version, need
-# to build from source??
-#  - sudo add-apt-repository -y ppa:saltmakrell/ppa
-#  - sudo apt-get update
-#  - sudo apt-get install yosys
+ 
+addons:
+  apt:
+    sources:
+    - tcl
+    
+addons:
+  apt:
+    packages:
+    - clang
+    - gawk
+    - tcl
+    - autoconf
+    - gperf
 
+cache:
+  directories:
+  - $HOME/yosys
+  - $HOME/iverilog
+
+before_install:
+  - export PATH=$PATH:$HOME/iverilog/bin/:$HOME/yosys/
+  - chmod +x ./scripts/ci/install_iverilog.sh
+  - ./scripts/ci/install_iverilog.sh
+  - chmod +x ./scripts/ci/install_yosys.sh
+  - ./scripts/ci/install_yosys.sh
+  
 # command to install dependencies
 install:
   - chmod +x ./scripts/ci/install_myhdl.sh
@@ -25,9 +45,9 @@ install:
 # run the test, nosetests can be used
 script:
    - cd examples
-   - py.test -s
+   - py.test   # -s
    - cd ../test
-   - py.test -s
+   - py.test   # -s
 
 notifications:
   email: false
