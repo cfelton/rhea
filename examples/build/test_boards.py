@@ -5,8 +5,6 @@ definitions.  Each board has a mapping to the designs
 ports ...
 """
 
-import pytest
-
 import rhea.build as build
 from rhea.build.boards import get_board
 from rhea.build.boards import get_all_board_names
