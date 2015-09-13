@@ -26,6 +26,7 @@ cache:
 
 before_install:
   - chmod +x ./scripts/ci/install_iverilog.sh
+  - ./scripts/ci/install_iverilog.sh
   - chmod +x ./scripts/ci/install_yosys.sh
   - ./scripts/ci/install_yosys.sh
   
