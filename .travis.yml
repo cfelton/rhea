@@ -27,7 +27,7 @@ cache:
   - $HOME/iverilog
 
 before_install:
-  - export PATH=$PATH:$PWD/iverilog/bin/:$PWD/yosys/
+  - export PATH=$PATH:$HOME/iverilog/bin/:$HOME/yosys/
   - chmod +x ./scripts/ci/install_iverilog.sh
   - ./scripts/ci/install_iverilog.sh
   - iverilog -h
