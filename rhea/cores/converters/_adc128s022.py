@@ -14,6 +14,7 @@ from ...system import FIFOBus
 from ..spi import SPIBus
 from ..misc import assign
 
+
 def adc128s022(glbl, fifobus, spibus, channel):
     """
     """

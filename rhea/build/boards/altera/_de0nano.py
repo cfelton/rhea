@@ -38,6 +38,18 @@ class DE0Nano(_fpga):
         # @todo: finish the GPIO pins
         'gpio': dict(pins=('D3', 'C3', 'A2', 'A3', 'B3', 'B4',
                            'A4', 'B5', 'A5', 'D5', 'B6', 'A6')),
+
+        # ADC pins (names given in the user manula)
+        'adc_cs_n': dict(pins=('A10',)),
+        'adc_saddr': dict(pins=('B10',)),
+        'adc_sdat': dict(pins=('A9',)),
+        'adc_sclk': dict(pins=('B14',)),
+
+        # I2C lines shared with accelerometer and EEPROM
+        'i2c_sclk': dict(pins=('F2',)),
+        'i2c_sdat': dict(pins=('F1',)),
+        'g_sensor_cs_n': dict(pins=('G5',)),
+        'g_sensor_int': dict(pins=('M2',)),
     }
 
     program_device_cli = (
@@ -46,5 +58,5 @@ class DE0Nano(_fpga):
     # example quartus_pgm -c USB-Blaster -m jtag -o bpv:design.pof
     program_nonvolatile_cli = (Template(""),)
     
-    def get_flow(self):
-        return Quartus(brd=self)
+    def get_flow(self, top=None):
+        return Quartus(brd=self, top=top)
