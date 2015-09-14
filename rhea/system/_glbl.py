@@ -19,4 +19,12 @@ class Global:
         else:
             self.reset = reset
 
+        # global enable signal
         self.enable = Signal(bool(0))
+
+        # timer ticks
+        # @todo: future enhancement, tick_user should be a list-of-signals
+        # @todo: so more than one custom (tick_user) can be generated.
+        self.tick_ms = Signal(bool(0))
+        self.tick_sec = Signal(bool(0))
+        self.tick_user = Signal(bool(0))

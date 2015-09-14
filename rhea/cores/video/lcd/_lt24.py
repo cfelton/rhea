@@ -21,5 +21,6 @@ def lt24lcd(glbl, vmem, lcd):
 
     # write out a new VMEM to the LCD display, a write cycle
     # consists of putting the video data on the bus and latching
-    # with the `wrx` signal.
+    # with the `wrx` signal.  Init (write once) the column and
+    # page addresses (cmd = 2A, 2B) then write mem (2C)
 

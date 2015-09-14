@@ -9,7 +9,7 @@ class LT24Interface(object):
         self.on = Signal(bool(0))
         self.resetn = Signal(bool(0))
         self.csn = Signal(bool(0))
-        self.rs = Signal(bool(0))
+        self.dcn = Signal(bool(0))
         self.wrn = Signal(bool(0))
         self.rdn = Signal(bool(0))
         self.data = Signal(intbv(0)[16:])
@@ -18,7 +18,7 @@ class LT24Interface(object):
         self.on = on
         self.resetn = resetn
         self.csn = csn
-        self.rs = rs
+        self.dcn = rs
         self.wrn = wrn
         self.rdn = rdn
         self.data = data
