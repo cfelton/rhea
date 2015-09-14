@@ -31,7 +31,7 @@ class IceRiver(_toolflow, Yosys):
         self.txt_file = os.path.join(self.path, self.name+'.txt')
         self.bin_file = os.path.join(self.path, self.name+'.bin')
         self.shell_script = os.path.join(self.path, self.name+'.sh')
-        
+
         fn = os.path.join(self.path, self.name+'.sh')
         sh = " "
         sh += "yosys -s {}".format(self.syn_file)
@@ -42,7 +42,7 @@ class IceRiver(_toolflow, Yosys):
 
         with open(self.shell_script, 'w') as f:
             f.write()
-            
+
         return
 
     def run(self, use='verilog', name=None):
@@ -53,7 +53,14 @@ class IceRiver(_toolflow, Yosys):
         self.add_files(cfiles)
         self.create_project(use=use)
         self.logfn = "build_iceriver.log"
-        self._execute(self.shell_script)
-        
+        self._execute_flow(self.shell_script)
+
         return self.logfn
-    
+
+    def program(self):
+        bitfile = os.path.join(self.path, self.bin_file)
+        for cmd in self.brd.program_device_cli:
+            ucmd = cmd.substitute(dict(bitfile=bitfile))
+            self.logfn = "program_iceriver.log"
+            self._execute_flow(ucmd)
+        return

@@ -12,6 +12,9 @@ from .xilinx._mojo import Mojo
 from .altera._de0nano import DE0Nano
 from .altera._de0nano_soc import DE0NanoSOC
 
+from .lattice._icestick import Icestick
+
+
 xbrd = {
     'xula': Xula,
     'xula2': Xula2,
@@ -25,6 +28,10 @@ abrd = {
     'de0nano_soc': DE0NanoSOC,
 }
 
+lbrd = {
+    'icestick': Icestick
+}
+
 
 def get_board(name):
     """ retrieve a board definition from the name provided.
@@ -34,12 +41,14 @@ def get_board(name):
         brd = xbrd[name]()
     elif name in abrd:
         brd = abrd[name]()
+    elif name in lbrd:
+        brd = lbrd[name]()
     else:
         # @todo: print out a list of boards and descriptions
         raise ValueError("Invalid board %s"%(name,))
-    
+
     return brd
 
 
 def get_all_board_names():
-    return xbrd.keys() + abrd.keys()
+    return xbrd.keys() + abrd.keys() + lbrd.keys()
