@@ -16,20 +16,23 @@ COLOR_BARS = (
 )
 
 
-def _update_cbars_with_max(P, width):
+def _update_cbars_with_max(color_depth):
     global COLOR_BARS
 
     cbars = [list(clr) for clr in COLOR_BARS]
     cbarvals = [None for _ in range(len(cbars))]
-
+    color_max_val = [(2**w)-1 for w in color_depth]
+    
     for cc in range(len(cbars)):
         for ii in range(3):
             if cbars[cc][ii] == 1:
-                cbars[cc][ii] = P
+                cbars[cc][ii] = color_max_val[ii]
         
-        # create a single value out of pixel tuple
-        val = (cbars[cc][0] << 2*width) + \
-              (cbars[cc][1] << width) +   \
+        # create a single value out of pixel tuple, note list index 
+        # the reverse diretion of bit-vectors (intbv) index.
+        s1, s2 = sum(color_depth[1:]), color_depth[-1]
+        val = (cbars[cc][0] << s1) + \
+              (cbars[cc][1] << s2) + \
               cbars[cc][2]
 
         cbarvals[cc] = val
@@ -42,39 +45,46 @@ def _update_cbars_with_max(P, width):
     return cbarvals
     
 
-def color_bars(glbl, vmem, resolution=(640, 480), width=10):
+def color_bars(glbl, vmem, resolution=(640, 480), color_depth=(10, 10, 10)):
     """ generate a color bar pattern
     """
     global COLOR_BARS
 
-    NUM_COLORS, PMAX, res = len(COLOR_BARS), (2**width)-1, resolution
+    pwidth = sum(color_depth)   # width of the pixel bit-vector
+    num_colors, pmax, res = len(COLOR_BARS), (2**pwidth)-1, resolution
 
-    cbarvals = _update_cbars_with_max(PMAX, width)
+    cbarvals = _update_cbars_with_max(color_depth)
 
-    # the width of each boundary
-    pw = res[0] / NUM_COLORS
+    # the width of each boundary (each bar)
+    pw = res[0] / num_colors
     
     clock, reset = glbl.clock, glbl.reset
-    pval = Signal(intbv(0)[3*width:])
-    # DEBUG
-    ssel = Signal(intbv(0)[32:0])
+    pixel = Signal(intbv(0)[pwidth:])
+    ssel = Signal(intbv(0)[32:0])   # DEBUG
 
     @always_comb
     def rtl_pval():
         sel = 0
-        for ii in range(NUM_COLORS):
+        for ii in range(num_colors):
             if vmem.hpxl > (ii*pw):
                 sel = ii
         ssel.next = sel
-        pval.next = cbarvals[sel]
+        pixel.next = cbarvals[sel]
 
-    W2, W, MASK = 2*width, width, PMAX
+    # get the slice of the pixel for each color
+    cd = color_depth
+    print("COLORBARS: ", pwidth, cd)
+    red = pixel(pwidth, pwidth-cd[0])
+    green = pixel(pwidth-cd[0], pwidth-cd[0]-cd[1])
+    blue = pixel(pwidth-cd[0]-cd[1], 0)
+    for width, slc in zip(color_depth, (red, green, blue)):
+        assert width == len(slc)
 
     @always_seq(clock.posedge, reset=reset)
     def rtl_rgb():
         # unpack the RGB value
-        vmem.red.next   = (pval >> W2) & MASK
-        vmem.green.next = (pval >> W) & MASK 
-        vmem.blue.next  = pval & MASK
+        vmem.red.next   = red
+        vmem.green.next = green
+        vmem.blue.next  = blue
 
     return rtl_pval, rtl_rgb

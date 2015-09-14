@@ -34,11 +34,12 @@ def mm_vgasys(
               pxlen=pxlen, active=active)
 
     # video memory interface
-    vmem = VideoMemory()
+    vmem = VideoMemory(color_depth=color_depth)
         
     # instances of modules
     gbar = color_bars(glbl, vmem,
-                      resolution=resolution)
+                      resolution=resolution,
+                      color_depth=color_depth)
 
     gvga = vga_sync(glbl, vga, vmem,
                     resolution=resolution,

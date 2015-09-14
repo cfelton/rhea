@@ -13,6 +13,7 @@ class LT24LCDDisplay(VideoDisplay):
         self.resolution = res = (240, 320)
         self.color_depth = cd = (5, 6, 5)
         super(LT24LCDDisplay, self).__init__(resolution=res, color_depth=cd)
+        self.name = 'lt24_lcd'
 
     def process(self, glbl, lcd):
         """
@@ -21,7 +22,13 @@ class LT24LCDDisplay(VideoDisplay):
 
         # ...
         self.states = enum('init')
+        
+        # use a dictionary to capture all the 
+        regfile = {}
 
+        # emulate the behavior of the LT24 LCD interface, the min pulses
+        # (strobes) is 15ns and require 15ns between, the max write rate 
+        # is 33 Mpix/sec 
         @instance
         def beh():
             cmdbytes = []
@@ -36,7 +43,7 @@ class LT24LCDDisplay(VideoDisplay):
                     # check for rising edge of wrn or rdn
                     if not wrn and lcd.wrn:
                         if not lcd.dcn:
-                            # a command
+                            # a command recieved
                             command_in_progress = True
                             cmd = lcd.data[8:]
                         else:
