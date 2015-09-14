@@ -16,8 +16,16 @@ class Icestick(_fpga):
     package = ''
     _name = 'icestick'
 
-    default_clocks = {}
-    default_ports = {}
+    default_clocks = {
+        'clock': dict(frequency=12e6, pins=(21,))
+    }
+    default_ports = {
+        'led': dict(pins=(99, 98, 97, 96, 95,)),
+        'spi_sck': dict(pins=(70,)),
+        'spi_si': dict(pins=(68,)),
+        'spi_so': dict(pins=(67,)),
+        'spi_ss': dict(pins=(71,)),
+    }
 
     def get_flow(self, top=None):
         return IceRiver(brd=self, top=top)
