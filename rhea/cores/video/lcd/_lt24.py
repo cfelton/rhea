@@ -27,8 +27,8 @@ def lt24lcd(glbl, vmem, lcd):
     # with the `wrx` signal.  Init (write once) the column and
     # page addresses (cmd = 2A, 2B) then write mem (2C)
     states = enum('init', 'write_column_addres', 'write_page_address',
-                  'display_update', 'write_command', 'read_command',
-                  'write_data', 'read_data')
+                  'display_update', 'display_update_next',
+                  'write_command', 'read_command', 'write_data', 'read_data')
     state = Signal(states.init)
     cmd = Signal(intbv(0)[8:])
     cmd_data = [Signal(intbv(0)[8:]) for _ in range(4)]
@@ -69,9 +69,36 @@ def lt24lcd(glbl, vmem, lcd):
             vmem.vpxl.next = vcnt
 
             # this is the pixel for the current write cycle
-            lcd.data.next = concat(vmem.red, vmem.green, vmem.bue)
-            state.next = states.write_data
-            return_state.next = states.update_display
+            if hcnt == 0 and vcnt == 0:
+                state.next = states.display_update_next
+            else:
+                lcd.data.next = concat(vmem.red, vmem.green, vmem.bue)
+                state.next = states.write_data
+                return_state.next = states.update_display
 
         # ~~~~[write command]~~~~
+        # drive csn, dcn, and wr low
+        # wait cycle driver wr high
+        # wait cycle driver dcn high
+        # for cb in cmdbyte:
+        #     data = cb, wr low
+        #     wait cycle
+        #     wr high
+        #
 
+
+    # The above state-machine drives the overall controllers state,
+    # register read/writes, display memory updates, etc.  The following
+    # state-machine drives
+
+
+def lt24lcd_driver(glbl, lcd, cmd, data, cmd_in_progress):
+    """
+    :param glbl:
+    :param lcd:
+    :param cmd:
+    :param data:
+    :param cmd_in_progress:
+    :return:
+    """
+    pass
