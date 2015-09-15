@@ -36,7 +36,7 @@ class IceRiver(Yosys):
         self.shell_script = os.path.join(self.path, self.name+'.sh')
 
     def create_constraints(self):
-        pcf = " "
+        pcf = " \n"
         pcf += "# pin definitions \n"
         for port_name, port in self.brd.ports.items():
             if port.inuse and isinstance(port.sig, Clock):
@@ -62,7 +62,14 @@ class IceRiver(Yosys):
 
         fn = os.path.join(self.path, self.name+'.sh')
         sh = " \n"
-        sh += "yosys -s {} \n".format(self.syn_file)
+
+        #sh += "yosys -s {} \n".format(self.syn_file)
+        # the following only works for signle files
+        v = [f for f in self._hdl_file_list]
+        vfile = os.path.join(self.path, v[0])
+        sh += "yosys -p \"synth_ice40 -blif {}\" {}\n".format(
+            self.blif_file, vfile)
+        
         sh += "arachne-pnr -d 1k -p {} {} -o {} \n".format(self.pcf_file,
                                                            self.blif_file,
                                                            self.txt_file)
@@ -78,8 +85,9 @@ class IceRiver(Yosys):
         cfiles = convert(self.brd, name=self.name,
                          use=use, path=self.path)
         self.add_files(cfiles)
-        # create_project generates the yosys synth script
-        self.create_project(use=use, write_blif=self.blif_file)
+        # create_project generates the yosys synth script, this
+        # isn't really used (generic yosys script)
+        self.create_project(use=use, write_blif=True, ice=True)
         self.create_constraints()
         self.create_flow_script()
         self.logfn = "build_iceriver.log"
