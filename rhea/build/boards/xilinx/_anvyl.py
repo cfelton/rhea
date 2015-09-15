@@ -15,7 +15,8 @@ class Anvyl(_fpga):
     _name = 'anvyl'
 
     default_clocks = {
-        'clk': dict(frequency=100e6, pins=('D11',),
+        # 'clk' in documentation
+        'clock': dict(frequency=100e6, pins=('D11',),
                     iostandard='LVCMOS33')        
     }
     

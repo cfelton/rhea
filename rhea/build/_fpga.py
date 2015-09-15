@@ -42,13 +42,13 @@ class _fpga(object):
         self._extintfs = {}
 
         # walk through the default settings
-        for k,v in self.default_clocks.items():
+        for k, v in self.default_clocks.items():
             self.add_clock(k, **v)
-        for k,v in self.default_resets.items():
+        for k, v in self.default_resets.items():
             self.add_reset(k, **v)
-        for k,v in self.default_ports.items():
+        for k, v in self.default_ports.items():
             self.add_port(k, **v)
-        for k,v in self.default_extintf.items():
+        for k, v in self.default_extintf.items():
             self.add_extintf(k, v)
 
 
@@ -75,7 +75,7 @@ class _fpga(object):
 
 
     def get_flow(self):
-        pass
+        raise NotImplemented
 
     def _remove_embed_attr(self, pins, pattr):
         """ removed an embedded pin attribute def if present.

@@ -56,7 +56,7 @@ class Yosys(_toolflow):
                     if len(_pins) == 1:
                         syn += "\"{}\" ".format(port_name)
                     else:
-                        syn += "\"{}\[{:%d}\]\" ".format(port_name, ii)
+                        syn += "\"{}\[{:d}\]\" ".format(port_name, ii)
                     syn += "\n"
         syn += "#\n"
 

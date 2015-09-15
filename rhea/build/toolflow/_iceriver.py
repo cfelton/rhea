@@ -75,8 +75,10 @@ class IceRiver(Yosys):
                                                            self.txt_file)
         sh += "icepack {} {} \n".format(self.txt_file, self.bin_file)
 
+    
         with open(self.shell_script, 'w') as f:
             f.write(sh)
+        os.chmod(self.shell_script, 0o444)
         return
 
     def run(self, use='verilog', name=None):
