@@ -196,8 +196,7 @@ class ISE(_toolflow):
         tcl_name = self.create_flow_script()
 
         cmd = ['xtclsh', tcl_name]
-        self.logfn = 'build_ise.log'
-        self._execute_flow(cmd)
+        self.logfn = self._execute_flow(cmd, "build_ise.log")
 
         return self.logfn
 

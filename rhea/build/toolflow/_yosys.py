@@ -87,7 +87,6 @@ class Yosys(_toolflow):
         # @todo: self.create_constraints()
 
         cmd = ['yosys', self.syn_file]
-        self.logfn = "build_yosys.log"
-        self._execute_flow(cmd)
+        self.logfn = self._execute_flow(cmd, "build_yosys.log")
 
         return self.logfn

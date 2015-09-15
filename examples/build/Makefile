@@ -42,6 +42,9 @@ de0nano: #altera/
 #	$(PYTHON) ex_de0.py
 
 clean:
-	rm -Rf altera/*
-	rm -Rf xilinx/*
+	rm -Rf altera
+	rm -Rf xilinx
+	rm -Rf yosys
+	rm -Rf iceriver
+
 

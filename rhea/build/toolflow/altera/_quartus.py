@@ -168,8 +168,7 @@ class Quartus(_toolflow):
         tcl_name = self.create_flow_script()
 
         cmd = ['quartus_sh', '-t', tcl_name, '-project', self.name]
-        self.logfn = 'build_quartus.log'
-        self._execute_flow(cmd)
+        self.logfn = self._execute_flow(cmd, "build_quartus.log")
 
         return self.logfn
 
@@ -186,8 +185,7 @@ class Quartus(_toolflow):
         for cmd in self.brd.program_device_cli:
             ucmd = cmd.substitute(dict(bitfile=bitfile))
             ucmd = shlex.split(ucmd)
-            self.logfn = 'program_quartus.log'
-            self._execute_flow(ucmd)
+            self._execute_flow(ucmd, "program_quartus.log")
         return
 
     def get_utilization(self):

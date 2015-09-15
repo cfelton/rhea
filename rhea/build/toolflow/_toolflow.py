@@ -21,6 +21,7 @@ ERROR: The $tool flow failed!  Error Code: $errcode
 """
 )
 
+
 class _toolflow(object): 
     _name = "not specified (bug in code)"
     def __init__(self, brd, top=None, name=None, path='.'):
@@ -112,19 +113,20 @@ class _toolflow(object):
         """
         raise NotImplemented()
 
-    def _execute_flow(self, cmd):
+    def _execute_flow(self, cmd, logfn=None):
+        logfn = os.path.join(self.path, logfn)
         try:
-            assert self.logfn is not None, "toolflow failed to set logfn"
-            logfile = open(self.logfn, 'w')
-            with open(self.logfn, 'w') as logfile:
+            assert logfn is not None, "toolflow failed to set logfn"
+            with open(logfn, 'w') as logfile:
                 subprocess.check_call(
                     cmd, stderr=subprocess.STDOUT, stdout=logfile)
         except (subprocess.CalledProcessError, OSError) as err:
             errmsg = _default_error_msg.substitute(
                 dict(tool=self._name, cmd=" ".join(cmd),
-                     errcode=str(err), 
-                     logfile=self.logfn))
+                     errcode=str(err), logfile=logfn))
             print(errmsg)
+
+        return logfn
 
     def program(self):
         """ Program the board with the bit-stream

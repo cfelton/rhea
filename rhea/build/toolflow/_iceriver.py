@@ -90,9 +90,8 @@ class IceRiver(Yosys):
         self.create_project(use=use, write_blif=True, ice=True)
         self.create_constraints()
         self.create_flow_script()
-        self.logfn = "build_iceriver.log"
         cmd = ['sh', self.shell_script]
-        self._execute_flow(cmd)
+        self.logfn = self._execute_flow(cmd, "build_iceriver.log")
 
         return self.logfn
 
