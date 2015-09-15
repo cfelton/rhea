@@ -6,6 +6,8 @@ class LT24Interface(object):
     def __init__(self):
         """
         """
+        self.resolution = res = (240, 320)
+        self.number_of_pixels = res[0] * res[1]
         self.on = Signal(bool(0))
         self.resetn = Signal(bool(0))
         self.csn = Signal(bool(0))

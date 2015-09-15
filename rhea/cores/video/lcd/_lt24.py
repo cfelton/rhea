@@ -92,13 +92,97 @@ def lt24lcd(glbl, vmem, lcd):
     # state-machine drives
 
 
-def lt24lcd_driver(glbl, lcd, cmd, data, cmd_in_progress):
+def lt24lcd_driver(glbl, lcd, cmd, datalen, data, 
+                   datasent, cmd_in_progress, maxlen=76800):
     """
     :param glbl:
     :param lcd:
-    :param cmd:
-    :param data:
+    :param cmd: 
+    :param datalen: number of data xfer to do
+    :param data: data to be sent
+    :param data_sent: one cycle strobe indicating the data xfered
     :param cmd_in_progress:
     :return:
+    
+    Typical confgiruration write
+       clock:             /--\__/--\__/--\__/--\__/--\__/--\__/--\__
+       cmd:               0x00    | 0x2B 
+       cmd_in_progress:   ____________/----------------
+                                            ^ cmd latched
+                                                  ^ first data byte for command
+       datasent           ________________________/----\_____
+       
+    The transaction is started by setting the `cmd` signal to nonzero,
+    the command byte is transferred and then the frist data, when then
+    first data is transferred the `datasent` is strobe, this indicates 
+    to the source (producer) to update `data` to the next value. 
+    The `cmd` must go to zero before the next transfer can occur. 
+    
+    Future enhancements:
+    @todo: add read commands 
     """
-    pass
+    
+    # local references
+    clock, reset = glbl.clock, glbl.reset 
+    
+    states = enum('wait', 
+                  'write_command_start', 
+                  'write_command_data', 
+                  'write_command_xsetup', 
+                  'write_command_xlatch',
+                  'end')
+    state = Signal(states.wait)
+    xfercnt = Signal(intbv(0, min=0, max=maxlen))
+    
+    @always_seq(clock.posedge, reset=reset)
+    def rtl_state_machine():
+        
+        # wait for a new command 
+        if state == states.wait:
+            datasent.next = False
+            if cmd != 0x00:
+                lcd.csn.next = False
+                lcd.wrn.next = False
+                lcd.dcn.next = False
+                lcd.data.next = cmd 
+                state.next = states.write_command_start
+                cmd_in_progress.next = True
+            else:
+                cmd_in_progress.next = False
+                
+        # start a write command`
+        elif state == states.write_command_start:
+            lcd.wrn.next = True
+            state.next = states.write_command_data
+            
+        elif state == states.write_command_data:
+            lcd.dcn.next = True 
+            lcd.wrn.next = False
+            xfercnt.next = 0
+            state.next = states.write_command_xsetup
+            
+        elif state == states.write_command_xsetup:
+            lcd.wrn.next = False
+            lcd.data.next = data 
+            datasent.next = True
+            xfercnt.next = xfercnt + 1
+            state.next = states.write_command_xlatch
+            
+        elif state == states.write_command_xlatch:
+            lcd.wrn.next = True
+            datasent.next = False
+            if xfercnt == datalen:
+                state.next = states.end
+            else:
+                state.next = states.write_command_xsetup
+                
+        elif state == states.end:
+            cmd_in_progress.next = False
+            if cmd == 0:
+                state.next = states.start
+                
+        else:
+            assert False, "Invalid state %s" % (state)
+            
+    return rtl_state_machine
+                
