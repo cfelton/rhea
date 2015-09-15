@@ -9,7 +9,7 @@ from blink import blinky
 
 def run_mojo():
     brd = get_board('mojo')
-    flow = brd.get_flow(top=m_blink)
+    flow = brd.get_flow(top=blinky)
     flow.run()
     info = flow.get_utilization()
     pprint(info)

@@ -55,14 +55,16 @@ de0nano: #altera/
 lattice: icestick
 
 icestick:
-    time $(PYTHON) ex_icestick.py 
-    
-    
+	time $(PYTHON) ex_icestick.py 
+
+
 #########################################################
 clean:
 	rm -Rf altera
 	rm -Rf xilinx
 	rm -Rf yosys
 	rm -Rf iceriver
+	rm -f *.log
+
 
 

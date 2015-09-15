@@ -8,7 +8,7 @@ from blink import blinky
 
 def run_nano():
     brd = get_board('de0nano_soc')
-    flow = build.flo.Quartus(brd=brd, top=m_blink)
+    flow = build.flo.Quartus(brd=brd, top=blinky)
     flow.run(use='vhdl')
     info = flow.get_utilization()
     pprint(info)

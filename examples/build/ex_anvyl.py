@@ -8,7 +8,7 @@ from blink import blinky
 
 def run_anvyl():
     brd = get_board('anvyl')
-    flow = brd.get_flow(top=m_blink)
+    flow = brd.get_flow(top=blinky)
     flow.run()
     info = flow.get_utilization()
     pprint(info)

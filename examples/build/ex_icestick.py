@@ -6,7 +6,7 @@ from blink import blinky
 
 def run_icestick():
     brd = get_board('icestick')
-    flow = brd.get_flow(top=m_blink)
+    flow = brd.get_flow(top=blinky)
     flow.run()
 
 

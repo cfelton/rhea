@@ -9,7 +9,7 @@ from blink import blinky
 def run_zybo():
     # get a board to implement the design on
     brd = get_board('zybo')
-    flow = build.flow.Vivado(brd=brd, top=m_blink)
+    flow = build.flow.Vivado(brd=brd, top=blinky)
     flow.run()
     info = flow.get_utilization()
     pprint(info)
