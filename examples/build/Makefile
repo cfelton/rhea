@@ -1,8 +1,11 @@
 PYTHON=python
 
 
-all: xilinx altera
+all: xilinx altera lattice
 
+#########################################################
+# Xilinx boards
+#########################################################
 xilinx: xula pone #atlys ufo400 
 
 xula: #xilinx/xula.bit
@@ -30,6 +33,10 @@ mojo: #xilinx/anvyl.bit
 #parallela: #xilinx/parallela.bit
 #	$(PYTHON) ex_parallela.py
 
+
+#########################################################
+# Altera boards
+#########################################################
 altera: de0nano #de0
 
 de0nano: #altera/
@@ -41,6 +48,17 @@ de0nano: #altera/
 #de0: #altera/
 #	$(PYTHON) ex_de0.py
 
+
+#########################################################
+# Lattice boards
+#########################################################
+lattice: icestick
+
+icestick:
+    time $(PYTHON) ex_icestick.py 
+    
+    
+#########################################################
 clean:
 	rm -Rf altera
 	rm -Rf xilinx

@@ -17,12 +17,14 @@ class Mojo(_fpga):
     _name = 'mojov3'
 
     default_clocks = {
-        'clk': dict(frequency=50e6, pins=(56,),
+        # clk in documentation (?)
+        'clock': dict(frequency=50e6, pins=(56,),
                     iostandard='LVTTL')        
     }
 
     default_resets = {
-        'rst_n': dict(active=0, async=True, pins=(38,),
+        # rst_n in documentation
+        'reset': dict(active=0, async=True, pins=(38,),
                       iostandard='LVTTL')
     }
     
