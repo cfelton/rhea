@@ -11,7 +11,6 @@ import os
 from time import gmtime, strftime
 import subprocess
 import shlex
-from pprint import pprint
 
 from .._toolflow import _toolflow
 from .._convert import convert

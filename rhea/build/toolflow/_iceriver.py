@@ -3,9 +3,17 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os
+import subprocess
+import shlex
+
+from ._toolflow import _toolflow
+from ._convert import convert
+from ._yosys import Yosys
+from .._fpga import _fpga
+from ..extintf import Clock
 
 
-class IceRiver(_toolflow, Yosys):
+class IceRiver(Yosys):
     _name = "Open-source Lattice iCE40"
     def __init__(self, brd, top=None, path='./iceriver/'):
         """
@@ -41,7 +49,7 @@ class IceRiver(_toolflow, Yosys):
         sh += "icepack {} {}".format(self.txt_file, self.bin_file)
 
         with open(self.shell_script, 'w') as f:
-            f.write()
+            f.write(sh)
 
         return
 
@@ -52,6 +60,7 @@ class IceRiver(_toolflow, Yosys):
                          use=use, path=self.path)
         self.add_files(cfiles)
         self.create_project(use=use)
+        self.create_flow_script()
         self.logfn = "build_iceriver.log"
         self._execute_flow(self.shell_script)
 

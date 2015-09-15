@@ -7,3 +7,4 @@ from .xilinx import ISE
 #from lattice import Diamond
 
 from ._yosys import Yosys
+from ._iceriver import IceRiver
