@@ -92,7 +92,7 @@ def tb_vgasys(args=None):
             reset.next = not reset.active
             
             # Wait till a full screen has been updated
-            while mvd.update_cnt < 1:
+            while mvd.update_cnt < 3:
                  yield delay(1000)
 
             # @todo: verify video system memory is correct!

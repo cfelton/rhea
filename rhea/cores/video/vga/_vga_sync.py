@@ -48,10 +48,11 @@ def vga_sync(
       vga.green :
       vga.blue  :
       
-      vmem.addr  : pixel address
-      vmem.red   : read pixel value
-      vmem.green :
-      vmem.blue  :
+      vmem.hpxl : horizontal pixel address
+      vmem.vpxl : vertical pixel address
+      vmem.red   : red pixel value
+      vmem.green : green pixel value
+      vmem.blue  : blue pixel value
    
     Parameters:
     -----------
@@ -72,23 +73,25 @@ def vga_sync(
     (A,B,C,D,E,O,
      P,Q,R,S,X,Z,) = calc_timings(clock.frequency, resolution,
                                   refresh_rate, line_rate)
+    # @todo: ??? FullScree == 0, this seems wrong ???
     FullScreen = O
 
     # counters to count the pixel clock (clock)
     HPXL, VPXL = res
-    xcnt = intbv(0, min=-1, max=X+1) # clock div
-    hcnt = intbv(0, min=0, max=A+1)  # hor count in ticks
-    vcnt = intbv(0, min=0, max=O+1)  # ver count in ticks
+    xcnt = intbv(0, min=-1, max=X+1)  # clock div
+    hcnt = intbv(0, min=0, max=A+1)   # hor count in ticks
+    vcnt = intbv(0, min=0, max=O+1)   # ver count in ticks
 
+    # local references to interface signals
     hpxl = vmem.hpxl
     vpxl = vmem.vpxl
 
     # debug stuff
-    hcd = Signal(hcnt)
-    vcd = Signal(vcnt)
+    hcd = Signal(hcnt)  # trace horizontal count
+    vcd = Signal(vcnt)  # trace vertical count
 
     # the hsync and vsync are periodic so we can start anywhere,
-    # it is convinient to start at the active pixel area
+    # it is convenient to start at the active pixel area
     @always_seq(clock.posedge, reset=reset)
     def rtl_sync():    
         # horizontal and vertical counters

@@ -10,32 +10,26 @@ class VideoMemory:
         self.aw = math.ceil(math.log(self.size, 2))  # address width
         self.width = sum(color_depth)           # width of each memory element
 
+        # write port strobe for write port
         self.wr = Signal(bool(0))
+
+        # pixel address, for the read and write port
         self.hpxl = Signal(intbv(0, min=0, max=resolution[0]))  # column
         self.vpxl = Signal(intbv(0, min=0, max=resolution[1]))  # row
-
-        # @todo: hpxl and vplx read
 
         self.red = Signal(intbv(0)[color_depth[0]:])
         self.green = Signal(intbv(0)[color_depth[1]:])
         self.blue = Signal(intbv(0)[color_depth[2]:])
 
         # the memory, if large, eternal required
-        # @todo: check the size, if larger than ??
+        # @todo: check the size, if larger than ?? print warning
         self.mem = [Signal(intbv(0)[self.width:]) for _ in range(self.size)]
-
-        # @todo: create an actual memory (dual port
-        # def memory(self):
-        #     """
-        #        vin : v
-        #     """
-        #
 
 
 def video_memory(glbl, vidmem_write, vidmem_read):
     """
     """
-    assert vidmem_write.width == vidmem_write.width
+    assert vidmem_write.width == vidmem_read.width
     vmem = vidmem_write
     res = vmem.resolution
     mem = [Signal(intbv(0)[vmem.width:]) for _ in range(vmem.size)]
@@ -43,15 +37,18 @@ def video_memory(glbl, vidmem_write, vidmem_read):
     clock, reset = glbl.clock, glbl.reset
 
     # address translation
-    addr = Signal(intbv(0, min=0, max=vmem.size))
+    waddr = Signal(intbv(0, min=0, max=vmem.size))
 
     @always_comb
     def rtl_addr():
         # @todo: this will be expensive, shortcut/hack ???
-        addr.next = vmem.hpxl + (vmem.vpxl * vmem.resolution[0])
+        waddr.next = vmem.hpxl + (vmem.vpxl * vmem.resolution[0])
 
     # write
     @always(clock.posedge)
-    def rtl():
+    def rtl_write():
         if vidmem_write.wr:
-            mem
+            mem[waddr].next = concat(vmem.red, vmem.green, vmem.blue)
+
+
+    return rtl_addr, rtl_write

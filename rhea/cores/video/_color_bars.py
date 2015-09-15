@@ -1,4 +1,6 @@
 
+from __future__ import division
+
 from myhdl import Signal, intbv, always_comb, always_seq
 
 
@@ -56,12 +58,14 @@ def color_bars(glbl, vmem, resolution=(640, 480), color_depth=(10, 10, 10)):
     cbarvals = _update_cbars_with_max(color_depth)
 
     # the width of each boundary (each bar)
-    pw = res[0] / num_colors
+    pw = int(res[0] // num_colors)
     
     clock, reset = glbl.clock, glbl.reset
     pixel = Signal(intbv(0)[pwidth:])
     ssel = Signal(intbv(0)[32:0])   # DEBUG
 
+    # get the pixel value for the current pixel address,
+    # only the horizontal pixel address is needed.
     @always_comb
     def rtl_pval():
         sel = 0
@@ -83,8 +87,8 @@ def color_bars(glbl, vmem, resolution=(640, 480), color_depth=(10, 10, 10)):
     @always_seq(clock.posedge, reset=reset)
     def rtl_rgb():
         # unpack the RGB value
-        vmem.red.next   = red
+        vmem.red.next = red
         vmem.green.next = green
-        vmem.blue.next  = blue
+        vmem.blue.next = blue
 
     return rtl_pval, rtl_rgb

@@ -57,4 +57,4 @@ class VideoDisplay(object):
     def process(self, glbl, vga):
         """ emulate the behavior of the display """
         raise NotImplemented
-        
+

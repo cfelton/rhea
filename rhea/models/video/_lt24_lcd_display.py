@@ -1,4 +1,7 @@
 
+from __future__ import absolute_import
+
+from copy import copy
 
 from myhdl import Signal, intbv, enum, instance, delay
 from PIL import Image
@@ -28,29 +31,40 @@ class LT24LCDDisplay(VideoDisplay):
 
         # emulate the behavior of the LT24 LCD interface, the min pulses
         # (strobes) is 15ns and require 15ns between, the max write rate 
-        # is 33 Mpix/sec 
+        # is 33 Mpix/sec.  Most (all) commands accept 4 bytes (4 writes)
+        # for a command.
         @instance
         def beh():
             cmdbytes = []
             databytes = []
+
             while True:
+                command_in_progress = False
+                data_in_progress = False
+                numbytes = 0
+
                 # wait for a new command
                 yield lcd.csn.negedge
                 wrn, rdn = bool(lcd.wrn), bool(lcd.rdn)
-                command_in_progress = False
-                numbytes = 0
-                while not lcd.csn:
+
+                # handle a transaction (csn low pulse)
+                while not lcd.csn and command_in_progress:
+                    if not lcd.csn and command_in_progress:
+                        regfile[cmd] = copy(cmdbytes)
+                        command_in_progress = False
                     # check for rising edge of wrn or rdn
                     if not wrn and lcd.wrn:
                         if not lcd.dcn:
-                            # a command recieved
+                            # a command received
                             command_in_progress = True
-                            cmd = lcd.data[8:]
+                            cmd = int(lcd.data[8:])
+                            if cmd not in regfile:
+                                regfile[cmd] = []
                         else:
                             if command_in_progress:
                                 cmdbytes[numbytes] = int(lcd.data[8:])
                             else:
-                                databytes
+                                databytes[numbytes] = int(lcd.data)
                             numbytes += 1
 
                     wrn, rdn = bool(lcd.wrn), bool(lcd.rdn)
