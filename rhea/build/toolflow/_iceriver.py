@@ -15,6 +15,7 @@ from ..extintf import Clock
 
 class IceRiver(Yosys):
     _name = "Open-source Lattice iCE40"
+
     def __init__(self, brd, top=None, path='./iceriver/'):
         """
         IceRiver is the (odd) name given to the open-source
@@ -28,29 +29,47 @@ class IceRiver(Yosys):
             http://www.clifford.at/icestorm/
         """
         super(IceRiver, self).__init__(brd=brd, top=top, path=path)
-        self.pcf_file = ''
-
-    def create_constraints(self):
         self.pcf_file = os.path.join(self.path, self.name+'.pcf')
-
-    def create_flow_script(self):
-        """ Simple shell script to execute the flow """
         self.blif_file = os.path.join(self.path, self.name+'.blif')
         self.txt_file = os.path.join(self.path, self.name+'.txt')
         self.bin_file = os.path.join(self.path, self.name+'.bin')
         self.shell_script = os.path.join(self.path, self.name+'.sh')
 
+    def create_constraints(self):
+        pcf = " "
+        pcf += "# pin definitions \n"
+        for port_name, port in self.brd.ports.items():
+            if port.inuse and isinstance(port.sig, Clock):
+                period = 1 / (port.sig.frequency / 1e9)
+                # pcf += "create_clock -period {:.7f} [get_ports %s]"
+
+        for port_name , port in self.brd.ports.items():
+            if port.inuse:
+                pins = port.pins
+                for ii, pn in enumerate(pins):
+                    if len(pins) == 1:
+                        pname = "{}".format(port_name)
+                    else:
+                        pname = "{}[{}]".format(port_name, ii)
+                    pcf += "set_io {} {} \n".format(pname, pn)
+
+        with open(self.pcf_file, 'w') as f:
+            f.write(pcf)
+        return
+
+    def create_flow_script(self):
+        """ Simple shell script to execute the flow """
+
         fn = os.path.join(self.path, self.name+'.sh')
-        sh = " "
-        sh += "yosys -s {}".format(self.syn_file)
-        sh += "arachne-pnr -d 1k -p {} {} -o {}".format(self.pcf_file,
-                                                        self.blif_file,
-                                                        self.txt_file)
-        sh += "icepack {} {}".format(self.txt_file, self.bin_file)
+        sh = " \n"
+        sh += "yosys -s {} \n".format(self.syn_file)
+        sh += "arachne-pnr -d 1k -p {} {} -o {} \n".format(self.pcf_file,
+                                                           self.blif_file,
+                                                           self.txt_file)
+        sh += "icepack {} {} \n".format(self.txt_file, self.bin_file)
 
         with open(self.shell_script, 'w') as f:
             f.write(sh)
-
         return
 
     def run(self, use='verilog', name=None):
@@ -59,10 +78,13 @@ class IceRiver(Yosys):
         cfiles = convert(self.brd, name=self.name,
                          use=use, path=self.path)
         self.add_files(cfiles)
-        self.create_project(use=use)
+        # create_project generates the yosys synth script
+        self.create_project(use=use, write_blif=self.blif_file)
+        self.create_constraints()
         self.create_flow_script()
         self.logfn = "build_iceriver.log"
-        self._execute_flow(self.shell_script)
+        cmd = ['sh', self.shell_script]
+        self._execute_flow(cmd)
 
         return self.logfn
 

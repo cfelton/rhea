@@ -18,6 +18,7 @@ from ._convert import convert
 
 class Yosys(_toolflow):
     _name = "yosys"
+
     def __init__(self, brd, top=None, path='./yosys/'):
         """ use yosys synthesis (mainly for testing)
 
@@ -34,7 +35,7 @@ class Yosys(_toolflow):
     def add_cores(self, filename):
         self._core_file_list.update(set(filename))
 
-    def create_project(self, use='verilog', *pattr):
+    def create_project(self, use='verilog', **pattr):
         # yosys only synthesizes verilog
         assert use.lower() == 'verilog'
 
@@ -44,8 +45,8 @@ class Yosys(_toolflow):
         syn += "# -------------------------------------------------------------------------- #\n\n"
 
         # list of synthesis attributes, project specific
-        for attr in pattr:
-            syn += attr
+        for k, v in pattr.items():
+            syn += "{} {} \n".format(k, v)
 
         for f in self._hdl_file_list:
             syn += "read_verilog {}/{} \n".format(self.path, f)
@@ -76,7 +77,6 @@ class Yosys(_toolflow):
 
         with open(self.syn_file, 'w') as f:
             f.write(syn)
-
         return
 
     def run(self, use='verilog', name=None):
