@@ -25,10 +25,12 @@ addons:
     - pkg-config
     - autoconf
     - gperf
-    - gcc-4.8
-    - g++-4.8
+    - gcc   
+    - g++   
     - libffi-dev
     - libftdi-dev
+# gcc-4.8 ??? why no work?
+# g++-4.8 ??? why no work?
 
 cache:
   directories:
