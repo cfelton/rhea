@@ -14,9 +14,6 @@ addons:
     - tcl
     - libffi
     - libftdi
-    
-addons:
-  apt:
     packages:
     - build-essential
     - clang
