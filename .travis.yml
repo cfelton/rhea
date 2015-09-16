@@ -9,25 +9,24 @@ python:
  
 addons:
   apt:
-    sources:
-    - libreadline
-    - tcl
-    - libffi
-    - libftdi
     packages:
     - build-essential
     - clang
     - bison
     - flex
+    - libreadline-dev
     - gawk
     - tcl
+    - tcl-dev
     - graphviz
     - xdot
     - pkg-config
     - autoconf
     - gperf
-    - gcc-4.8
-    - g++-4.8
+    - gcc-4.9
+    - g++-4.9
+    - libffi-dev
+    - libftdi-dev
 
 cache:
   directories:
