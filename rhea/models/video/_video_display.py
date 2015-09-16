@@ -18,6 +18,7 @@ class VideoDisplay(object):
         self.resolution = res = resolution
         self.num_hpxl, self.num_vpxl = self.resolution
         self.name = 'unknown'
+        self.update_cnt = 0
         
         if max(color_depth) <= 8:
             arraytype = 'B'

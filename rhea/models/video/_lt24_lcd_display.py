@@ -70,3 +70,4 @@ class LT24LCDDisplay(VideoDisplay):
                     wrn, rdn = bool(lcd.wrn), bool(lcd.rdn)
                     yield delay(2)
 
+        return beh

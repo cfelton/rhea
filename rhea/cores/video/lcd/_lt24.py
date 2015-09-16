@@ -26,36 +26,84 @@ def lt24lcd(glbl, vmem, lcd):
     # consists of putting the video data on the bus and latching
     # with the `wrx` signal.  Init (write once) the column and
     # page addresses (cmd = 2A, 2B) then write mem (2C)
-    states = enum('init', 'write_column_addres', 'write_page_address',
-                  'display_update', 'display_update_next',
-                  'write_command', 'read_command', 'write_data', 'read_data')
+    states = enum('init',
+                  'write_column_address',
+                  'write_page_address',
+                  'write_wait_pre',
+                  'write_wait',
+                  'display_update_start',
+                  'display_update',
+                  'display_update_next',
+                  'display_update_end')
     state = Signal(states.init)
     cmd = Signal(intbv(0)[8:])
-    cmd_data = [Signal(intbv(0)[8:]) for _ in range(4)]
+    cmddata = [Signal(intbv(0)[8:]) for _ in range(4)]
     return_state = Signal(states.init)
 
     num_hor_pxl, num_ver_pxl = resolution
     hcnt = intbv(0, min=0, max=num_hor_pxl)
     vcnt = intbv(0, min=0, max=num_ver_pxl)
+    cindx = intbv(0, min=0, max=number_of_pixels+1)
+    csig = Signal(cindx)
+
+    datalen = Signal(intbv(0, min=0, max=number_of_pixels+1))
+    data = Signal(intbv(0)[16:])
+    datasent = Signal(bool(0))
+    cmd_in_progress = Signal(bool(0))
+
+    gdrv = lt24lcd_driver(glbl, lcd, cmd, datalen, data,
+                          datasent, cmd_in_progress)
 
     @always_seq(clock.posedge, reset=reset)
     def rtl_state_machine():
         if state == states.init:
-            state.next = state.write_column_address
+            cindx[:] = 0
+            state.next = states.write_column_address
 
         elif state == states.write_column_address:
             cmd.next = 0x2A
-            cmd_data[0].next = 0
-            cmd_data[1].next = 0
-            cmd_data[2].next = 0
-            cmd_data[3].next = 240
-            state.next = states.write_command
+            cmddata[0].next = 0     # start address MSB
+            cmddata[1].next = 0     # start address LSB
+            cmddata[2].next = 0     # end address MSB
+            cmddata[3].next = 0xEF  # end address LSB
+            cindx[:] = 0
+            data.next = cmddata[cindx]
+            datalen.next = 4
+            state.next = states.write_wait_pre
             return_state.next = states.write_page_address
 
         elif state == states.write_page_address:
-            return_state.next = states.display_update
+            cmd.next = 0x2B
+            cmddata[0].next = 0     # start address MSB
+            cmddata[1].next = 0     # start address LSB
+            cmddata[2].next = 0x01  # end address MSB
+            cmddata[3].next = 0x40  # end address LSB
+            cindx[:] = 0
+            data.next = cmddata[cindx]
+            datalen.next = 4
+            state.next = states.write_wait_pre
+            return_state.next = states.display_update_start
 
-        elif state == states.update_display:
+        elif state == states.write_wait_pre:
+            state.next = states.write_wait
+
+        elif state == states.write_wait:
+            csig.next = cindx
+            if cmd_in_progress:
+                if datasent:
+                    cindx[:] = cindx + 1
+                    if cindx < datalen:
+                        data.next = cmddata[cindx]
+            else:
+                cmd.next = 0
+                state.next = return_state
+
+        elif state == states.display_update_start:
+            cmd.next = 0x2C
+            state.next = states.display_update
+            datalen.next = number_of_pixels
+
+        elif state == states.display_update:
             hcnt[:] = hcnt + 1
             vcnt[:] = vcnt + 1
             if vcnt == num_ver_pxl-1:
@@ -70,26 +118,25 @@ def lt24lcd(glbl, vmem, lcd):
 
             # this is the pixel for the current write cycle
             if hcnt == 0 and vcnt == 0:
-                state.next = states.display_update_next
+                state.next = states.display_update_end
             else:
-                lcd.data.next = concat(vmem.red, vmem.green, vmem.bue)
-                state.next = states.write_data
-                return_state.next = states.update_display
+                data.next = concat(vmem.red, vmem.green, vmem.blue)
+                state.next = states.display_update_next
 
-        # ~~~~[write command]~~~~
-        # drive csn, dcn, and wr low
-        # wait cycle driver wr high
-        # wait cycle driver dcn high
-        # for cb in cmdbyte:
-        #     data = cb, wr low
-        #     wait cycle
-        #     wr high
-        #
+        elif state == states.display_update_next:
+            if cmd_in_progress:
+                if datasent:
+                    state.next = states.display_update
+            else:
+                cmd.next = 0
+                state.next = states.display_update_end
 
+        elif state == states.display_update_end:
+            # @todo: wait for next update
+            if not cmd_in_progress:
+                state.next = states.display_update
 
-    # The above state-machine drives the overall controllers state,
-    # register read/writes, display memory updates, etc.  The following
-    # state-machine drives
+    return gdrv, rtl_state_machine
 
 
 def lt24lcd_driver(glbl, lcd, cmd, datalen, data, 
@@ -132,7 +179,7 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
                   'write_command_xlatch',
                   'end')
     state = Signal(states.wait)
-    xfercnt = Signal(intbv(0, min=0, max=maxlen))
+    xfercnt = Signal(intbv(0, min=0, max=maxlen+1))
     
     @always_seq(clock.posedge, reset=reset)
     def rtl_state_machine():
@@ -154,20 +201,23 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
         elif state == states.write_command_start:
             lcd.wrn.next = True
             state.next = states.write_command_data
-            
+
+        # setup the data portion of the command
         elif state == states.write_command_data:
             lcd.dcn.next = True 
             lcd.wrn.next = False
             xfercnt.next = 0
             state.next = states.write_command_xsetup
-            
+
+        # transfer the data setup
         elif state == states.write_command_xsetup:
             lcd.wrn.next = False
             lcd.data.next = data 
             datasent.next = True
             xfercnt.next = xfercnt + 1
             state.next = states.write_command_xlatch
-            
+
+        # transfer the data latch
         elif state == states.write_command_xlatch:
             lcd.wrn.next = True
             datasent.next = False
@@ -175,14 +225,14 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
                 state.next = states.end
             else:
                 state.next = states.write_command_xsetup
-                
+
+        # end of the transaction
         elif state == states.end:
             cmd_in_progress.next = False
             if cmd == 0:
-                state.next = states.start
+                state.next = states.wait
                 
         else:
-            assert False, "Invalid state %s" % (state)
+            assert False, "Invalid state %s" % (state,)
             
     return rtl_state_machine
-                

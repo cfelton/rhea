@@ -50,5 +50,4 @@ def video_memory(glbl, vidmem_write, vidmem_read):
         if vidmem_write.wr:
             mem[waddr].next = concat(vmem.red, vmem.green, vmem.blue)
 
-
     return rtl_addr, rtl_write
