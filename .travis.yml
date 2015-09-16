@@ -10,25 +10,31 @@ python:
 addons:
   apt:
     source:
-    - ubuntu-toolchain-r-test
+      - ubuntu-toolchain-r-test
     packages:
-    - build-essential
-    - clang
-    - bison
-    - flex
-    - libreadline-dev
-    - gawk
-    - tcl
-    - tcl-dev
-    - graphviz
-    - xdot
-    - pkg-config
-    - autoconf
-    - gperf
-    - gcc   
-    - g++   
-    - libffi-dev
-    - libftdi-dev
+      - gcc-4.9
+      - g++-4.9
+      - build-essential
+      - clang
+      - bison
+      - flex
+      - libreadline-dev
+      - gawk
+      - tcl
+      - tcl-dev
+      - graphviz
+      - xdot
+      - pkg-config
+      - autoconf
+      - gperf
+      - gcc   
+      - g++   
+      - libffi-dev
+      - libftdi-dev
+    update-alternatives:
+      - install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50
+      - install /usr/bin/g++ g++ /usr/bin/g++-4.9 50
+      
 # gcc-4.8 ??? why no work?
 # g++-4.8 ??? why no work?
 
