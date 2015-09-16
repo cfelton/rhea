@@ -40,6 +40,7 @@ cache:
   - $HOME/yosys
 
 before_install:
+  - g++ --version
   - export PATH=$PATH:$HOME/iverilog/bin/:$HOME/yosys/
   - export PATH=$PATH:$HOME/icestorm/icepack/:$HOME/arachne-pnr/bin/
   - chmod +x ./scripts/ci/install_iverilog.sh
@@ -50,7 +51,6 @@ before_install:
   - ./scripts/ci/install_arachne.sh
   - chmod +x ./scripts/ci/install_yosys.sh
   - ./scripts/ci/install_yosys.sh
-  - g++ --version
   
 # command to install dependencies
 install:
