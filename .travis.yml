@@ -9,6 +9,8 @@ python:
  
 addons:
   apt:
+    source:
+    - ubuntu-toolchain-r-test
     packages:
     - build-essential
     - clang
@@ -23,8 +25,8 @@ addons:
     - pkg-config
     - autoconf
     - gperf
-    - gcc-4.9
-    - g++-4.9
+    - gcc-4.8
+    - g++-4.8
     - libffi-dev
     - libftdi-dev
 
