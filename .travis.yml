@@ -29,6 +29,8 @@ addons:
     - pkg-config
     - autoconf
     - gperf
+    - gcc-4.8
+    - g++-4.8
 
 cache:
   directories:
@@ -58,12 +60,12 @@ install:
   - pip install Pillow
   - pip install .
 
-# run the test, nosetests can be used
+# run the test
 script:
    - cd examples
-   - py.test   # -s
+   - py.test  
    - cd ../test
-   - py.test   # -s
+   - py.test  
 
 notifications:
   email: false
