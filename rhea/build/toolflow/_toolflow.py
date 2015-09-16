@@ -113,11 +113,12 @@ class _toolflow(object):
         """
         raise NotImplemented()
 
-    def _execute_flow(self, cmd, logfn=None):
+    def _execute_flow(self, cmd, logfn=None, logmode='w'):
         logfn = os.path.join(self.path, logfn)
         try:
             assert logfn is not None, "toolflow failed to set logfn"
-            with open(logfn, 'w') as logfile:
+            assert len(cmd) > 0, "invalid toolflow command {}".format(cmd)
+            with open(logfn, logmode) as logfile:
                 subprocess.check_call(
                     cmd, stderr=subprocess.STDOUT, stdout=logfile)
         except (subprocess.CalledProcessError, OSError) as err:

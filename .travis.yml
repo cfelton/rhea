@@ -10,26 +10,42 @@ python:
 addons:
   apt:
     sources:
+    - libreadline
     - tcl
+    - libffi
+    - libftdi
     
 addons:
   apt:
     packages:
+    - build-essential
     - clang
+    - bison
+    - flex
     - gawk
     - tcl
+    - graphviz
+    - xdot
+    - pkg-config
     - autoconf
     - gperf
 
 cache:
   directories:
-  - $HOME/yosys
   - $HOME/iverilog
+  - $HOME/icestorm
+  - $HOME/arachne-pnr
+  - $HOME/yosys
 
 before_install:
   - export PATH=$PATH:$HOME/iverilog/bin/:$HOME/yosys/
+  - export PATH=$PATH:$HOME/icestorm/icepack/:$HOME/arachne-pnr/bin/
   - chmod +x ./scripts/ci/install_iverilog.sh
   - ./scripts/ci/install_iverilog.sh
+  - chmod +x ./scripts/ci/install_icestorm.sh
+  - ./scripts/ci/install_icestorm.sh
+  - chmod +x ./scripts/ci/install_arachne.sh
+  - ./scripts/ci/install_arachne.sh
   - chmod +x ./scripts/ci/install_yosys.sh
   - ./scripts/ci/install_yosys.sh
   

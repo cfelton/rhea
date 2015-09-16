@@ -33,7 +33,7 @@ class IceRiver(Yosys):
         self.blif_file = os.path.join(self.path, self.name+'.blif')
         self.txt_file = os.path.join(self.path, self.name+'.txt')
         self.bin_file = os.path.join(self.path, self.name+'.bin')
-        self.shell_script = os.path.join(self.path, self.name+'.sh')
+        self.shell_script = None
 
     def create_constraints(self):
         pcf = " \n"
@@ -59,10 +59,7 @@ class IceRiver(Yosys):
 
     def create_flow_script(self):
         """ Simple shell script to execute the flow """
-
-        fn = os.path.join(self.path, self.name+'.sh')
-        sh = " \n"
-
+        sh = ""
         #sh += "yosys -s {} \n".format(self.syn_file)
         # the following only works for signle files
         v = [f for f in self._hdl_file_list]
@@ -75,10 +72,7 @@ class IceRiver(Yosys):
                                                            self.txt_file)
         sh += "icepack {} {} \n".format(self.txt_file, self.bin_file)
 
-    
-        with open(self.shell_script, 'w') as f:
-            f.write(sh)
-        os.chmod(self.shell_script, 0o444)
+        self.shell_script = sh.strip().split('\n')
         return
 
     def run(self, use='verilog', name=None):
@@ -92,8 +86,15 @@ class IceRiver(Yosys):
         self.create_project(use=use, write_blif=True, ice=True)
         self.create_constraints()
         self.create_flow_script()
-        cmd = ['sh', self.shell_script]
-        self.logfn = self._execute_flow(cmd, "build_iceriver.log")
+
+        # delete previous log
+        logfn = "build_iceriver.log"
+        if os.path.isfile(os.path.join(self.path, logfn)):
+            os.remove(os.path.join(self.path, logfn))
+            
+        for cmd in self.shell_script:
+            cmd = shlex.split(cmd)            
+            self.logfn = self._execute_flow(cmd, logfn, logmode='a')
 
         return self.logfn
 
