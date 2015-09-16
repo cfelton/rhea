@@ -50,6 +50,7 @@ before_install:
   - ./scripts/ci/install_arachne.sh
   - chmod +x ./scripts/ci/install_yosys.sh
   - ./scripts/ci/install_yosys.sh
+  - g++ --version
   
 # command to install dependencies
 install:
