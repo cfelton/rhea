@@ -1,8 +1,12 @@
 
+import pytest
+
 import rhea.build as build
 from rhea.build.boards import get_board
 from blink import blinky
 
+
+@pytest.mark.xfail
 def test_iceriver():
     """
     This test is identical to ex_icestick but it is 
