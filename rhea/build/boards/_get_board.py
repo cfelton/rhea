@@ -51,4 +51,4 @@ def get_board(name):
 
 
 def get_all_board_names():
-    return xbrd.keys() + abrd.keys() + lbrd.keys()
+    return list(xbrd.keys()) + list(abrd.keys()) + list(lbrd.keys())
