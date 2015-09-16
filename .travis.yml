@@ -12,8 +12,8 @@ addons:
     source:
       - ubuntu-toolchain-r-test
     packages:
-      - gcc-4.9
-      - g++-4.9
+      - ['gcc-4.9']
+      - ['g++-4.9']
       - build-essential
       - clang
       - bison
@@ -27,8 +27,6 @@ addons:
       - pkg-config
       - autoconf
       - gperf
-      - gcc   
-      - g++   
       - libffi-dev
       - libftdi-dev
     update-alternatives:
