@@ -55,11 +55,9 @@ need to clone it and install the source).  The first
 *rhea* release will not occur until myhdl 1.0 is released (probably much
 later).
 
-This code/package is licensed under the ~~LGPL~~ MIT license.  This allows 
-anyone to use the package in their projects with no limitations ~~but
-if the code in the `rhea` package is modified those modifications need to
-be made available to the public (not the code the cores are used 
-in or with).~~  Questions and other license options email me.
+This code/package is licensed under the MIT license.  This allows 
+anyone to use the package in their projects with no limitations   
+Questions and other license options email me.
 
 The following are the definition of some terms used in this README :
 
