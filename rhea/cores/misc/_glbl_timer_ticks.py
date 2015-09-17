@@ -2,7 +2,7 @@
 
 from __future__ import division
 
-from myhdl import Signal, intbv, always_seq, always_comb
+from myhdl import Signal, intbv, always_seq, always
 
 
 def timer_counter(glbl, counter, increment, overflow):
@@ -14,14 +14,12 @@ def timer_counter(glbl, counter, increment, overflow):
         if increment:
             if counter == count_max-1:
                 counter.next = 0
-                overflow.next = True
             else:
                 counter.next = counter + 1
-                overflow.next = False
 
-    @always_comb
+    @always(clock.posedge)
     def rtl_overflow():
-        if increment and counter == count_max-1:
+        if increment and counter == count_max-2:
             overflow.next = True
         else:
             overflow.next = False
@@ -42,23 +40,29 @@ def glbl_timer_ticks(glbl, include_seconds=True, user_timer=None):
     clock, reset = glbl.clock, glbl.reset
 
     # define the number of clock ticks per strobe
-    ticks_per_ms = glbl.clock.frequency//1000
+    ticks_per_ms = int(glbl.clock.frequency//1000)
     ms_per_sec = 1000
-    ms_per_user = user_timer if user_timer is not None else 1
+    ms_per_user = int(user_timer) if user_timer is not None else 1
 
     mscnt = Signal(intbv(0, min=0, max=ticks_per_ms))
     seccnt = Signal(intbv(0, min=0, max=ms_per_sec))
     usercnt = Signal(intbv(0, min=0, max=ms_per_user))
 
-    gens += timer_counter(glbl, counter=mscnt, increment=True,
-                          overflow=glbl.ticks_ms)
+    g1 = timer_counter(glbl, counter=mscnt, increment=True,
+                       overflow=glbl.tick_ms)
 
     if include_seconds:
-        gens += timer_counter(glbl, counter=seccnt, increment=glbl.tick_ms,
-                              overflow=glbl.tick_sec)
+        g2 = timer_counter(glbl, counter=seccnt, 
+                           increment=glbl.tick_ms,
+                           overflow=glbl.tick_sec)
+    else:
+        g2 = []
 
     if user_timer is not None:
-        gens += timer_counter(glbl, counter=usercnt, increment=glbl.tick_ms,
-                              overflow=glbl.tick_user)
+        g3 = timer_counter(glbl, counter=usercnt, 
+                           increment=glbl.tick_ms,
+                           overflow=glbl.tick_user)
+    else:
+        g3 = []
 
-    return gens
+    return g1, g2, g3

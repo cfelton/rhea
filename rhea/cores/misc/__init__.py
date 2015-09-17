@@ -1,6 +1,7 @@
 
 from __future__ import absolute_import
 
+from ._glbl_timer_ticks import glbl_timer_ticks
 from ._assign import assign
 from ._serio import io_stub
 

@@ -7,6 +7,7 @@ from rhea.cores.video import VideoMemory
 from rhea.cores.video import color_bars
 from rhea.cores.video.lcd import LT24Interface
 from rhea.cores.video.lcd import lt24lcd
+from rhea.cores.misc import glbl_timer_ticks
 from rhea.utils.test import tb_move_generated_files
 
 
@@ -28,11 +29,12 @@ def mm_lcdsys(clock, reset,
                lcd_rdn, lcd_data)
 
     # modules
+    gtck = glbl_timer_ticks(glbl)
     gbar = color_bars(glbl, vmem, resolution=resolution,
                       color_depth=color_depth)
     glcd = lt24lcd(glbl, vmem, lcd)
 
-    return gbar, glcd
+    return gtck, gbar, glcd
 
 
 def convert():
