@@ -50,7 +50,6 @@ def build_init_rom(init_sequence):
     for cmd, info in init_sequence.items():
         cmd_entry = [len(info['data'])+3] + [info['pause']] + \
                     [cmd] + info['data']
-        print(cmd_entry)
         maxpause = max(maxpause, info['pause'])
         mem = mem + cmd_entry        
     rom = tuple(mem)
@@ -112,8 +111,6 @@ def lt24lcd(glbl, vmem, lcd):
     # --------------------------------------------------------
     # build the display init sequency ROM
     rom, romlen, maxpause = build_init_rom(init_sequence)
-    print(len(rom), romlen, maxpause)
-    print(rom)
     offset = Signal(intbv(0, min=0, max=romlen+1))
     pause = Signal(intbv(0, min=0, max=maxpause+1))
 
@@ -147,8 +144,6 @@ def lt24lcd(glbl, vmem, lcd):
         elif state == states.init_next:
             if glbl.tick_ms:
                 if pause == 0:
-                    print("offset in rom {:d} out of {:d}".format(
-                        int(offset), int(romlen)))
                     if offset == romlen:
                         state.next = states.display_update_start
                     else:
