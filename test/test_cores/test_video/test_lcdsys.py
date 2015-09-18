@@ -64,7 +64,7 @@ def tb_lt24lcd(args=None):
         def tbstim():
             yield reset.pulse(33)
             yield clock.posedge
-            timeout = 33
+            timeout = 33000
             while mvd.update_cnt < 3 and timeout > 0:
                 yield delay(1000)
                 timeout -= 1
@@ -77,8 +77,8 @@ def tb_lt24lcd(args=None):
     vcd = tb_clean_vcd('_lcdlt24')
     traceSignals.timescale = '1ns'
     traceSignals.name = vcd
-    #Simulation(traceSignals(_bench)).run()
-    Simulation(_bench()).run()
+    Simulation(traceSignals(_bench)).run()
+    #Simulation(_bench()).run()
 
 
 @pytest.mark.xfail

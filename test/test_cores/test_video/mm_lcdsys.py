@@ -28,8 +28,9 @@ def mm_lcdsys(clock, reset,
     lcd.assign(lcd_on, lcd_resetn, lcd_csn, lcd_rs, lcd_wrn,
                lcd_rdn, lcd_data)
 
+    # simulation mode, reduce the dead time between real-world ticks
     # modules
-    gtck = glbl_timer_ticks(glbl)
+    gtck = glbl_timer_ticks(glbl, user_timer=16, tick_div=100)
     gbar = color_bars(glbl, vmem, resolution=resolution,
                       color_depth=color_depth)
     glcd = lt24lcd(glbl, vmem, lcd)

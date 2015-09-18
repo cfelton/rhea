@@ -10,6 +10,7 @@ from rhea.system import Global, Clock, Reset
 from rhea.cores.video.lcd import LT24Interface
 from rhea.cores.video.lcd._lt24 import lt24lcd_driver
 from rhea.models.video import LT24LCDDisplay
+from rhea.cores.misc import glbl_timer_ticks
 from rhea.utils.test import tb_clean_vcd
 
 
@@ -30,6 +31,7 @@ def tb_lt24lcd_driver(args):
         tbdut = lt24lcd_driver(glbl, lcd, cmd, datalen, data,
                                datasent, cmd_in_progress, 
                                maxlen=lcd.number_of_pixels)
+        gtck = glbl_timer_ticks(glbl)
         tbmdl = display.process(glbl, lcd)
         tbclk = clock.gen()
         
@@ -85,7 +87,7 @@ def tb_lt24lcd_driver(args):
 
             raise StopSimulation
             
-        return tbdut, tbmdl, tbclk, tbstim
+        return tbdut, tbmdl, tbclk, tbstim, gtck
             
     vcd = tb_clean_vcd(tb_lt24lcd_driver.__name__)
     traceSignals.name = vcd

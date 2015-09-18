@@ -27,7 +27,7 @@ def timer_counter(glbl, counter, increment, overflow):
     return rtl_count, rtl_overflow
 
 
-def glbl_timer_ticks(glbl, include_seconds=True, user_timer=None):
+def glbl_timer_ticks(glbl, include_seconds=True, user_timer=None, tick_div=1):
     """ generate 1 ms and 1 sec ticks
 
     :param glbl:
@@ -44,6 +44,11 @@ def glbl_timer_ticks(glbl, include_seconds=True, user_timer=None):
     ms_per_sec = 1000
     ms_per_user = int(user_timer) if user_timer is not None else 1
 
+    # simulation mode, remove the dead time, the ticks
+    # will be considerably shorter than actual
+    if tick_div > 1:
+        ticks_per_ms = int(ticks_per_ms // tick_div)
+
     mscnt = Signal(intbv(0, min=0, max=ticks_per_ms))
     seccnt = Signal(intbv(0, min=0, max=ms_per_sec))
     usercnt = Signal(intbv(0, min=0, max=ms_per_user))
@@ -56,6 +61,7 @@ def glbl_timer_ticks(glbl, include_seconds=True, user_timer=None):
                            increment=glbl.tick_ms,
                            overflow=glbl.tick_sec)
     else:
+        glbl.tick_sec = None
         g2 = []
 
     if user_timer is not None:
@@ -63,6 +69,7 @@ def glbl_timer_ticks(glbl, include_seconds=True, user_timer=None):
                            increment=glbl.tick_ms,
                            overflow=glbl.tick_user)
     else:
+        glbl.tick_user = None
         g3 = []
 
     return g1, g2, g3

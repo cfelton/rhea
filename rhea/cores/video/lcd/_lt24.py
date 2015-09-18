@@ -5,43 +5,44 @@ from __future__ import division
 This module contains a video driver for the terasic LT24
 LCD display ...
 """
-
+from collections import OrderedDict
 from myhdl import Signal, intbv, enum, always_seq, concat
 
 from ._lt24intf import LT24Interface
 
 
-# the following table defines the LCD init squence,
-# the sequency will be formatted into a ROM
+# the following table defines the LCD init sequence,
+# the sequence will be formatted into a ROM
 #   00: cmd length  (total length)
 #   01  pause, delay in milliseconds
 #   01: cmd
 #   02: cmd data[0]
 #   ...
+# init sequence from http://www.avrfreaks.net/sites/default/files/ILI9341.c
 
-init_sequence = {
-    0x11: dict(data=[], pause=120),   # 
-    0xCF: dict(data=[0x00, 0x83, 0x30], pause=0),
-    0xED: dict(data=[0x64, 0x03, 0x12, 0x81], pause=0),
-    0xE8: dict(data=[0x85, 0x00, 0x78], pause=0),
-    0xCB: dict(data=[0x39, 0x2C, 0x00, 0x34, 0x02], pause=0),
-    0xF7: dict(data=[0x20], pause=0),
-    0xEA: dict(data=[0x00, 0x00], pause=0),
-    0xC0: dict(data=[0x19], pause=0),
-    0xC1: dict(data=[0x11], pause=0),
-    0xC5: dict(data=[0x3C, 0x3F], pause=0),
-    0xC7: dict(data=[0x90], pause=0),
-    0x36: dict(data=[0x28], pause=0),
-    0x3A: dict(data=[0x55], pause=0),
-    0xB1: dict(data=[0x00, 0x17], pause=0),
-    0xB6: dict(data=[0x0A, 0xA2], pause=0),
-    0xF6: dict(data=[0x01, 0x30], pause=0),
-    0xF2: dict(data=[0x00], pause=0),    
-    0x2A: dict(data=[0x00, 0x00, 0x00, 0xEF], pause=0),
-    0x2B: dict(data=[0x00, 0x00, 0x01, 0x40], pause=0),
-    0x11: dict(data=[], pause=120),
-    0x29: dict(data=[], pause=30),    # 
-}
+seq = OrderedDict()
+seq[0x11] = dict(data=[], pause=120)
+seq[0xCF] = dict(data=[0x00, 0x83, 0x30], pause=0)
+seq[0xED] = dict(data=[0x64, 0x03, 0x12, 0x81], pause=0)
+seq[0xE8] = dict(data=[0x85, 0x00, 0x78], pause=0)
+seq[0xCB] = dict(data=[0x39, 0x2C, 0x00, 0x34, 0x02], pause=0)
+seq[0xF7] = dict(data=[0x20], pause=0)
+seq[0xEA] = dict(data=[0x00, 0x00], pause=0)
+seq[0xC0] = dict(data=[0x19], pause=0)
+seq[0xC1] = dict(data=[0x11], pause=0)
+seq[0xC5] = dict(data=[0x3C, 0x3F], pause=0)
+seq[0xC7] = dict(data=[0x90], pause=0)
+seq[0x36] = dict(data=[0x28], pause=0)
+seq[0x3A] = dict(data=[0x55], pause=0)
+seq[0xB1] = dict(data=[0x00, 0x17], pause=0)
+seq[0xB6] = dict(data=[0x0A, 0xA2], pause=0)
+seq[0xF6] = dict(data=[0x01, 0x30], pause=0)
+seq[0xF2] = dict(data=[0x00], pause=0)
+seq[0x2A] = dict(data=[0x00, 0x00, 0x00, 0xEF], pause=0)
+seq[0x2B] = dict(data=[0x00, 0x00, 0x01, 0x40], pause=0)
+seq[0x11] = dict(data=[], pause=120)
+seq[0x29] = dict(data=[], pause=30)
+init_sequence = seq
 
 
 def build_init_rom(init_sequence):
@@ -67,20 +68,23 @@ def lt24lcd(glbl, vmem, lcd):
     # local references to signals in interfaces
     clock, reset = glbl.clock, glbl.reset
 
+    # make sure the user timer is configured
+    assert glbl.tick_user is not None
+
     # write out a new VMEM to the LCD display, a write cycle
     # consists of putting the video data on the bus and latching
     # with the `wrx` signal.  Init (write once) the column and
     # page addresses (cmd = 2A, 2B) then write mem (2C)
     states = enum(
-        'init_wait_reset',
-        'init_start',
-        'init_start_cmd', 
-        'init_next',
+        'init_wait_reset',      # wait for the controller to reset the LCD
+        'init_start',           # start the display init sequence
+        'init_start_cmd',       # send a command, port of the display seq
+        'init_next',            # determine if another command
 
-        'write_cmd_start',
-        'write_cmd',
+        'write_cmd_start',       # command subroutine
+        'write_cmd',             # command subroutine
 
-        'display_update_start',
+        'display_update_start',  # update the display
         'display_update',
         'display_update_next',
         'display_update_end'
@@ -88,7 +92,6 @@ def lt24lcd(glbl, vmem, lcd):
 
     state = Signal(states.init_wait_reset)
     cmd = Signal(intbv(0)[8:])
-    cmddata = [Signal(intbv(0)[8:]) for _ in range(4)]
     return_state = Signal(states.init_wait_reset)
 
     num_hor_pxl, num_ver_pxl = resolution
@@ -106,9 +109,16 @@ def lt24lcd(glbl, vmem, lcd):
     gdrv = lt24lcd_driver(glbl, lcd, cmd, datalen, data,
                           datasent, cmd_in_progress)
 
+    # --------------------------------------------------------
+    # build the display init sequency ROM
     rom, romlen, maxpause = build_init_rom(init_sequence)
-    offset = Signal(intbv(0, min=0, max=romlen))
-    pause = Signal(intbv(0, min=0, max=maxpause))
+    print(len(rom), romlen, maxpause)
+    print(rom)
+    offset = Signal(intbv(0, min=0, max=romlen+1))
+    pause = Signal(intbv(0, min=0, max=maxpause+1))
+
+    # --------------------------------------------------------
+    # state-machine
 
     @always_seq(clock.posedge, reset=reset)
     def rtl_state_machine():
@@ -119,8 +129,9 @@ def lt24lcd(glbl, vmem, lcd):
 
         elif state == states.init_start:
             v = rom[offset]
-            #cmdlen.next = v
-            datalen.next =  v - 3
+            # @todo: change the table to only contain the number of
+            # @todo: bytes to be transferred
+            datalen.next = v - 3
             p = rom[offset+1]
             pause.next = p
             offset.next = offset + 2
@@ -136,7 +147,9 @@ def lt24lcd(glbl, vmem, lcd):
         elif state == states.init_next:
             if glbl.tick_ms:
                 if pause == 0:
-                    if offset == romlen-1:
+                    print("offset in rom {:d} out of {:d}".format(
+                        int(offset), int(romlen)))
+                    if offset == romlen:
                         state.next = states.display_update_start
                     else:
                         state.next = states.init_start
@@ -194,7 +207,6 @@ def lt24lcd(glbl, vmem, lcd):
             # @todo: wait for next update
             if not cmd_in_progress:
                 state.next = states.display_update
-
 
     return gdrv, rtl_state_machine
 
@@ -258,7 +270,7 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
             lcd.rdn.next = True
             lcd.dcn.next = True        
             lcd.on.next = True
-            xfercnt.next = 2
+            xfercnt.next = 2  # used as ms counter
             lcd.reset_complete.next = False
             state.next = states.reset
 
@@ -266,7 +278,7 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
             if glbl.tick_ms:
                 if xfercnt == 0:
                     lcd.resetn.next = False
-                    xfercnt.next = 10
+                    xfercnt.next = 10  # used as ms counter
                     state.next = states.reset_wait
                 else:
                     xfercnt.next = xfercnt - 1
@@ -297,17 +309,21 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
                 lcd.rdn.next = True
                 lcd.dcn.next = True                
                 
-        # start a write command`
+        # start a write command
         elif state == states.write_command_start:
             lcd.wrn.next = True
             state.next = states.write_command_data
 
         # setup the data portion of the command
         elif state == states.write_command_data:
-            lcd.dcn.next = True 
-            lcd.wrn.next = False
+            lcd.dcn.next = True
             xfercnt.next = 0
-            state.next = states.write_command_xsetup
+            if datalen == 0:
+                lcd.wrn.next = True
+                state.next = states.end
+            else:
+                lcd.wrn.next = False
+                state.next = states.write_command_xsetup
 
         # transfer the data setup
         elif state == states.write_command_xsetup:
@@ -328,6 +344,7 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
 
         # end of the transaction
         elif state == states.end:
+            lcd.csn.next = True
             cmd_in_progress.next = False
             if cmd == 0:
                 state.next = states.wait

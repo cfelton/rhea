@@ -19,7 +19,8 @@ class VideoDisplay(object):
         self.num_hpxl, self.num_vpxl = self.resolution
         self.name = 'unknown'
         self.update_cnt = 0
-        
+        self._col, self._row = 0, 0
+
         if max(color_depth) <= 8:
             arraytype = 'B'
         elif max(color_depth) <= 16:
@@ -31,13 +32,48 @@ class VideoDisplay(object):
         # in the process of updating image
         #self.uvmem = [array(arraytype, [0 for _ in range(res[0])])
         #              for _ in range(res[1])]
-        self.uvmem = [[None for _ in range(res[0])]
-                      for _ in range(res[1])]
+        self._uvmem = [[None for _ in range(res[0])]
+                        for _ in range(res[1])]
         # static image
         #self.vvmem = [array(arraytype, [0 for _ in range(res[0])])
         #              for _ in range(res[1])]
-        self.vvmem = [[None for _ in range(res[0])]
-                      for _ in range(res[1])]
+        self._vvmem = [[None for _ in range(res[0])]
+                        for _ in range(res[1])]
+
+    def reset_cursor(self):
+        self._col, self._row = 0, 0
+
+    def update_next_pixel(self, val):
+        col, row = self._col, self._row
+        assert col < self.num_hpxl
+        assert row < self.num_vpxl
+
+        self._uvmem[row][col] = int(val)
+
+        col += 1
+        if col == self.num_hpxl:
+            col = 0
+            row += 1
+        if row == self.num_vpxl:
+            row = 0
+
+        if col == 0 and row == 0:
+            self.update_cnt += 1
+
+        self._col, self._row = col, row
+
+    def set_pixel(self, col, row, val):
+        """
+        :param col:
+        :param row:
+        :return:
+        """
+        assert col < self.num_hpxl
+        assert row < self.num_vpxl
+        self._uvmem[row][col] = int(val)
+
+        # assume a frame is updated sequentially, once the end
+        # is reached a frame update is incremented
 
     def create_save_image(self, framen, frame):
         """ 

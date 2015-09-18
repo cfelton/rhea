@@ -42,6 +42,7 @@ class LT24LCDDisplay(VideoDisplay):
                 command_in_progress = False
                 data_in_progress = False
                 numbytes = 0
+                self.reset_cursor()
 
                 # wait for a new command
                 yield lcd.csn.negedge
@@ -64,7 +65,10 @@ class LT24LCDDisplay(VideoDisplay):
                             if command_in_progress:
                                 cmdbytes[numbytes] = int(lcd.data[8:])
                             else:
-                                databytes[numbytes] = int(lcd.data)
+                                if cmd == 0x2C:
+                                    self.update_next_pixel(int(lcd.data))
+                                else:
+                                    databytes[numbytes] = int(lcd.data)
                             numbytes += 1
 
                     wrn, rdn = bool(lcd.wrn), bool(lcd.rdn)
