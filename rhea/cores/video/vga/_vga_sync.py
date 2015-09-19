@@ -73,8 +73,8 @@ def vga_sync(
     (A,B,C,D,E,O,
      P,Q,R,S,X,Z,) = calc_timings(clock.frequency, resolution,
                                   refresh_rate, line_rate)
-    # @todo: ??? FullScree == 0, this seems wrong ???
-    FullScreen = O
+    # The following is "O" (oh), the fullscreen is the O (oh) parameter
+    full_screen = O
 
     # counters to count the pixel clock (clock)
     HPXL, VPXL = res
@@ -96,14 +96,14 @@ def vga_sync(
     def rtl_sync():    
         # horizontal and vertical counters
         hcnt[:] = hcnt + 1
-        vcnt[:] = vcnt + 1
-        if vcnt == FullScreen:
+        if vcnt == full_screen:
             vcnt[:] = 0
             hcnt[:] = 0
         elif vcnt > R:
             hcnt[:] = A-1
         elif hcnt >= A:
             hcnt[:] = 0
+            vcnt[:] = vcnt + 1
 
         # clock divider for pixel enable
         xcnt[:] = xcnt + 1

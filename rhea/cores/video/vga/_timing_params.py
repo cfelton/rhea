@@ -42,7 +42,7 @@ def calc_timings(frequency, resolution,
       vertical back porch    : left overs
       vertical front porch   : ~320-340us
 
-    Note: because mfgs could specificy many different values for the 
+    Note: because mfgs could specify many different values for the
           porches (at least back in the day) it isn't that useful to 
           try and match many different mfg standards. The porch 
           determines where the pic is on the screen.  Most monitors 

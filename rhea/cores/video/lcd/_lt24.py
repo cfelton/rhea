@@ -172,12 +172,12 @@ def lt24lcd(glbl, vmem, lcd):
 
         elif state == states.display_update:
             hcnt[:] = hcnt + 1
-            vcnt[:] = vcnt + 1
             if vcnt == num_ver_pxl-1:
                 hcnt[:] = 0
                 vcnt[:] = 0
             elif hcnt == num_hor_pxl-1:
                 hcnt[:] = 0
+                vcnt[:] = vcnt + 1
 
             # this will be the pixel for the next write cycle
             vmem.hpxl.next = hcnt
