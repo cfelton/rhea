@@ -72,7 +72,6 @@ def color_bars(glbl, vmem, resolution=(640, 480), color_depth=(10, 10, 10)):
         for ii in range(num_colors):
             if vmem.hpxl > (ii*pw):
                 sel = ii
-                break
         ssel.next = sel
         pixel.next = cbarvals[sel]
 
