@@ -99,6 +99,7 @@ class VideoDisplay(object):
         im = Image.new('RGB', self.resolution)
         for rr, row in enumerate(frame):
             for cc, rgb in enumerate(row):
+                # @todo modify the color_depth to match (8,8,8)
                 im.putpixel((cc, rr), tuple(rgb))
                 
         if not os.path.isdir("output"):
