@@ -49,7 +49,7 @@ def build_init_rom(init_sequence):
         assert isinstance(info, dict)
         cmd_entry = [len(info['data'])+3] + [info['pause']] + \
                     [info['cmd']] + info['data']
-        print("{cmd} {pause} {data} {bb}".format(
+        print("{cmd:02X} {pause} {data} {bb}".format(
               bb=list(map(hex, cmd_entry)), **info))
         maxpause = max(maxpause, info['pause'])
         mem = mem + cmd_entry
@@ -102,12 +102,13 @@ def lt24lcd(glbl, vmem, lcd):
     datalen = Signal(intbv(0, min=0, max=number_of_pixels+1))
     data = Signal(intbv(0)[16:])
     datasent = Signal(bool(0))
+    datalast = Signal(bool(0))
     cmd_in_progress = Signal(bool(0))
 
     # --------------------------------------------------------
     # LCD driver
     gdrv = lt24lcd_driver(glbl, lcd, cmd, datalen, data,
-                          datasent, cmd_in_progress)
+                          datasent, datalast, cmd_in_progress)
 
     # --------------------------------------------------------
     # build the display init sequency ROM
@@ -138,7 +139,12 @@ def lt24lcd(glbl, vmem, lcd):
         elif state == states.init_start_cmd:
             v = rom[offset]
             cmd.next = v
-            offset.next = offset + 1
+            if datalen > 0:
+                v = rom[offset+1]
+                data.next = v
+                offset.next = offset + 2
+            else:
+                offset.next = offset + 1
             state.next = states.write_cmd_start
             return_state.next = states.init_next
 
@@ -156,7 +162,7 @@ def lt24lcd(glbl, vmem, lcd):
 
         elif state == states.write_cmd:
             if cmd_in_progress:
-                if datasent:
+                if datasent and not datalast:
                     v = rom[offset]
                     data.next = v
                     offset.next = offset+1
@@ -192,7 +198,7 @@ def lt24lcd(glbl, vmem, lcd):
 
         elif state == states.display_update_next:
             if cmd_in_progress:
-                if datasent:
+                if datasent and not datalast:
                     state.next = states.display_update
             else:
                 cmd.next = 0
@@ -207,7 +213,7 @@ def lt24lcd(glbl, vmem, lcd):
 
 
 def lt24lcd_driver(glbl, lcd, cmd, datalen, data, 
-                   datasent, cmd_in_progress, maxlen=76800):
+                   datasent, datalast, cmd_in_progress, maxlen=76800):
     """
     :param glbl:
     :param lcd:
@@ -325,6 +331,8 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
             lcd.wrn.next = False
             lcd.data.next = data 
             datasent.next = True
+            if xfercnt == datalen-1:
+                datalast.next = True
             xfercnt.next = xfercnt + 1
             state.next = states.write_command_xlatch
 
@@ -332,6 +340,7 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
         elif state == states.write_command_xlatch:
             lcd.wrn.next = True
             datasent.next = False
+            datalast.next = False
             if xfercnt == datalen:
                 state.next = states.end
             else:
