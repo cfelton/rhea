@@ -5,7 +5,6 @@ from __future__ import division
 This module contains a video driver for the terasic LT24
 LCD display ...
 """
-from collections import OrderedDict
 from myhdl import Signal, intbv, enum, always_seq, concat
 
 from ._lt24intf import LT24Interface
@@ -19,37 +18,37 @@ from ._lt24intf import LT24Interface
 #   02: cmd data[0]
 #   ...
 # init sequence from http://www.avrfreaks.net/sites/default/files/ILI9341.c
-
-seq = OrderedDict()
-seq[0x11] = dict(data=[], pause=120)
-seq[0xCF] = dict(data=[0x00, 0x83, 0x30], pause=0)
-seq[0xED] = dict(data=[0x64, 0x03, 0x12, 0x81], pause=0)
-seq[0xE8] = dict(data=[0x85, 0x00, 0x78], pause=0)
-seq[0xCB] = dict(data=[0x39, 0x2C, 0x00, 0x34, 0x02], pause=0)
-seq[0xF7] = dict(data=[0x20], pause=0)
-seq[0xEA] = dict(data=[0x00, 0x00], pause=0)
-seq[0xC0] = dict(data=[0x19], pause=0)
-seq[0xC1] = dict(data=[0x11], pause=0)
-seq[0xC5] = dict(data=[0x3C, 0x3F], pause=0)
-seq[0xC7] = dict(data=[0x90], pause=0)
-seq[0x36] = dict(data=[0x28], pause=0)
-seq[0x3A] = dict(data=[0x55], pause=0)
-seq[0xB1] = dict(data=[0x00, 0x17], pause=0)
-seq[0xB6] = dict(data=[0x0A, 0xA2], pause=0)
-seq[0xF6] = dict(data=[0x01, 0x30], pause=0)
-seq[0xF2] = dict(data=[0x00], pause=0)
-seq[0x2A] = dict(data=[0x00, 0x00, 0x00, 0xEF], pause=0)
-seq[0x2B] = dict(data=[0x00, 0x00, 0x01, 0x40], pause=0)
-seq[0x11] = dict(data=[], pause=120)
-seq[0x29] = dict(data=[], pause=30)
+seq = []
+seq += [dict(cmd=0x11, data=[], pause=120)]
+seq += [dict(cmd=0xCF, data=[0x00, 0x83, 0x30], pause=0)]
+seq += [dict(cmd=0xED, data=[0x64, 0x03, 0x12, 0x81], pause=0)]
+seq += [dict(cmd=0xE8, data=[0x85, 0x00, 0x78], pause=0)]
+seq += [dict(cmd=0xCB, data=[0x39, 0x2C, 0x00, 0x34, 0x02], pause=0)]
+seq += [dict(cmd=0xF7, data=[0x20], pause=0)]
+seq += [dict(cmd=0xEA, data=[0x00, 0x00], pause=0)]
+seq += [dict(cmd=0xC0, data=[0x19], pause=0)]
+seq += [dict(cmd=0xC1, data=[0x11], pause=0)]
+seq += [dict(cmd=0xC5, data=[0x3C, 0x3F], pause=0)]
+seq += [dict(cmd=0xC7, data=[0x90], pause=0)]
+seq += [dict(cmd=0x36, data=[0x28], pause=0)]
+seq += [dict(cmd=0x3A, data=[0x55], pause=0)]
+seq += [dict(cmd=0xB1, data=[0x00, 0x17], pause=0)]
+seq += [dict(cmd=0xB6, data=[0x0A, 0xA2], pause=0)]
+seq += [dict(cmd=0xF6, data=[0x01, 0x30], pause=0)]
+seq += [dict(cmd=0xF2, data=[0x00], pause=0)]
+seq += [dict(cmd=0x2A, data=[0x00, 0x00, 0x00, 0xEF], pause=0)]
+seq += [dict(cmd=0x2B, data=[0x00, 0x00, 0x01, 0x40], pause=0)]
+seq += [dict(cmd=0x11, data=[], pause=120)]
+seq += [dict(cmd=0x29, data=[], pause=30)]
 init_sequence = seq
 
 
 def build_init_rom(init_sequence):
     mem, maxpause = [], 0
-    for cmd, info in init_sequence.items():
+    for info in init_sequence:
+        assert isinstance(info, dict)
         cmd_entry = [len(info['data'])+3] + [info['pause']] + \
-                    [cmd] + info['data']
+                    [info['cmd']] + info['data']
         maxpause = max(maxpause, info['pause'])
         mem = mem + cmd_entry        
     rom = tuple(mem)
@@ -111,6 +110,7 @@ def lt24lcd(glbl, vmem, lcd):
     # --------------------------------------------------------
     # build the display init sequency ROM
     rom, romlen, maxpause = build_init_rom(init_sequence)
+    print(rom)
     offset = Signal(intbv(0, min=0, max=romlen+1))
     pause = Signal(intbv(0, min=0, max=maxpause+1))
 
