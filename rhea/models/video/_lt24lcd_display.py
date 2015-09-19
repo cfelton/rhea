@@ -38,7 +38,7 @@ class LT24LCDDisplay(VideoDisplay):
 
             while True:
                 command_in_progress = False
-                data_in_progress = False
+                # numbytes actually the number of transfers
                 numbytes, cmdbytes = 0, []
                 self.reset_cursor()
 
@@ -52,8 +52,8 @@ class LT24LCDDisplay(VideoDisplay):
                     if lcd.csn and command_in_progress:
                         regfile[cmd] = copy(cmdbytes)
                         command_in_progress = False
-                        print("{:<8d}:LT24: cmd 0x{:02X} data {}".format(
-                            now(), cmd, list(map(hex, cmdbytes[:])), ))
+                        print("{:<8d}:LT24: cmd 0x{:02X}, numdata {}, data {}".format(
+                            now(), cmd, numbytes, list(map(hex, cmdbytes[:])), ))
                     # check for rising edge of wrn or rdn
                     if not wrn and lcd.wrn:
                         if not lcd.dcn:

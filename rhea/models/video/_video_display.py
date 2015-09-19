@@ -58,7 +58,11 @@ class VideoDisplay(object):
             row = 0
 
         if col == 0 and row == 0:
+            # @todo: remove print add option to create png or not
+            print("full display update")
             self.update_cnt += 1
+            self._vvmem = deepcopy(self._uvmem)
+            self.create_save_image(self.update_cnt, self._vvmem)
 
         self._col, self._row = col, row
 

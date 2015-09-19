@@ -95,6 +95,8 @@ def lt24lcd(glbl, vmem, lcd):
     return_state = Signal(states.init_wait_reset)
 
     num_hor_pxl, num_ver_pxl = resolution
+    print("resolution {}x{} = {} number of pixes".format(
+          num_hor_pxl, num_ver_pxl, number_of_pixels))
     hcnt = intbv(0, min=0, max=num_hor_pxl)
     vcnt = intbv(0, min=0, max=num_ver_pxl)
 
@@ -177,13 +179,14 @@ def lt24lcd(glbl, vmem, lcd):
                 datalen.next = number_of_pixels
 
         elif state == states.display_update:
-            hcnt[:] = hcnt + 1
             if vcnt == num_ver_pxl-1:
                 hcnt[:] = 0
                 vcnt[:] = 0
             elif hcnt == num_hor_pxl-1:
                 hcnt[:] = 0
                 vcnt[:] = vcnt + 1
+            else:
+                hcnt[:] = hcnt + 1
 
             # this will be the pixel for the next write cycle
             vmem.hpxl.next = hcnt
