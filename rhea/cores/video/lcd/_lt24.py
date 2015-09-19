@@ -36,10 +36,10 @@ seq += [dict(cmd=0xB1, data=[0x00, 0x17], pause=0)]
 seq += [dict(cmd=0xB6, data=[0x0A, 0xA2], pause=0)]
 seq += [dict(cmd=0xF6, data=[0x01, 0x30], pause=0)]
 seq += [dict(cmd=0xF2, data=[0x00], pause=0)]
-seq += [dict(cmd=0x2A, data=[0x00, 0x00, 0x00, 0xEF], pause=0)]
-seq += [dict(cmd=0x2B, data=[0x00, 0x00, 0x01, 0x40], pause=0)]
 seq += [dict(cmd=0x11, data=[], pause=120)]
 seq += [dict(cmd=0x29, data=[], pause=30)]
+seq += [dict(cmd=0x2A, data=[0x00, 0x00, 0x00, 0xEF], pause=0)]
+seq += [dict(cmd=0x2B, data=[0x00, 0x00, 0x01, 0x40], pause=0)]
 init_sequence = seq
 
 
@@ -49,8 +49,10 @@ def build_init_rom(init_sequence):
         assert isinstance(info, dict)
         cmd_entry = [len(info['data'])+3] + [info['pause']] + \
                     [info['cmd']] + info['data']
+        print("{cmd} {pause} {data} {bb}".format(
+              bb=list(map(hex, cmd_entry)), **info))
         maxpause = max(maxpause, info['pause'])
-        mem = mem + cmd_entry        
+        mem = mem + cmd_entry
     rom = tuple(mem)
     return rom, len(rom), maxpause
 
@@ -110,7 +112,6 @@ def lt24lcd(glbl, vmem, lcd):
     # --------------------------------------------------------
     # build the display init sequency ROM
     rom, romlen, maxpause = build_init_rom(init_sequence)
-    print(rom)
     offset = Signal(intbv(0, min=0, max=romlen+1))
     pause = Signal(intbv(0, min=0, max=maxpause+1))
 
@@ -142,13 +143,12 @@ def lt24lcd(glbl, vmem, lcd):
             return_state.next = states.init_next
 
         elif state == states.init_next:
-            if glbl.tick_ms:
-                if pause == 0:
-                    if offset == romlen:
-                        state.next = states.display_update_start
-                    else:
-                        state.next = states.init_start
+            if pause == 0:
+                if offset == romlen:
+                    state.next = states.display_update_start
                 else:
+                    state.next = states.init_start
+            elif glbl.tick_ms:
                     pause.next = pause - 1
 
         elif state == states.write_cmd_start:

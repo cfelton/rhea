@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from copy import copy
 
-from myhdl import Signal, intbv, enum, instance, delay
+from myhdl import Signal, intbv, enum, instance, delay, now
 from PIL import Image
 
 from ._video_display import VideoDisplay
@@ -35,24 +35,25 @@ class LT24LCDDisplay(VideoDisplay):
         # for a command.
         @instance
         def beh():
-            cmdbytes = []
-            databytes = []
 
             while True:
                 command_in_progress = False
                 data_in_progress = False
-                numbytes = 0
+                numbytes, cmdbytes = 0, []
                 self.reset_cursor()
 
                 # wait for a new command
+                # @todo: add timing checks
                 yield lcd.csn.negedge
                 wrn, rdn = bool(lcd.wrn), bool(lcd.rdn)
 
                 # handle a transaction (csn low pulse)
-                while not lcd.csn and command_in_progress:
-                    if not lcd.csn and command_in_progress:
+                while not lcd.csn or command_in_progress:
+                    if lcd.csn and command_in_progress:
                         regfile[cmd] = copy(cmdbytes)
                         command_in_progress = False
+                        print("{:8d}:LT24: cmd 0x{:02X} data {}".format(
+                            now(), cmd, list(map(hex, cmdbytes[:])), ))
                     # check for rising edge of wrn or rdn
                     if not wrn and lcd.wrn:
                         if not lcd.dcn:
@@ -63,13 +64,13 @@ class LT24LCDDisplay(VideoDisplay):
                                 regfile[cmd] = []
                         else:
                             if command_in_progress:
-                                cmdbytes[numbytes] = int(lcd.data[8:])
-                            else:
                                 if cmd == 0x2C:
                                     self.update_next_pixel(int(lcd.data))
                                 else:
-                                    databytes[numbytes] = int(lcd.data)
-                            numbytes += 1
+                                    cmdbytes += [int(lcd.data[8:])]
+                                numbytes += 1
+                            else:
+                                assert False, "Unexpected data!"
 
                     wrn, rdn = bool(lcd.wrn), bool(lcd.rdn)
                     yield delay(2)
