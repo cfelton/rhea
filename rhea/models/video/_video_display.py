@@ -2,7 +2,7 @@
 import os
 from array import array
 from copy import deepcopy
-
+from myhdl import intbv
 from PIL import Image
 
 
@@ -48,7 +48,19 @@ class VideoDisplay(object):
         assert col < self.num_hpxl
         assert row < self.num_vpxl
 
-        self._uvmem[row][col] = int(val)
+        if isinstance(val, int):
+            nbits = sum(self.color_depth)
+            val = intbv(val)[nbits:]
+            cd = self.color_depth
+            rgb = (val[nbits:nbits-cd[0]],
+                   val[nbits-cd[0]:cd[2]],
+                   val[cd[2]:0],)
+        elif isinstance(val, tuple):
+            rgb = val
+        else:
+            raise ValueError
+
+        self._uvmem[row][col] = rgb
 
         col += 1
         if col == self.num_hpxl:
