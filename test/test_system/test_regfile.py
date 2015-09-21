@@ -234,7 +234,10 @@ def test_convert():
     clock = Signal(bool(0))
     reset = ResetSignal(0, active=0, async=True)
     mon = Signal(intbv(0)[8:])
+    
+    toVerilog.directory = 'output'
     toVerilog(m_per_top, clock, reset, mon)
+    toVHDL.directory = 'output'
     toVHDL(m_per_top, clock, reset, mon)
 
     

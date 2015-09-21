@@ -1,21 +1,96 @@
 
 from __future__ import absolute_import
 
+from math import log, ceil
 from myhdl import Signal, intbv
 
-from .. import Clock
-from .. import Reset
+from .. import Clock, Reset 
 from . import MemMap
 
-class AXI4(MemMap):
+
+class AXI4Lite(MemMap):
     def __init__(self, glbl, data_width=8, address_width=16):
-
-        # @todo: get clock and reset from global
-        self.aclk = Clock(0)
-        self.aresetn = Reset(0, active=0, async=False)
-
-        self.awid = Signal(intbv(0)[4:0])
-        self.awvalid = Signal(bool(0))
-
+        """ 
+        """
         super(AXI4, self).__init__(data_width=data_width,
                                    address_width=address_width) 
+        self.aclk = glbl.clock
+        self.aresetn = glbl.reset
+        
+        self.awaddr = Signal(intbv(0)[address_width:])
+        self.awprot = signal(intbv(0)[3:])
+        self.awvalid = Signal(bool(0))
+        self.awready = Signal(bool(0))
+        
+        self.wdata = Signal(intbv(0)[data_width:])
+        num_strb_bits = int(ceil(len(data_width)/8))
+        self.wstrb = Signal(intbv(0)[num_strb_bits:])
+        self.wvalid = Signal(bool(0))
+        self.wready = Signal(bool(0))
+        
+        self.bresp = Signal(intbv(0)[2:])
+        self.bvalid = Signal(bool(0))
+        self.bready = Signal(bool(0))
+        
+        self.araddr = Signal(intbv(0)[address_width:])
+        self.arprot = Signal(intbv(0)[3:])
+        self.arvalid = Signal(bool(0))
+        self.arready = Signal(bool(0))
+        
+        self.rdata = Signal(intbv(0)[data_width:])
+        self.rresp = Signal(intbv(0)[2:])
+        self.rvalid = Signal(bool(0))
+        self.rready = Signal(bool(0))
+        
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Transactors
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        
+    def write(self, addr, val):
+        """ Emulate a write transfer from a master
+        The following is a very basic write transaction, future 
+        enhancements are needed to verify/validate of features of 
+        the AXI4Lite bus. 
+        
+        @todo: add pritority  (not often used)
+        @todo: add byte strobe
+        @todo: add response checks
+        @todo: and checks for all channel acks
+        """
+        self.awaddr.next = addr 
+        self.awvalid.next = True
+        self.wdata.next = val 
+        self.wvalid.next = True 
+        self.bready.next = True 
+        tickcount = 0
+        yield self.aclk.posedge
+        while not self.wready and tickcount < self.timeout:
+            yield self.aclk.posedge
+            tickcount += 1 
+        self.awvalid.next = False 
+        self.wvalid.next = False 
+        self.bready.next = False 
+    
+    def read(self, addr):
+        pass
+    
+    def ack(self, data=None):
+        pass
+    
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Modules
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def map_generic(self, generic):
+        pass
+    
+    def peripheral_regfile(self, glbl, regfile, name):
+        pass
+    
+    def controller(self, generic):
+        pass
+    
+    def peripheral(self, generic):
+        pass 
+    
+    
+
+

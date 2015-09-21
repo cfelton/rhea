@@ -19,7 +19,7 @@ from .memmap._memmap import MemMap
 from .memmap._barebone import Barebone
 from .memmap._wishbone import Wishbone
 from .memmap._avalonmm import AvalonMM
-from .memmap._axi4 import AXI4
+from .memmap._axi4 import AXI4Lite
 
 # streaming interfaces
 from .fifobus._fifobus import FIFOBus
