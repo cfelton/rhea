@@ -104,6 +104,12 @@ class VideoDisplay(object):
         # assume a frame is updated sequentially, once the end
         # is reached a frame update is incremented
 
+    def _adjust_color_depth(self, rgb):
+        argb = rgb
+        if self.color_depth != (8, 8, 8):
+            argb = [(vv/cc)*256 for vv,cc in zip(rgb, self.color_depth)]
+        return argb
+
     def create_save_image(self, framen, frame):
         """ 
         :param framen: frame number
@@ -112,7 +118,7 @@ class VideoDisplay(object):
         im = Image.new('RGB', self.resolution)
         for rr, row in enumerate(frame):
             for cc, rgb in enumerate(row):
-                # @todo modify the color_depth to match (8,8,8)
+                rgb = self._adjust_color_depth(rgb)
                 im.putpixel((cc, rr), tuple(rgb))
                 
         if not os.path.isdir("output"):
