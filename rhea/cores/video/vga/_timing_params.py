@@ -28,7 +28,7 @@ def calc_timings(frequency, resolution,
     D : RGB pixel , ticks
     E : horizontal front porch, ticks
     
-    O : one full screen, ticks
+    F : one full screen, ticks
     P : vertical sync, ticks
     Q : vertical back portch, ticks
     R : all lines, ticks
@@ -70,7 +70,7 @@ def calc_timings(frequency, resolution,
     R = res[1] * (B+C+D+E)       # all lines
     S = round(340e-6/period)     # vertical front porch
     Q = vticks - (P + S + R)     # vertical back porch
-    O = sum([P, Q, R, S])        # full screen ~= refresh_rate
+    F = sum([P, Q, R, S])        # full screen ~= refresh_rate
     # the pixel count (pixel clock)
     Z = res[0]*res[1]
 
@@ -88,8 +88,8 @@ def calc_timings(frequency, resolution,
         print("   D: horizontal active: ......... %d" % (D))
         print("   E: horizontal front porch: .... %d" % (E))
         
-        print("   O: full screen ................ %d, (%.2f Hz)" % (
-            O, 1/(O*period)))
+        print("   F: full screen ................ %d, (%.2f Hz)" % (
+            F, 1/(F*period)))
         print("   P: vertical pulse width ....... %d" % (P))
         print("   Q: vertical back porch ........ %d" % (Q))
         print("   R: all lines .................. %d" % (R))
@@ -99,7 +99,7 @@ def calc_timings(frequency, resolution,
 
     # @todo: create files for the other languages.
     
-    return list(map(int, (A, B, C, D, E, O, P, Q, R, S, X, Z,)))
+    return list(map(int, (A, B, C, D, E, F, P, Q, R, S, X, Z,)))
 
 
 def get_timing_dict(frequency, resolution,
@@ -114,7 +114,7 @@ def get_timing_dict(frequency, resolution,
                'C': tv[2],
                'D': tv[2],
                'E': tv[2],
-               'O': tv[2],
+               'F': tv[2],
                'P': tv[2],
                'Q': tv[2],
                'R': tv[2],

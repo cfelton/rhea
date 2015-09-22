@@ -95,7 +95,8 @@ def vga_sync(
     @always_seq(clock.posedge, reset=reset)
     def rtl_sync():    
         # horizontal and vertical counters
-        hcnt[:] = hcnt + 1
+        hcnt[:] = hcnt + 1  # horizontal count only
+        vcnt[:] = vcnt + 1  # all pixel count, horizontal and veritical
         if vcnt == full_screen:
             vcnt[:] = 0
             hcnt[:] = 0
@@ -103,7 +104,6 @@ def vga_sync(
             hcnt[:] = A-1
         elif hcnt >= A:
             hcnt[:] = 0
-            vcnt[:] = vcnt + 1
 
         # clock divider for pixel enable
         xcnt[:] = xcnt + 1

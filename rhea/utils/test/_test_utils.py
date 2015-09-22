@@ -4,6 +4,7 @@ import shutil
 from glob import glob
 import argparse
 
+
 def tb_argparser():
     """ common command line arguments
     """
@@ -13,6 +14,21 @@ def tb_argparser():
     parser.add_argument('--convert', action='store_true')
     return parser
 
+
+def tb_run_testbench(bench, args=None):
+    if args is None:
+        args = tb_argparser().parse_args()
+    vcd = tb_clean_vcd(bench.__name__)
+    if args.trace:
+        # @todo: the following (timescale) needs to be set 
+        traceSignals.timescale = '1ns'
+        traceSignals.name = vcd
+        gens = traceSignals(bench)
+    else:
+        gens = bench()
+        
+    Simulation(gens).run()
+    
 
 def tb_move_generated_files():
     """ move generated files 

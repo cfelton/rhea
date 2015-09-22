@@ -16,7 +16,7 @@ class LT24LCDDisplay(VideoDisplay):
         self.resolution = res = (240, 320)
         self.color_depth = cd = (5, 6, 5)
         super(LT24LCDDisplay, self).__init__(resolution=res, color_depth=cd)
-        self.name = 'lt24lcd'
+        self.name = 'lt24lcd'                
 
     def process(self, glbl, lcd):
         """

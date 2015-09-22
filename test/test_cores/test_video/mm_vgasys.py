@@ -20,7 +20,7 @@ def mm_vgasys(
 
     # ~~~~[PARAMETERS]~~~~
     resolution=(640, 480,),
-    color_depth=(10, 10, 10,),
+    color_depth=(8, 8, 8,),
     refresh_rate=60,
     line_rate=31250
     ):
@@ -49,7 +49,7 @@ def mm_vgasys(
     return gvga, gbar
 
  
-def convert(color_depth=(10, 10, 10,)):
+def convert(color_depth=(8, 8, 8,)):
     """ convert the vgasys to verilog
     """
     clock = Clock(0, frequency=50e6)

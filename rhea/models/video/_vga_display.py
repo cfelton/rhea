@@ -90,8 +90,6 @@ class VGADisplay(VideoDisplay):
                     self.state = self.States.DISPLAY
                 elif self.state == self.States.END:
                     self.state = self.States.INIT
-                    self.update_cnt += 1
-                    self.create_save_image()
                 else:
                     yield self.StateFuncs[self.state](glbl, vga, counters)
 
@@ -113,6 +111,7 @@ class VGADisplay(VideoDisplay):
             if vga.state == vga.States.ACTIVE:
                 pixel = list(map(int, (vga.red, vga.green, vga.blue,)))
                 #print(c.vcnt, c.hcnt)
+                # determine if this is the last pixel for the display
                 last = c.hcnt == self.num_hpxl-1 and c.vcnt == self.num_vpxl-1
                 self.set_pixel(c.hcnt, c.vcnt, pixel, last)
                 c.hcnt += 1

@@ -1,6 +1,8 @@
 
+from __future__ import print_function
+from __future__ import division
+
 import os
-from array import array
 from copy import deepcopy
 from datetime import datetime
 from myhdl import intbv, now
@@ -21,23 +23,13 @@ class VideoDisplay(object):
         self.name = 'unknown'
         self.update_cnt = 0
         self._col, self._row = 0, 0
-
-        if max(color_depth) <= 8:
-            arraytype = 'B'
-        elif max(color_depth) <= 16:
-            arraytype = 'H'
-        elif max(color_depth) <= 32:
-            arraytype = 'L'
+        self.color_depth=color_depth
 
         # create a container to emulate the video display
         # in the process of updating image
-        #self.uvmem = [array(arraytype, [0 for _ in range(res[0])])
-        #              for _ in range(res[1])]
         self._uvmem = [[None for _ in range(res[0])]
                         for _ in range(res[1])]
         # static image
-        #self.vvmem = [array(arraytype, [0 for _ in range(res[0])])
-        #              for _ in range(res[1])]
         self._vvmem = [[None for _ in range(res[0])]
                         for _ in range(res[1])]
                         
@@ -46,6 +38,11 @@ class VideoDisplay(object):
         self.time_start = datetime.now()
         self.time_last = datetime.now()
 
+    def __str__(self):
+        s = "{} x {} emulated display with {} colors".format(
+             self.resolution[0], self.resolution[1], self.color_depth)
+        return s
+        
     def get_time(self):
         """ get the amount of real time from creation to now """
         return datetime.now() - self.time_start
@@ -62,9 +59,9 @@ class VideoDisplay(object):
             nbits = sum(self.color_depth)
             val = intbv(val)[nbits:]
             cd = self.color_depth
-            rgb = (val[nbits:nbits-cd[0]],
-                   val[nbits-cd[0]:cd[2]],
-                   val[cd[2]:0],)
+            rgb = (int(val[nbits:nbits-cd[0]]),
+                   int(val[nbits-cd[0]:cd[2]]),
+                   int(val[cd[2]:0]),)
         elif isinstance(val, tuple):
             rgb = val
         else:
@@ -101,13 +98,18 @@ class VideoDisplay(object):
         assert row < self.num_vpxl
         self._uvmem[row][col] = rgb
         if last:
+            self.update_cnt += 1
+            td = datetime.now() - self.time_last
+            print("{:<10d}: full display update {} ({})".format(now(), self.update_cnt, td))
             self._vvmem = deepcopy(self._uvmem)
-
+            self.create_save_image()
+            self.time_last = datetime.now()
+        return
 
     def _adjust_color_depth(self, rgb):
         argb = rgb
         if self.color_depth != (8, 8, 8):
-            argb = [(vv/cc)*256 for vv,cc in zip(rgb, self.color_depth)]
+            argb = [(vv/cc)*256 for vv ,cc in zip(rgb, self.color_depth)]
             argb = list(map(int, argb))
         return argb
 
@@ -118,17 +120,36 @@ class VideoDisplay(object):
         """
         framen = self.update_cnt   # latest display update
         frame = self._vvmem        # display memory
-        im = Image.new('RGB', self.resolution)
+        print("Creating frame image and saving as png")
+        #im = Image.new('RGB', self.resolution, self.color_depth)
+        assert len(frame) <= self.resolution[1]
+        assert len(frame[0]) <= self.resolution[0]
+        print("   ... put pixels")
         for rr, row in enumerate(frame):
             for cc, rgb in enumerate(row):
-                rgb = self._adjust_color_depth(rgb)
-                im.putpixel((cc, rr), tuple(rgb))
+                #rgb = self._adjust_color_depth(rgb)
+                #im.putpixel((cc, rr), tuple(rgb))
+                pass 
                 
         if not os.path.isdir("output"):
             os.makedirs("output")
         imgpath = os.path.join("output/", "{}_frame_{}.png".format(
             self.name, framen))
-        im.save(imgpath)
+        print("   ... save image")
+        #print("     width ........... {}".format(im.width))        
+        #print("     height .......... {}".format(im.height))
+        # debug, 
+        #if im.getcolors() is None:
+        #    for row in range(2):
+        #        for col in range(8):
+        #            print("{} -> {} ".format(
+        #                  frame[row][col], im.getpixel((col,row)) ),  
+        #                 end='')
+        #        print("")
+        #im.verify()
+        #im.save(imgpath)
+        #im.close()
+        print("image written")
 
     def process(self, glbl, vga):
         """ emulate the behavior of the display """

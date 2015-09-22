@@ -9,6 +9,7 @@ from __future__ import absolute_import
 
 import argparse
 from argparse import Namespace
+import time 
 
 import pytest
 
@@ -57,7 +58,8 @@ def tb_vgasys(args=None):
     reset = Reset(0, active=0, async=False)
     vselect = Signal(bool(0))
 
-    vga = VGA(color_depth=color_depth )
+    # intergace to the VGA driver and emulated display 
+    vga = VGA(color_depth=color_depth)
 
     def _test():
         # top-level VGA system 
@@ -95,6 +97,8 @@ def tb_vgasys(args=None):
             while mvd.update_cnt < 3:
                  yield delay(1000)
 
+            print("display updates complete")
+            time.sleep(1)
             # @todo: verify video system memory is correct!
             # @todo: (self checking!).  Read one of the frame
             # @todo: png's and verify a couple bars are expected
@@ -106,7 +110,8 @@ def tb_vgasys(args=None):
     vcd = tb_clean_vcd('_test')
     traceSignals.timescale = '1ns'
     traceSignals.name = vcd
-    Simulation(traceSignals(_test)).run()
+    #Simulation(traceSignals(_test)).run()
+    Simulation(_test()).run()
 
 
 @pytest.mark.xfail
