@@ -91,7 +91,7 @@ class VGADisplay(VideoDisplay):
                 elif self.state == self.States.END:
                     self.state = self.States.INIT
                     self.update_cnt += 1
-                    self.create_save_image(self.update_cnt, self.uvmem)
+                    self.create_save_image()
                 else:
                     yield self.StateFuncs[self.state](glbl, vga, counters)
 
@@ -109,23 +109,21 @@ class VGADisplay(VideoDisplay):
         """
         c = counters
         if c.hcnt < self.num_hpxl:
-            #yield vga.pxlen.posedge if not vga.pxlen else delay(0)
             yield vga.pxlen.posedge
             if vga.state == vga.States.ACTIVE:
-                pixel = map(int, (vga.red, vga.green, vga.blue,))
+                pixel = list(map(int, (vga.red, vga.green, vga.blue,)))
                 #print(c.vcnt, c.hcnt)
-                self.uvmem[c.vcnt][c.hcnt] = pixel
+                last = c.hcnt == self.num_hpxl-1 and c.vcnt == self.num_vpxl-1
+                self.set_pixel(c.hcnt, c.vcnt, pixel, last)
                 c.hcnt += 1
         else:
             c.vcnt += 1
-            #yield glbl.clock.posedge
-            #yield delay(int(self.td['X']/2))
             if c.vcnt == self.num_vpxl:
                 self.state = self.States.VFP
             else:
                 self.state = self.States.HFP
                 c.hfpcnt = 0
-        #end
+        # end
 
     def _state_hor_front_porch(self, glbl, vga, counters):
         """
@@ -137,11 +135,11 @@ class VGADisplay(VideoDisplay):
         else:                
             # depending on how the "pixel clock" divides into the
             # active area the front-porch could be slightly longer
-            # the calculations need to be udpated to adjust for this
+            # the calculations need to be updated to adjust for this
             #assert vga.state == vga.States.HOR_FRONT_PORCH
             yield glbl.clock.posedge
             c.hfpcnt += 1
-        #end3
+        # end
 
     def _state_hor_sync(self, glbl, vga, counters):
         """
@@ -153,7 +151,7 @@ class VGADisplay(VideoDisplay):
         else:
             yield glbl.clock.posedge
             c.hsync += 1
-        #end
+        # end
 
     def _state_hor_back_porch(self, glbl, vga, counters):
         """
@@ -169,7 +167,7 @@ class VGADisplay(VideoDisplay):
             yield glbl.clock.posedge
             #assert vga.state == vga.States.HOR_BACK_PORCH
             c.hbpcnt += 1
-        #end
+        # end
 
     def _state_ver_front_porch(self, glbl, vga, counters):
         """
@@ -179,7 +177,7 @@ class VGADisplay(VideoDisplay):
             self.state = self.States.VSYNC
         else:
             yield glbl.clock.posedge
-            #assert vga.porch == vga.Porch.VER_FRONT
+            # assert vga.porch == vga.Porch.VER_FRONT
             c.vfpcnt += 1
 
     def _state_ver_sync(self, glbl, vga, counters):

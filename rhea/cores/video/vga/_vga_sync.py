@@ -69,18 +69,18 @@ def vga_sync(
 
     # compute the limits (counter limits) for the vsync
     # and hsync timings.  Review the calc_timing function
-    # for definitions of A,B,C,D,E,O,P,Q,R,S, and Z
-    (A,B,C,D,E,O,
+    # for definitions of A,B,C,D,E,F,P,Q,R,S, and Z
+    (A,B,C,D,E,F,
      P,Q,R,S,X,Z,) = calc_timings(clock.frequency, resolution,
                                   refresh_rate, line_rate)
-    # The following is "O" (oh), the fullscreen is the O (oh) parameter
-    full_screen = O
+    # full_screen pixels res[0]*res[1] (should be)
+    full_screen = F
 
     # counters to count the pixel clock (clock)
     HPXL, VPXL = res
     xcnt = intbv(0, min=-1, max=X+1)  # clock div
     hcnt = intbv(0, min=0, max=A+1)   # hor count in ticks
-    vcnt = intbv(0, min=0, max=O+1)   # ver count in ticks
+    vcnt = intbv(0, min=0, max=F+1)   # ver count in ticks
 
     # local references to interface signals
     hpxl = vmem.hpxl
@@ -160,7 +160,7 @@ def vga_sync(
             vga.state.next = vga.States.VER_FRONT_PORCH        
         elif vcd >= (R+S) and vcd < (R+S+P):
             pass # should be handled by above
-        elif vcd >= (R+S+P) and vcd < (FullScreen):
+        elif vcd >= (R+S+P) and vcd < (full_screen):
             vga.state.next = vga.States.VER_BACK_PORCH
         elif hcd >= D and hcd < (D+E):
             vga.state.next = vga.States.HOR_FRONT_PORCH

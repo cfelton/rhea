@@ -85,13 +85,13 @@ class VideoDisplay(object):
             td = datetime.now() - self.time_last
             print("{:<10d}: full display update {} ({})".format(now(), self.update_cnt, td))
             self._vvmem = deepcopy(self._uvmem)
-            self.create_save_image(self.update_cnt, self._vvmem)
+            self.create_save_image()
             self.time_last = datetime.now()
             
         self._col, self._row = col, row
         return 
 
-    def set_pixel(self, col, row, val):
+    def set_pixel(self, col, row, rgb, last=False):
         """
         :param col:
         :param row:
@@ -99,22 +99,25 @@ class VideoDisplay(object):
         """
         assert col < self.num_hpxl
         assert row < self.num_vpxl
-        self._uvmem[row][col] = int(val)
+        self._uvmem[row][col] = rgb
+        if last:
+            self._vvmem = deepcopy(self._uvmem)
 
-        # assume a frame is updated sequentially, once the end
-        # is reached a frame update is incremented
 
     def _adjust_color_depth(self, rgb):
         argb = rgb
         if self.color_depth != (8, 8, 8):
             argb = [(vv/cc)*256 for vv,cc in zip(rgb, self.color_depth)]
+            argb = list(map(int, argb))
         return argb
 
-    def create_save_image(self, framen, frame):
+    def create_save_image(self):
         """ 
         :param framen: frame number
         :param frame: 2D frame container (list, array)
         """
+        framen = self.update_cnt   # latest display update
+        frame = self._vvmem        # display memory
         im = Image.new('RGB', self.resolution)
         for rr, row in enumerate(frame):
             for cc, rgb in enumerate(row):
