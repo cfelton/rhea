@@ -1,6 +1,6 @@
 
 
-from myhdl import Signal, intbv, enum, always_seq, concat
+from myhdl import Signal, intbv, enum, always_seq, concat, now
 
 
 def lt24lcd_driver(glbl, lcd, cmd, datalen, data, 
@@ -37,9 +37,11 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
     clock, reset = glbl.clock, glbl.reset 
 
     states = enum(
+        # do the initial reset 
         'reset_start',
         'reset',
         'reset_wait',
+        # perform a command to the display 
         'wait', 
         'write_command_start', 
         'write_command_data', 
@@ -49,12 +51,15 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
     )
 
     state = Signal(states.reset_start)
+    last_state = Signal(states.end)
     xfercnt = Signal(intbv(0, min=0, max=maxlen+1))
     lcd.reset_complete = Signal(bool(0))
 
     @always_seq(clock.posedge, reset=reset)
     def rtl_state_machine():
-
+        # @todo: debug only, remov
+        last_state.next = state
+        
         if state == states.reset_start:
             lcd.resetn.next = True
             lcd.csn.next = True

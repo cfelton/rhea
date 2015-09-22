@@ -5,7 +5,7 @@ from argparse import Namespace
 
 import pytest
 
-from myhdl import (Signal, intbv, instance, StopSimulation,
+from myhdl import (Signal, intbv, instance, now, StopSimulation,
                    traceSignals, Simulation)
 
 from rhea.system import Clock, Reset, Global
@@ -21,8 +21,8 @@ from rhea.system import Clock, Reset, Global
 from rhea.models.video import LT24LCDDisplay
 from rhea.utils.test import tb_clean_vcd
 
-from mm_lcdsys import mm_lcdsys
-from mm_lcdsys import convert
+from mm_lt24lcdsys import mm_lt24lcdsys
+from mm_lt24lcdsys import convert
 
 
 @pytest.mark.xfail
@@ -54,10 +54,10 @@ def tb_lt24lcd(args=None):
     mvd = LT24LCDDisplay()
 
     def _bench():
-        tbdut = mm_lcdsys(clock, reset, lcd_on, lcd_resetn, lcd_csn,
-                          lcd_rs, lcd_wrn, lcd_rdn, lcd_data)
-        # @todo: LCDDisplay(...)
-        tbvd = mvd.process(glbl, lcd)
+        tbdut = mm_lt24lcdsys(clock, reset, lcd_on, lcd_resetn, 
+                              lcd_csn, lcd_rs, lcd_wrn, lcd_rdn, 
+                              lcd_data)
+        tbvd = mvd.process(glbl, lcd)   # LCD display model 
         tbclk = clock.gen()
 
         @instance
@@ -70,6 +70,7 @@ def tb_lt24lcd(args=None):
                 timeout -= 1
 
             yield delay(100)
+            print("{:<10d}: simulation real time {}".format(now(), mvd.get_time()))
             raise StopSimulation
 
         return tbdut, tbvd, tbclk, tbstim
@@ -89,3 +90,4 @@ def test_conversion():
 if __name__ == '__main__':
     args = Namespace()
     tb_lt24lcd(args)
+    test_conversion()

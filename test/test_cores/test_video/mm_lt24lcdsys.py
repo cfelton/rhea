@@ -11,9 +11,9 @@ from rhea.cores.misc import glbl_timer_ticks
 from rhea.utils.test import tb_move_generated_files
 
 
-def mm_lcdsys(clock, reset,
-              lcd_on, lcd_resetn, lcd_csn, lcd_rs,
-              lcd_wrn, lcd_rdn, lcd_data):
+def mm_lt24lcdsys(clock, reset,
+    lcd_on, lcd_resetn, lcd_csn, lcd_rs,
+    lcd_wrn, lcd_rdn, lcd_data):
     """
     """
     # interfaces
@@ -50,12 +50,12 @@ def convert():
     lcd_data = Signal(intbv(0)[16:])
 
     myhdl.toVerilog.directory = 'output'
-    myhdl.toVerilog(mm_lcdsys, clock, reset,
+    myhdl.toVerilog(mm_lt24lcdsys, clock, reset,
                     lcd_on, lcd_resetn, lcd_csn, lcd_rs,
                     lcd_wrn, lcd_rdn, lcd_data)
 
     myhdl.toVHDL.directory = 'output'
-    myhdl.toVDHL(mm_lcdsys, clock, reset,
-                    lcd_on, lcd_resetn, lcd_csn, lcd_rs,
-                    lcd_wrn, lcd_rdn, lcd_data)
+    myhdl.toVHDL(mm_lt24lcdsys, clock, reset,
+                 lcd_on, lcd_resetn, lcd_csn, lcd_rs,
+                 lcd_wrn, lcd_rdn, lcd_data)
     tb_move_generated_files()

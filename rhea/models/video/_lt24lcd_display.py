@@ -52,7 +52,7 @@ class LT24LCDDisplay(VideoDisplay):
                     if lcd.csn and command_in_progress:
                         regfile[cmd] = copy(cmdbytes)
                         command_in_progress = False
-                        print("{:<8d}:LT24: cmd 0x{:02X}, numdata {}, data {}".format(
+                        print("{:<10d}:LT24: cmd 0x{:02X}, numdata {}, data {}".format(
                             now(), cmd, numbytes, list(map(hex, cmdbytes[:])), ))
                     # check for rising edge of wrn or rdn
                     if not wrn and lcd.wrn:

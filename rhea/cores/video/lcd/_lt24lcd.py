@@ -5,7 +5,7 @@ from __future__ import division
 This module contains a video driver for the terasic LT24
 LCD display ...
 """
-from myhdl import Signal, intbv, enum, always_seq, concat
+from myhdl import Signal, intbv, enum, always_seq, concat, now
 
 from ._lt24intf import LT24Interface
 from ._lt24lcd_init_sequence import init_sequence, build_init_rom
@@ -30,21 +30,23 @@ def lt24lcd(glbl, vmem, lcd):
     # with the `wrx` signal.  Init (write once) the column and
     # page addresses (cmd = 2A, 2B) then write mem (2C)
     states = enum(
-        'init_wait_reset',      # wait for the controller to reset the LCD
-        'init_start',           # start the display init sequence
-        'init_start_cmd',       # send a command, port of the display seq
-        'init_next',            # determine if another command
+        'init_wait_reset',        # wait for the controller to reset the LCD
+        'init_start',             # start the display init sequence
+        'init_start_cmd',         # send a command, port of the display seq
+        'init_next',              # determine if another command
 
-        'write_cmd_start',       # command subroutine
-        'write_cmd',             # command subroutine
+        'write_cmd_start',         # command subroutine
+        'write_cmd',               # command subroutine
 
-        'display_update_start',  # update the display
-        'display_update',
-        'display_update_next',
-        'display_update_end'
+        'display_update_start',    # update the display
+        'display_update_start_p',  # delay for command ack
+        'display_update',          # update the display
+        'display_update_next',     # wait for driver to ack pixel xfered
+        'display_update_end'       # end of display update 
     )
 
     state = Signal(states.init_wait_reset)
+    state_prev = Signal(states.init_wait_reset)
     cmd = Signal(intbv(0)[8:])
     return_state = Signal(states.init_wait_reset)
 
@@ -77,7 +79,7 @@ def lt24lcd(glbl, vmem, lcd):
 
     @always_seq(clock.posedge, reset=reset)
     def rtl_state_machine():
-
+        state_prev.next = state 
         if state == states.init_wait_reset:
             if lcd.reset_complete:
                 state.next = states.init_start
@@ -129,10 +131,14 @@ def lt24lcd(glbl, vmem, lcd):
         elif state == states.display_update_start:
             if glbl.tick_user:
                 cmd.next = 0x2C
-                state.next = states.display_update
+                state.next = states.display_update_start_p
                 datalen.next = number_of_pixels
+                
+        elif state == states.display_update_start_p:
+            state.next =states.display_update
 
         elif state == states.display_update:
+            assert cmd_in_progress
             if vcnt == num_ver_pxl-1:
                 hcnt[:] = 0
                 vcnt[:] = 0
@@ -148,10 +154,12 @@ def lt24lcd(glbl, vmem, lcd):
 
             # this is the pixel for the current write cycle
             if hcnt == 0 and vcnt == 0:
+                cmd.next = 0
                 state.next = states.display_update_end
             else:
                 data.next = concat(vmem.red, vmem.green, vmem.blue)
                 state.next = states.display_update_next
+                
 
         elif state == states.display_update_next:
             if cmd_in_progress:
@@ -162,9 +170,9 @@ def lt24lcd(glbl, vmem, lcd):
                 state.next = states.display_update_end
 
         elif state == states.display_update_end:
-            # @todo: wait for next update
+            # wait till the driver ack the command completion
             if not cmd_in_progress:
-                state.next = states.display_update
+                state.next = states.display_update_start
 
     return gdrv, rtl_state_machine
 

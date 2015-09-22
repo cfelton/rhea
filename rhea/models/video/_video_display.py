@@ -2,7 +2,8 @@
 import os
 from array import array
 from copy import deepcopy
-from myhdl import intbv
+from datetime import datetime
+from myhdl import intbv, now
 from PIL import Image
 
 
@@ -39,7 +40,16 @@ class VideoDisplay(object):
         #              for _ in range(res[1])]
         self._vvmem = [[None for _ in range(res[0])]
                         for _ in range(res[1])]
+                        
+        # emulating video displays takes considerable simulation time, track
+        # the simulation real time. 
+        self.time_start = datetime.now()
+        self.time_last = datetime.now()
 
+    def get_time(self):
+        """ get the amount of real time from creation to now """
+        return datetime.now() - self.time_start
+        
     def reset_cursor(self):
         self._col, self._row = 0, 0
 
@@ -71,12 +81,15 @@ class VideoDisplay(object):
 
         if col == 0 and row == 0:
             # @todo: remove print add option to create png or not
-            print("full display update")
             self.update_cnt += 1
+            td = datetime.now() - self.time_last
+            print("{:<10d}: full display update {} ({})".format(now(), self.update_cnt, td))
             self._vvmem = deepcopy(self._uvmem)
             self.create_save_image(self.update_cnt, self._vvmem)
-
+            self.time_last = datetime.now()
+            
         self._col, self._row = col, row
+        return 
 
     def set_pixel(self, col, row, val):
         """
