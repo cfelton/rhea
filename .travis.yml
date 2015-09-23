@@ -49,8 +49,10 @@ before_install:
   - export PATH=$PATH:$HOME/icestorm/icepack/:$HOME/arachne-pnr/bin/
   - chmod +x ./scripts/ci/install_iverilog.sh
   - ./scripts/ci/install_iverilog.sh
-# these fail to build and install because unable to update
-# to gcc >= 4.8
+  - echo $HOME
+  - ls $HOME/
+# these fail to build and install because the inability to 
+# update to gcc >= 4.8
 #  - chmod +x ./scripts/ci/install_icestorm.sh
 #  - ./scripts/ci/install_icestorm.sh
 #  - chmod +x ./scripts/ci/install_arachne.sh
