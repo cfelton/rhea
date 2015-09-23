@@ -24,7 +24,7 @@ from rhea.cores.video import VGA
 # a video display model to check the timings
 from rhea.models.video import VGADisplay
 
-from rhea.utils.test import *
+from rhea.utils.test import run_testbench
 
 # local wrapper to build a VGA system
 from mm_vgasys import mm_vgasys
@@ -61,7 +61,7 @@ def tb_vgasys(args=None):
     # intergace to the VGA driver and emulated display 
     vga = VGA(color_depth=color_depth)
 
-    def _test():
+    def _bench_vgasys():
         # top-level VGA system 
         tbdut = mm_vgasys(clock, reset, vselect, 
                           vga.hsync, vga.vsync, 
@@ -107,14 +107,10 @@ def tb_vgasys(args=None):
 
         return tbclk, tbvd, tbstim, tbdut
 
-    vcd = tb_clean_vcd('_test')
-    traceSignals.timescale = '1ns'
-    traceSignals.name = vcd
-    #Simulation(traceSignals(_test)).run()
-    Simulation(_test()).run()
+    # run the verification simulation
+    run_testbench(_bench_vgasys)
 
 
-@pytest.mark.xfail
 def test_vgasys_conversion():
     convert()
 

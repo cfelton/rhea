@@ -8,13 +8,17 @@ from myhdl import *
 
 from rhea.system import Global, Clock, Reset
 from rhea.cores.video.lcd import LT24Interface
-from rhea.cores.video.lcd._lt24 import lt24lcd_driver
+from rhea.cores.video.lcd._lt24lcd_driver import lt24lcd_driver
 from rhea.models.video import LT24LCDDisplay
 from rhea.cores.misc import glbl_timer_ticks
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import tb_clean_vcd, run_testbench
 
 
-def tb_lt24lcd_driver(args):
+def test_lt24lcd_driver():
+    tb_lt24lcd_driver()
+
+
+def tb_lt24lcd_driver(args=None):
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
@@ -25,14 +29,16 @@ def tb_lt24lcd_driver(args):
     datalen = Signal(intbv(0, min=0, max=lcd.number_of_pixels+1))
     data = Signal(intbv(0)[16:])
     datasent = Signal(bool(0))
+    datalast = Signal(bool(0))
     cmd_in_progress = Signal(bool(0))
     
-    def _bench():
+    def _bench_lt24lcd_driver():
         tbdut = lt24lcd_driver(glbl, lcd, cmd, datalen, data,
-                               datasent, cmd_in_progress, 
+                               datasent, datalast, cmd_in_progress,
                                maxlen=lcd.number_of_pixels)
         gtck = glbl_timer_ticks(glbl)
         tbmdl = display.process(glbl, lcd)
+        
         tbclk = clock.gen()
         
         @instance
@@ -88,12 +94,8 @@ def tb_lt24lcd_driver(args):
             raise StopSimulation
             
         return tbdut, tbmdl, tbclk, tbstim, gtck
-            
-    vcd = tb_clean_vcd(tb_lt24lcd_driver.__name__)
-    traceSignals.name = vcd
-    print("start simulation")
-    Simulation(traceSignals(_bench)).run()
-    print("simulation done")
+
+    run_testbench(_bench_lt24lcd_driver)
     
     
 if __name__ == '__main__':

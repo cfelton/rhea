@@ -19,13 +19,12 @@ from rhea.system import Clock, Reset, Global
 
 # @todo: add LT24 display model
 from rhea.models.video import LT24LCDDisplay
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import run_testbench
 
 from mm_lt24lcdsys import mm_lt24lcdsys
 from mm_lt24lcdsys import convert
 
 
-@pytest.mark.xfail
 def test_lt24lcd():
     args = Namespace()
     tb_lt24lcd(args=args)
@@ -53,7 +52,7 @@ def tb_lt24lcd(args=None):
                lcd_rdn, lcd_data)
     mvd = LT24LCDDisplay()
 
-    def _bench():
+    def _bench_lt24lcdsys():
         tbdut = mm_lt24lcdsys(clock, reset, lcd_on, lcd_resetn, 
                               lcd_csn, lcd_rs, lcd_wrn, lcd_rdn, 
                               lcd_data)
@@ -75,14 +74,9 @@ def tb_lt24lcd(args=None):
 
         return tbdut, tbvd, tbclk, tbstim
 
-    vcd = tb_clean_vcd('_lcdlt24')
-    traceSignals.timescale = '1ns'
-    traceSignals.name = vcd
-    Simulation(traceSignals(_bench)).run()
-    #Simulation(_bench()).run()
+    run_testbench(_bench_lt24lcdsys)
 
 
-@pytest.mark.xfail
 def test_conversion():
     convert()
 

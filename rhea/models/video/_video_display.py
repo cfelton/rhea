@@ -109,7 +109,7 @@ class VideoDisplay(object):
     def _adjust_color_depth(self, rgb):
         argb = rgb
         if self.color_depth != (8, 8, 8):
-            argb = [(vv/cc)*256 for vv ,cc in zip(rgb, self.color_depth)]
+            argb = [(vv/cc)*256 for vv, cc in zip(rgb, self.color_depth)]
             argb = list(map(int, argb))
         return argb
 
@@ -121,14 +121,14 @@ class VideoDisplay(object):
         framen = self.update_cnt   # latest display update
         frame = self._vvmem        # display memory
         print("Creating frame image and saving as png")
-        #im = Image.new('RGB', self.resolution, self.color_depth)
+        im = Image.new('RGB', self.resolution, self.color_depth)
         assert len(frame) <= self.resolution[1]
         assert len(frame[0]) <= self.resolution[0]
         print("   ... put pixels")
         for rr, row in enumerate(frame):
             for cc, rgb in enumerate(row):
                 #rgb = self._adjust_color_depth(rgb)
-                #im.putpixel((cc, rr), tuple(rgb))
+                im.putpixel((cc, rr), tuple(rgb))
                 pass 
                 
         if not os.path.isdir("output"):
@@ -136,22 +136,23 @@ class VideoDisplay(object):
         imgpath = os.path.join("output/", "{}_frame_{}.png".format(
             self.name, framen))
         print("   ... save image")
-        #print("     width ........... {}".format(im.width))        
-        #print("     height .......... {}".format(im.height))
-        # debug, 
-        #if im.getcolors() is None:
-        #    for row in range(2):
-        #        for col in range(8):
-        #            print("{} -> {} ".format(
-        #                  frame[row][col], im.getpixel((col,row)) ),  
-        #                 end='')
-        #        print("")
-        #im.verify()
-        #im.save(imgpath)
-        #im.close()
+        print("     width ........... {}".format(im.width))
+        print("     height .......... {}".format(im.height))
+        # debug, should always be a set of colors
+        if im.getcolors() is None:
+            for row in range(2):
+                for col in range(8):
+                    print("{} -> {} ".format(
+                          frame[row][col], im.getpixel((col, row)) ),
+                         end='')
+                print("")
+        im.verify()
+        im.save(imgpath)
+        im.close()
         print("image written")
 
     def process(self, glbl, vga):
         """ emulate the behavior of the display """
         raise NotImplemented
+
 
