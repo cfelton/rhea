@@ -47,10 +47,10 @@ before_install:
   - g++ --version
   - export PATH=$PATH:$HOME/iverilog/bin/:$HOME/yosys/
   - export PATH=$PATH:$HOME/icestorm/icepack/:$HOME/arachne-pnr/bin/
-  - chmod +x ./scripts/ci/install_iverilog.sh
-  - ./scripts/ci/install_iverilog.sh
   - echo $HOME
   - ls $HOME/
+  - chmod +x ./scripts/ci/install_iverilog.sh
+  - ./scripts/ci/install_iverilog.sh
 # these fail to build and install because the inability to 
 # update to gcc >= 4.8
 #  - chmod +x ./scripts/ci/install_icestorm.sh
