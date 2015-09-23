@@ -13,10 +13,11 @@ from rhea.cores.usbext.fpgalink import fpgalink_fx2
 # Example FPGA logic which interfaces with fpgalink
 from _fpgalink_logic_ex1 import m_fpga_logic_ex1
 
-from rhea.utils.test import *
+from rhea.utils.test import tb_clean_vcd
 
 
 def flcosim(clock, reset, fx2_bus, fl_bus):
+    # @todo: move these files to local "support"
     f1 = '../mn/cores/usbext/fpgalink/comm_fpga_fx2_v1.v'
     f2 = '../mn/cores/usbext/fpgalink/comm_fpga_fx2_v2.v'
     f3 = '../mn/cores/usbext/fpgalink/tb_comm_fpga_fx2_m.v'
@@ -84,7 +85,7 @@ def map_ext_int(clock, reset, fx2_ext, fx2_bus):
 
 def test_fpgalink():
     args = argparse.Namespace(cosim=False)
-    tb_clean_vcd('m_fpgalink_fx2')
+    args.vcd = tb_clean_vcd('fpgalink_fx2')
     tb_fpgalink(args)
 
 
@@ -110,7 +111,8 @@ def tb_fpgalink(args):
     fx2bus2.gotdata = fx2bus1.gotdata
     fx2bus2.gotroom = fx2bus1.gotroom
 
-    # get the two HDL versions (MyHDL and Verilog)    
+    # get the two HDL versions (MyHDL and Verilog)
+    traceSignals.name = args.vcd
     tb_dut = traceSignals(fpgalink_fx2, clock, reset, fx2bus1, flbus1)
     tb_fl1 = m_fpga_logic_ex1(clock, reset, flbus1)
     
@@ -156,5 +158,5 @@ if __name__ == '__main__':
     parser.add_argument('--cosim', action='store_true', default=False,
                         help='Run cosimulation with verilog version of fpgalink requires icarus')
     args = parser.parse_args()
-    tb_clean_vcd('fpgalink_fx2')
+    args.vcd = tb_clean_vcd('fpgalink_fx2')
     tb_fpgalink(args)
