@@ -51,12 +51,15 @@ before_install:
   - export PATH=$PATH:$HOME/icestorm/icepack/:$HOME/arachne-pnr/bin/
   - chmod +x ./scripts/ci/install_iverilog.sh
   - ./scripts/ci/install_iverilog.sh
+# these fail to build and install because unable to update
+# to gcc >= 4.8
 #  - chmod +x ./scripts/ci/install_icestorm.sh
 #  - ./scripts/ci/install_icestorm.sh
 #  - chmod +x ./scripts/ci/install_arachne.sh
 #  - ./scripts/ci/install_arachne.sh
   - chmod +x ./scripts/ci/install_yosys.sh
   - ./scripts/ci/install_yosys.sh
+  - yosys -V
   
 # command to install dependencies
 install:
