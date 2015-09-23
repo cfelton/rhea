@@ -8,8 +8,13 @@ from myhdl import traceSignals, Simulation
 
 
 def run_testbench(bench, timescale='1ns', args=None):
+    """ run (simulate) a testbench
+    The args need to be retrieved outside the testbench
+    else the test will fail with the pytest runner, if 
+    no args are passed a default will be used
+    """
     if args is None:
-        args = tb_argparser().parse_args()
+        args = argparse.Namespace(trace=False)
     vcd = tb_clean_vcd(bench.__name__)
     if args.trace:
         # @todo: the following (timescale) needs to be set
