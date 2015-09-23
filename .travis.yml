@@ -57,6 +57,7 @@ before_install:
 #  - ./scripts/ci/install_arachne.sh
   - chmod +x ./scripts/ci/install_yosys.sh
   - ./scripts/ci/install_yosys.sh
+  - ls $HOME/yosys/
   - yosys -V
   
 # command to install dependencies
