@@ -8,7 +8,7 @@ from myhdl import *
 
 from rhea.system import Global, Clock, Reset
 from rhea.cores.misc import glbl_timer_ticks
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import run_testbench
 
 def test_ticks():
     tb_ticks(args=argparse.Namespace())
@@ -22,7 +22,7 @@ def tb_ticks(args=None):
     reset = Reset(0, active=0, async=True)
     glbl = Global(clock, reset)
 
-    def _bench():
+    def _bench_ticks():
         tbdut = glbl_timer_ticks(glbl, include_seconds=True, 
                                  user_timer=user_ms)
         tbclk = clock.gen(hticks=hticks)
@@ -61,11 +61,8 @@ def tb_ticks(args=None):
             raise StopSimulation
 
         return tbdut, tbclk, tbstim
-    
-    vcd = tb_clean_vcd(tb_ticks.__name__)
-    traceSignals.name = vcd
-    traceSignals.timescale = '{:d}us'.format(int((1/clock.frequency)/10))
-    Simulation(traceSignals(_bench)).run()
+
+    run_testbench(_bench_ticks)
 
 
 if __name__ == '__main__':

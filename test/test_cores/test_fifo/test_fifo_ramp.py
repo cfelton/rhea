@@ -15,7 +15,7 @@ from rhea.system import Global
 from rhea.system import Wishbone
 from rhea.system import FIFOBus
 
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import run_testbench
 
 
 def test_fifo_ramp():
@@ -26,7 +26,7 @@ def test_fifo_ramp():
     regbus = Wishbone(glbl)
     fifobus = FIFOBus()
 
-    def _test_fifo_ramp():
+    def _bench_fifo_ramp():
         tb_dut = fifo_ramp(clock, reset, regbus, fifobus,
                            base_address=0x0000)
         tb_rbor = regbus.m_per_outputs()
@@ -77,10 +77,7 @@ def test_fifo_ramp():
 
         return tb_clk, tb_dut, tb_stim, tb_mon, tb_rbor
 
-    vcd = tb_clean_vcd('_test_fifo_ramp')
-    traceSignals.name = vcd
-    g = traceSignals(_test_fifo_ramp)
-    Simulation(g).run()
+    run_testbench(_bench_fifo_ramp)
 
 
 if __name__ == '__main__':

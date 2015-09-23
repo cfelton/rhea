@@ -6,8 +6,7 @@ from rhea.models.video import VideoDisplay
 
 def test_create_save():
     num_frames = 3
-    #resolution = res = (randint(32, 800), randint(32, 800),)
-    resolution = res =  (32, 15,)
+    resolution = res = (randint(32, 800), randint(32, 800),)
     color_depth = cd = (8, 8, 8)
     disp = VideoDisplay(resolution=resolution,
                         color_depth=color_depth)
@@ -21,10 +20,8 @@ def test_create_save():
                 last = (row == res[1]-1 and col == res[0]-1)
                 if last:
                     print("End of frame {}, {}, {}".format(row, col, rgb))
-                #print(col, row, rgb, last)
                 disp.set_pixel(col, row, rgb, last)
                 
                 
 if __name__ == '__main__':
     test_create_save()
-            

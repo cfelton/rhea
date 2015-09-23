@@ -7,13 +7,13 @@ import argparse
 from myhdl import traceSignals, Simulation
 
 
-def run_testbench(bench, args=None):
+def run_testbench(bench, timescale='1ns', args=None):
     if args is None:
         args = tb_argparser().parse_args()
     vcd = tb_clean_vcd(bench.__name__)
     if args.trace:
         # @todo: the following (timescale) needs to be set
-        traceSignals.timescale = '1ns'
+        traceSignals.timescale = timescale
         traceSignals.name = vcd
         gens = traceSignals(bench)
     else:

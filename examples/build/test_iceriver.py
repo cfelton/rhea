@@ -1,4 +1,6 @@
 
+import os
+
 import pytest
 
 import rhea.build as build
@@ -16,5 +18,6 @@ def test_iceriver():
     """
     brd = get_board('icestick')
     flow = brd.get_flow(top=blinky)
+    flow.path = os.path.join('output', flow.path)
     flow.run()
 
