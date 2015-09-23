@@ -48,6 +48,7 @@ def tb_lt24lcd_driver(args=None):
 
             # --------------------------------------------
             # send a column write command
+            print("column write command")
             cmd.next = 0x2A
             bytes = [0, 0, 0, 239]
             data.next = bytes[0]
@@ -62,8 +63,9 @@ def tb_lt24lcd_driver(args=None):
 
             # --------------------------------------------
             # send a page address write command
+            print("page address write command")
             cmd.next = 0x2B
-            bytes = [0, 0, 1, 0x40]
+            bytes = [0, 0, 1, 0x3F]
             data.next = bytes[0]
             datalen.next = 4
 
@@ -76,6 +78,7 @@ def tb_lt24lcd_driver(args=None):
 
             # --------------------------------------------
             # write display memory, full update
+            print("display update")
             cmd.next = 0x2C
             data.next = randint(0, data.max-1)
             datalen.next = lcd.number_of_pixels
@@ -83,10 +86,13 @@ def tb_lt24lcd_driver(args=None):
             for ii in range(lcd.number_of_pixels):
                 yield datasent.posedge
                 data.next = randint(0, data.max-1)
+                if ii % 100:
+                    print("{} pixels xfer'd".format(ii))
             cmd.next = 0
             yield cmd_in_progress.negedge
             yield clock.posedge
-
+            print("display update complete")
+    
             # --------------------------------------------
             # @todo: verify the display received an image
             yield delay(100)

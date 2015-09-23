@@ -36,6 +36,7 @@ def test_fifo_ramp():
                 
         @instance 
         def tb_stim():
+            print("start fifo ramp test")
             try:
                 yield delay(100)
                 yield reset.pulse(111)
@@ -43,19 +44,24 @@ def test_fifo_ramp():
                 # simply enable, enable the module and then
                 # verify an incrementing pattern over the
                 # fifobus
-                yield regbus.write(0x00, 1)
+                yield regbus.write(0x07, 2)  # div of two
+                yield regbus.write(0x00, 1)  # enable 
                 yield regbus.read(0x00)
                 assert 1 == regbus.get_read_data(), "cfg reg write failed"
 
                 # monitor the bus until ?? ramps
-                Nramps, rr = 128, 0
-                while rr < Nramps:
+                Nramps, rr, timeout = 128, 0, 0
+                while rr < Nramps and timeout < (200*Nramps):
                     cnt = 0
                     for ii, sh in enumerate((24, 16, 8, 0,)):
                         yield regbus.read(0x08+ii)
                         cnt = cnt | (regbus.get_read_data() << sh)
-                    rr = cnt
-
+                    timeout += 1
+                    # @todo: add ramp check
+                    if cnt != rr or (timeout % 1000) == 0:
+                        print("   ramp {}  {}".format(int(cnt), int(rr),))
+                    rr = int(cnt)
+                print("{}, {}, {}".format(Nramps, rr, timeout))
             except AssertionError as err:
                 asserr.next = True
                 for _ in range(10):
