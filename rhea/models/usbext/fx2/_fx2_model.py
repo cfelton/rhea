@@ -4,6 +4,7 @@
 
 from __future__ import division
 
+import os
 import logging
 import threading
 import time
@@ -89,7 +90,10 @@ class Fx2Model(threading.Thread):
         self.fx2_bus = None
         self.g = None
 
-        logging.basicConfig(filename='fx2_log.txt',
+        if not os.path.isdir('output'):
+            os.makedirs('output')
+        logfn = os.path.join('output/', 'fx2_log.txt')
+        logging.basicConfig(filename=logfn,
                             level=logging.DEBUG, filemode='w')
 
         self.ulog = logging.getLogger('Fx2Logger')

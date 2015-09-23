@@ -29,7 +29,7 @@ _default_pin_attr = {
 class ISE(_toolflow):
     _name = "Xilinx ISE"
 
-    def __init__(self, brd, top=None, path='./xilinx/'):
+    def __init__(self, brd, top=None, path='xilinx/'):
         """
         Given a top-level module (function) and a board definition
         create an instance of the ISE tool-chain.

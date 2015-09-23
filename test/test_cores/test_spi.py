@@ -16,7 +16,7 @@ from rhea.system import Global, Clock, Reset
 from rhea.system import Wishbone
 from rhea.system import FIFOBus
 
-from rhea.utils.test import run_testbench
+from rhea.utils.test import run_testbench, tb_move_generated_files
 
 
 def m_test_top(clock, reset, sck, mosi, miso, ss):
@@ -37,6 +37,7 @@ def convert():
     toVerilog(m_test_top, clock, reset, sck, mosi, miso, ss)
     toVHDL.directory = 'output/'
     toVHDL(m_test_top, clock, reset, sck, mosi, miso, ss)
+    tb_move_generated_files()
 
 
 def test_spi():

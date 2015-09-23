@@ -19,7 +19,7 @@ from ._convert import convert
 class Yosys(_toolflow):
     _name = "yosys"
 
-    def __init__(self, brd, top=None, path='./yosys/'):
+    def __init__(self, brd, top=None, path='yosys/'):
         """ use yosys synthesis (mainly for testing)
 
         This toolflow creates more than the actual tool supports.

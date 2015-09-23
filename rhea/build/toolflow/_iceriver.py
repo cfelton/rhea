@@ -16,7 +16,7 @@ from ..extintf import Clock
 class IceRiver(Yosys):
     _name = "Open-source Lattice iCE40"
 
-    def __init__(self, brd, top=None, path='./iceriver/'):
+    def __init__(self, brd, top=None, path='iceriver/'):
         """
         IceRiver is the (odd) name given to the open-source
         tools available that support (some) lattice devices.
