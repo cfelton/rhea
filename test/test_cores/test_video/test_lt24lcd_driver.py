@@ -36,7 +36,7 @@ def tb_lt24lcd_driver(args=None):
         tbdut = lt24lcd_driver(glbl, lcd, cmd, datalen, data,
                                datasent, datalast, cmd_in_progress,
                                maxlen=lcd.number_of_pixels)
-        gtck = glbl_timer_ticks(glbl)
+        gtck = glbl_timer_ticks(glbl, tick_div=100)
         tbmdl = display.process(glbl, lcd)
         
         tbclk = clock.gen()

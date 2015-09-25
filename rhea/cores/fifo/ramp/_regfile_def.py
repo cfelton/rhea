@@ -22,6 +22,6 @@ for ii,regname in enumerate(('div3', 'div2', 'div1', 'div0')):
 for ii, regname in enumerate(('cnt3', 'cnt2', 'cnt1', 'cnt0')):
     regcnt = Register(regname, 0x08+ii, 8, 'ro', 0)
     regcnt.comment = "the number of ramp cycles completed"
-    regcnt.add_named_bits('%sb' % (regname,),slice(8,0),"count")
+    regcnt.add_named_bits('%sb' % (regname,), slice(8, 0), "count")
     regfile.add_register(regcnt)
 

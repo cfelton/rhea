@@ -37,6 +37,11 @@ def tb_argparser():
     return parser
 
 
+def tb_args():
+    parser = tb_argparser()
+    return parser.parse_args()
+
+
 def tb_move_generated_files():
     """ move generated files 
     

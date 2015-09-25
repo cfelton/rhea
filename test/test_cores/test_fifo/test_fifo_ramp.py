@@ -5,20 +5,24 @@
 from __future__ import division
 from __future__ import print_function
 
+from argparse import Namespace
+
 from myhdl import *
 
 from rhea.cores.fifo import fifo_ramp
 
-from rhea.system import Clock
-from rhea.system import Reset
-from rhea.system import Global
+from rhea.system import Global, Clock, Reset
 from rhea.system import Wishbone
 from rhea.system import FIFOBus
 
-from rhea.utils.test import run_testbench
+from rhea.utils.test import run_testbench, tb_args
 
 
 def test_fifo_ramp():
+    tb_fifo_ramp(Namespace(trace=False))
+
+
+def tb_fifo_ramp(args):
 
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
@@ -27,15 +31,15 @@ def test_fifo_ramp():
     fifobus = FIFOBus()
 
     def _bench_fifo_ramp():
-        tb_dut = fifo_ramp(clock, reset, regbus, fifobus,
+        tbdut = fifo_ramp(clock, reset, regbus, fifobus,
                            base_address=0x0000)
-        tb_rbor = regbus.m_per_outputs()
-        tb_clk = clock.gen()
+        tbrbor = regbus.m_per_outputs()
+        tbclk = clock.gen()
         
         asserr = Signal(bool(0))
                 
         @instance 
-        def tb_stim():
+        def tbstim():
             print("start fifo ramp test")
             try:
                 yield delay(100)
@@ -45,17 +49,24 @@ def test_fifo_ramp():
                 # verify an incrementing pattern over the
                 # fifobus
                 yield regbus.write(0x07, 2)  # div of two
+                yield regbus.read(0x07)
+                assert 2 == regbus.get_read_data()
+
                 yield regbus.write(0x00, 1)  # enable 
                 yield regbus.read(0x00)
                 assert 1 == regbus.get_read_data(), "cfg reg write failed"
 
                 # monitor the bus until ?? ramps
                 Nramps, rr, timeout = 128, 0, 0
-                while rr < Nramps and timeout < (200*Nramps):
+                while rr < Nramps and timeout < (20*Nramps):
                     cnt = 0
                     for ii, sh in enumerate((24, 16, 8, 0,)):
+                        yield delay(1000)
                         yield regbus.read(0x08+ii)
-                        cnt = cnt | (regbus.get_read_data() << sh)
+                        cntpart = regbus.get_read_data()
+                        cnt = cnt | (cntpart << sh)
+                        print("{:<8d}: ramp count[{:<4d}, {:d}]: {:08X}, {:02X} - timeout {:d}".format(
+                               now(), rr, ii, cnt, cntpart, timeout))
                     timeout += 1
                     # @todo: add ramp check
                     if cnt != rr or (timeout % 1000) == 0:
@@ -76,15 +87,15 @@ def test_fifo_ramp():
         _cval = Signal(modbv(0, min=0, max=256))
 
         @always(clock.posedge)
-        def tb_mon():
+        def tbmon():
             if fifobus.wr:
                 assert _cval == fifobus.wdata
                 _cval.next = _cval+1
 
-        return tb_clk, tb_dut, tb_stim, tb_mon, tb_rbor
+        return tbclk, tbdut, tbstim, tbmon, tbrbor
 
-    run_testbench(_bench_fifo_ramp)
+    run_testbench(_bench_fifo_ramp, args=args)
 
 
 if __name__ == '__main__':
-    test_fifo_ramp()
+    tb_fifo_ramp(tb_args())

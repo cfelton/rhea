@@ -19,7 +19,7 @@ from rhea.system import Clock, Reset, Global
 
 # @todo: add LT24 display model
 from rhea.models.video import LT24LCDDisplay
-from rhea.utils.test import run_testbench
+from rhea.utils.test import run_testbench, tb_args
 
 from mm_lt24lcdsys import mm_lt24lcdsys
 from mm_lt24lcdsys import convert
@@ -82,6 +82,5 @@ def test_conversion():
 
 
 if __name__ == '__main__':
-    args = Namespace()
-    tb_lt24lcd(args)
+    tb_lt24lcd(tb_args())
     test_conversion()
