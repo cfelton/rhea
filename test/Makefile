@@ -9,6 +9,8 @@ find:
 	grep "def .*test_" -R * --include=*.py | cat -n
 
 test:
+	rm -Rf output/
+	mkdir output/
 	$(TIME) python ./test_cores/test_converters/test_adc128s022.py > $(LOG)
 	$(TIME) python ./test_cores/test_eth/test_gemac_lite.py >> $(LOG)
 	$(TIME) python ./test_cores/test_fifo/test_afifo.py >> $(LOG)
