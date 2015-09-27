@@ -1,5 +1,5 @@
 
-TIME=time
+TIME=
 LOG=output/run_all_tests.log
 
 run:
