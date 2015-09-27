@@ -1,5 +1,5 @@
 
-TIME=/usr/bin/time
+TIME=time
 LOG=output/run_all_tests.log
 
 run:
