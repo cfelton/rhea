@@ -73,13 +73,13 @@ install:
 
 # run the test
 script:
-   - cd examples
-   - py.test -s
+  - cd examples
+  - py.test -s
 # There is some issue that causes the tests executed with py.test
 # to take 10x longer, run the tests individually until resolved.
-   - cd ../test
-#   - py.test -s
-    - make test
+#  - py.test -s
+  - cd ../test
+  - make test
 
 notifications:
   email: false
