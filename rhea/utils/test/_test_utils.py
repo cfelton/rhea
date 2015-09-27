@@ -24,7 +24,9 @@ def run_testbench(bench, timescale='1ns', args=None):
     else:
         gens = bench()
 
-    Simulation(gens).run()
+    sim = Simulation(gens)
+    sim.run()
+    del sim
 
 
 def tb_argparser():
@@ -52,12 +54,16 @@ def tb_move_generated_files():
     to use this function to clean up after a test.
     """
     # move all VHDL files
+    if not os.path.isdir('output/vhd'):
+        os.makedirs('output/vhd/')
     for vf in glob('*.vhd'):
         if os.path.isfile(os.path.join('output/vhd/', vf)):
             os.remove(os.path.join('output/vhd/', vf))
         shutil.move(vf, 'output/vhd/')
 
     # move all Verilog files
+    if not os.path.isdir('output/ver'):
+        os.makedirs('output/ver/')
     for vf in glob('*.v'):
         if os.path.isfile(os.path.join('output/ver/', vf)):
             os.remove(os.path.join('output/ver/', vf))
