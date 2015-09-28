@@ -65,23 +65,25 @@ def testbench_uart_model(args=None):
 
 def testbench_uart(args=None):
     # @todo: get numbytes from args
-    numbytes = 7
+    numbytes = 27
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=0, async=True)
     glbl = Global(clock, reset)
-    si, so = Signal(bool(1)), Signal(bool(1))
+    mdlsi, mdlso = Signal(bool(1)), Signal(bool(1))
     uartmdl = UARTModel()
     fifotx = FIFOBus()
     fiforx = FIFOBus()
 
     def _bench_uart():
-        tbdut = uartlite(glbl, fifotx, fiforx, si, so)
-        tbmdl = uartmdl.process(glbl, si, so)
+        tbmdl = uartmdl.process(glbl, mdlsi, mdlso)
+        tbdut = uartlite(glbl, fifotx, fiforx, mdlso, mdlsi)
         tbclk = clock.gen()
 
         @always_comb
         def tblpbk():
-            si.next = so
+            fifotx.wdata.next = fiforx.rdata
+            fifotx.wr.next = not fiforx.empty
+            fiforx.rd.next = not fiforx.empty
 
         @instance
         def tbstim():
@@ -93,7 +95,7 @@ def testbench_uart(args=None):
                 wb = randint(0, 255)
                 print("send {:02X}".format(wb))
                 uartmdl.write(wb)
-                timeout = ((clock.frequency/uartmdl.baudrate) * 20)
+                timeout = ((clock.frequency/uartmdl.baudrate) * 40)
                 rb = uartmdl.read()
                 while rb is None and timeout > 0:
                     yield clock.posedge
