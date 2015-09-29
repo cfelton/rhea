@@ -12,8 +12,6 @@ addons:
     source:
       - ubuntu-toolchain-r-test
     packages:
-      - 'gcc-4.9'
-      - 'g++-4.9'
       - build-essential
       - clang
       - bison
@@ -29,9 +27,9 @@ addons:
       - gperf
       - libffi-dev
       - libftdi-dev
-    update-alternatives:
-      - install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50
-      - install /usr/bin/g++ g++ /usr/bin/g++-4.9 50
+#    update-alternatives:
+#      - install /usr/bin/gcc gcc /usr/bin/gcc-4.9 50
+#      - install /usr/bin/g++ g++ /usr/bin/g++-4.9 50
 
 # cannot figure out how to get a new version of gcc
 # to build the dependencies.
@@ -49,14 +47,20 @@ before_install:
   - g++ --version
   - export PATH=$PATH:$HOME/iverilog/bin/:$HOME/yosys/
   - export PATH=$PATH:$HOME/icestorm/icepack/:$HOME/arachne-pnr/bin/
+  - echo $HOME
+  - ls $HOME/
   - chmod +x ./scripts/ci/install_iverilog.sh
   - ./scripts/ci/install_iverilog.sh
+# these fail to build and install because the inability to 
+# update to gcc >= 4.8
 #  - chmod +x ./scripts/ci/install_icestorm.sh
 #  - ./scripts/ci/install_icestorm.sh
 #  - chmod +x ./scripts/ci/install_arachne.sh
 #  - ./scripts/ci/install_arachne.sh
   - chmod +x ./scripts/ci/install_yosys.sh
   - ./scripts/ci/install_yosys.sh
+  - ls $HOME/yosys/
+  - yosys -V
   
 # command to install dependencies
 install:
@@ -70,9 +74,9 @@ install:
 # run the test
 script:
    - cd examples
-   - py.test  
+   - py.test -s
    - cd ../test
-   - py.test  
+   - py.test -s
 
 notifications:
   email: false

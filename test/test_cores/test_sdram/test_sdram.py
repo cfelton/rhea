@@ -25,6 +25,8 @@ from rhea.cores.sdram import sdram_sdr_controller
 from rhea.models.sdram import SDRAMModel
 from rhea.models.sdram import sdram_controller_model
 
+from rhea.utils.test import run_testbench
+
 
 def test_sdram():
     tb_sdram(Namespace())
@@ -55,7 +57,7 @@ def tb_sdram(args):
     max_addr = 2048   # @todo: add actual SDRAM memory size limit
     max_data = 2**16  # @todo: add actual databus width
 
-    def _test_stim():
+    def _bench_sdram():
         """
         This test exercises a SDRAM controller ...
         """
@@ -111,12 +113,7 @@ def tb_sdram(args):
 
         return tbclk, tbclk_sdram, tbstim, tbmdl_sdm, tbmdl_ctl
 
-    if os.path.isfile('vcd/_test.vcd'):
-        os.remove('vcd/_test.vcd')
-
-    traceSignals.timescale = '1ps'
-    traceSignals.name = 'vcd/_test'
-    Simulation(traceSignals(_test_stim)).run()
+    run_testbench(_bench_sdram, timescale='1ps')
 
 
 if __name__ == '__main__':

@@ -20,7 +20,7 @@ from rhea.cores.video import hdmi
 
 # a video desplay model to check the timings
 from rhea.models.video import VideoDisplay
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import run_testbench
 
 # @todo move cosimulation to cosimulation directory
 #from _hdmi_prep_cosim import prep_cosim
@@ -38,7 +38,7 @@ def test_hdmi():
     #tbdut = prep_cosim(clock, reset, args=args)
     tbdut = hdmi()
     
-    def _test():
+    def _bench_hdmi():
 
         #tbdut = mm_hdmisys(glbl, vselect, hdmi,
         #                   resolution=res,
@@ -78,9 +78,6 @@ def test_hdmi():
         return tbclk, tbstim
 
     # run the above test
-    vcd = tb_clean_vcd('_test')
-    traceSignals.timescale = '1ns'
-    traceSignals.name = vcd
-    #Simulation((traceSignals(_test), tbdut,)).run()
+    run_testbench(_bench_hdmi)
 
 

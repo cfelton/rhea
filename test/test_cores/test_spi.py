@@ -12,19 +12,16 @@ from rhea.cores.spi import SPIBus
 
 from rhea.models.spi import SPIEEPROM
 
-from rhea.system import Clock
-from rhea.system import Reset
-from rhea.system import Global
+from rhea.system import Global, Clock, Reset
 from rhea.system import Wishbone
 from rhea.system import FIFOBus
-from rhea.system.regfile import Register
 
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import run_testbench, tb_move_generated_files
 
 
 def m_test_top(clock, reset, sck, mosi, miso, ss):
     # @todo: create a top-level for conversion ...
-    g_spi = m_spi()
+    g_spi = spi_controller()
     return g_spi
 
 
@@ -35,9 +32,12 @@ def convert():
     mosi = Signal(bool(0))
     miso = Signal(bool(0))
     ss = Signal(bool(0))
-       
+
+    toVerilog.directory = 'output/'
     toVerilog(m_test_top, clock, reset, sck, mosi, miso, ss)
+    toVHDL.directory = 'output/'
     toVHDL(m_test_top, clock, reset, sck, mosi, miso, ss)
+    tb_move_generated_files()
 
 
 def test_spi():
@@ -52,7 +52,7 @@ def test_spi():
     spibus = SPIBus()
     asserr = Signal(bool(0))
     
-    def _test_spi():
+    def _bench_spi():
         tbdut = spi_controller(glbl, regbus, 
                           fiforx, fifotx, spibus,
                           base_address=base_address)
@@ -140,10 +140,13 @@ def test_spi():
         
         return tbstim, tbdut, tbeep, tbclk, tbmap
 
-    vcd = tb_clean_vcd('_test_spi')
-    traceSignals.name = vcd
-    Simulation(traceSignals(_test_spi)).run()
-    
-        
+    run_testbench(_bench_spi)
+
+
+@pytest.mark.xfail
+def test_convert():
+    convert()
+
+
 if __name__ == '__main__':
     test_spi()

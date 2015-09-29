@@ -12,7 +12,7 @@ from myhdl import *
 from rhea.system import FIFOBus
 import rhea.cores as cores
 
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import run_testbench
 
 
 def test_afifo(args=None):
@@ -106,7 +106,7 @@ def test_afifo(args=None):
             yield delay(3*33)
             reset.next = not reset.active
 
-            # reset is delayd by at least two
+            # reset is delayed by at least two
             for ii in range(5):
                 yield wclk.posedge
         
@@ -115,7 +115,6 @@ def test_afifo(args=None):
         
                 # Write some byte
                 for ii in range(num_bytes):
-                    #print('%d wr %d' % (num_bytes, ii))
                     yield wclk.posedge
                     fbus.wdata.next = ii
                     fbus.wr.next  = True
@@ -136,7 +135,6 @@ def test_afifo(args=None):
                 for ii in range(num_bytes):
                     yield rclk.posedge
                     fbus.rd.next = True
-                    #print("rdata %x ii %x " % (fbus.rdata, ii))
                     assert fbus.rvld
                     assert fbus.rdata == ii, "rdata %x ii %x " % (fbus.rdata, ii)
         
@@ -177,12 +175,10 @@ def test_afifo(args=None):
         return (tbdut, tbwclk, tbrclk, tb_always_wr, tb_always_wr_gate, 
                 tb_always_rd, tbstim)
 
+    # run the tests
+    for tt in (_test1, _test2,):
+        run_testbench(tt)
 
-    for tt in (_test1, _test2,): 
-        vcd = tb_clean_vcd('test_afifo_%s' % (tt.__name__))
-        traceSignals.name = vcd
-        g = traceSignals(tt)
-        Simulation(g).run()
 
 if __name__ == '__main__':
     test_afifo()

@@ -7,6 +7,7 @@ from myhdl import *
 
 from rhea.models.usbext import Fx2Model
 from rhea.models.usbext.fx2 import slave_fifo
+from rhea.utils.test import run_testbench
 
 # The Fx2Model has two config modes.  The actual FX2 controller has
 # numerous programmable modes.  The "configs" emulate configurations
@@ -19,7 +20,7 @@ def test_config1_host_write():
 
     fm = Fx2Model(config=1, verbose=True, trace=False)
     fb = fm.get_bus()
-    tb_dut = traceSignals(slave_fifo, fm, fb)
+    tbdut = slave_fifo(fm, fb)
 
     def _write(fm, num=1):
         pass
@@ -36,96 +37,97 @@ def test_config1_host_write():
         fb.ADDR.next = 0
         yield delay(3*fm.IFCLK_TICK)
 
-    @instance
-    def tb_stimulus():
-        fb.ADDR.next = 0
-        yield delay(3*fm.IFCLK_TICK)
-        fb.RST.next = False
-        yield delay(13*fm.IFCLK_TICK)
-        fb.RST.next = True
-        yield delay(13*fm.IFCLK_TICK)
-        
-        # FLAGC is gotdata
-        # FLAGB is gotroom
-        # In the config1 mode FLAGC is gotdata and FLAGB is gotroom.
-        # At start FLAGB == True and FLAGC == False.  After a write
-        # FLAGC == True.
-        # Config1 onl
-        
-        assert fb.FLAGB == True
-        assert fb.FLAGC == False
-        
-        fm.write([0xCE], fm.EP2)
-        yield delay(3*fm.IFCLK_TICK)
-        assert fb.FLAGB == True  # still should have room
-        assert fb.FLAGC == True  # should have data now
-        assert fb.FDO == 0xCE
-        assert not fm.isempty(fm.EP2)
+    def _bench_host_write():
+        @instance
+        def tbstim():
+            fb.ADDR.next = 0
+            yield delay(3*fm.IFCLK_TICK)
+            fb.RST.next = False
+            yield delay(13*fm.IFCLK_TICK)
+            fb.RST.next = True
+            yield delay(13*fm.IFCLK_TICK)
 
-        # read out the data written, 1 byte
-        yield _read(fb, 1)
-        assert fb.FLAGB == True  # still should have room
-        assert fb.FLAGC == False # no data now
-        assert fm.isempty(fm.EP2)
-        yield delay(13*fm.IFCLK_TICK)
-        
-        # Write a burst of data and read the burst of data
-        data = list(range(33))
-        data[0] = 0xFE
-        fm.write(data, fm.EP2)
-        yield delay(3*fm.IFCLK_TICK)
-        assert fb.FLAGB == True  # still should have room
-        assert fb.FLAGC == True  # should have data now
-        assert fb.FDO == 0xFE
-        assert not fm.isempty(fm.EP2)
+            # FLAGC is gotdata
+            # FLAGB is gotroom
+            # In the config1 mode FLAGC is gotdata and FLAGB is gotroom.
+            # At start FLAGB == True and FLAGC == False.  After a write
+            # FLAGC == True.
+            # Config1 onl
 
-        yield _read(fb, 33)
-        assert fb.FLAGB == True  # still should have room
-        assert fb.FLAGC == False # now data now
-        assert fm.isempty(fm.EP2)
+            assert fb.FLAGB == True
+            assert fb.FLAGC == False
 
-        # read one more
-        yield _read(fb, 1)
+            fm.write([0xCE], fm.EP2)
+            yield delay(3*fm.IFCLK_TICK)
+            assert fb.FLAGB == True  # still should have room
+            assert fb.FLAGC == True  # should have data now
+            assert fb.FDO == 0xCE
+            assert not fm.isempty(fm.EP2)
 
-        # fill the FIFO
-        data = [randint(0, 0xFF) for _ in range(512)]
-        fm.write(data, fm.EP2)
-        yield delay(3*fm.IFCLK_TICK)
-        assert fb.FLAGB == True  # still should have room
-        assert fb.FLAGC == True  # should have data now
-        assert fb.FDO == data[0]
-        assert not fm.isempty(fm.EP2)
+            # read out the data written, 1 byte
+            yield _read(fb, 1)
+            assert fb.FLAGB == True  # still should have room
+            assert fb.FLAGC == False # no data now
+            assert fm.isempty(fm.EP2)
+            yield delay(13*fm.IFCLK_TICK)
 
-        yield _read(fb, 512)
-        assert fb.FLAGB == True  # still should have room
-        assert fb.FLAGC == False # now data now
-        assert fm.isempty(fm.EP2)
+            # Write a burst of data and read the burst of data
+            data = list(range(33))
+            data[0] = 0xFE
+            fm.write(data, fm.EP2)
+            yield delay(3*fm.IFCLK_TICK)
+            assert fb.FLAGB == True  # still should have room
+            assert fb.FLAGC == True  # should have data now
+            assert fb.FDO == 0xFE
+            assert not fm.isempty(fm.EP2)
 
-        # The model should handle flow, control it will take
-        # how much ever data? (this emulates how the host USB
-        # software stack would work).
-        data = [randint(0, 0xFF) for _ in range(517)]
-        fm.write(data, fm.EP2)
-        yield delay(3*fm.IFCLK_TICK)
-        assert fb.FLAGB == True  # still should have room
-        assert fb.FLAGC == True  # should have data now
-        assert fb.FDO == data[0]
-        assert not fm.isempty(fm.EP2)
+            yield _read(fb, 33)
+            assert fb.FLAGB == True  # still should have room
+            assert fb.FLAGC == False # now data now
+            assert fm.isempty(fm.EP2)
 
-        yield _read(fb, 512)
-        assert fb.FLAGB == True  # still should have room
-        assert fb.FLAGC == True  # now data now
+            # read one more
+            yield _read(fb, 1)
 
-        yield _read(fb, 7)
-        assert fb.FLAGB == True  # still should have room
-        assert fb.FLAGC == False # now data now
-        assert fm.isempty(fm.EP2)
+            # fill the FIFO
+            data = [randint(0, 0xFF) for _ in range(512)]
+            fm.write(data, fm.EP2)
+            yield delay(3*fm.IFCLK_TICK)
+            assert fb.FLAGB == True  # still should have room
+            assert fb.FLAGC == True  # should have data now
+            assert fb.FDO == data[0]
+            assert not fm.isempty(fm.EP2)
 
-        raise StopSimulation
-    
-    Simulation((tb_dut, tb_stimulus)).run()
-    if os.path.isfile('SlaveFifo.vcd'):
-        shutil.move('SlaveFifo.vcd', 'v_test_config1_host_write.vcd')
+            yield _read(fb, 512)
+            assert fb.FLAGB == True  # still should have room
+            assert fb.FLAGC == False # now data now
+            assert fm.isempty(fm.EP2)
+
+            # The model should handle flow, control it will take
+            # how much ever data? (this emulates how the host USB
+            # software stack would work).
+            data = [randint(0, 0xFF) for _ in range(517)]
+            fm.write(data, fm.EP2)
+            yield delay(3*fm.IFCLK_TICK)
+            assert fb.FLAGB == True  # still should have room
+            assert fb.FLAGC == True  # should have data now
+            assert fb.FDO == data[0]
+            assert not fm.isempty(fm.EP2)
+
+            yield _read(fb, 512)
+            assert fb.FLAGB == True  # still should have room
+            assert fb.FLAGC == True  # now data now
+
+            yield _read(fb, 7)
+            assert fb.FLAGB == True  # still should have room
+            assert fb.FLAGC == False # now data now
+            assert fm.isempty(fm.EP2)
+
+            raise StopSimulation
+
+        return tbdut, tbstim
+
+    run_testbench(_bench_host_write)
 
 
 def test_config1_host_read():
@@ -134,7 +136,7 @@ def test_config1_host_read():
 
     fm = Fx2Model(config=1, verbose=True, trace=False)
     fb = fm.get_bus()
-    tb_dut = traceSignals(slave_fifo, fm, fb)
+    tbdut = slave_fifo(fm, fb)
 
     def _write(fb, data):
         yield fb.IFCLK.posedge
@@ -148,63 +150,64 @@ def test_config1_host_read():
     def _read(fm, num=1):
         pass
 
-    @instance
-    def tb_stimulus():
-        fb.ADDR.next = 0
-        yield delay(3*fm.IFCLK_TICK)
-        fb.RST.next = False
-        yield delay(13*fm.IFCLK_TICK)
-        fb.RST.next = True
-        yield delay(13*fm.IFCLK_TICK)
-        fb.ADDR.next = 2
-        
-        # FLAGC is gotdata
-        # FLAGB is gotroom
-        # In the config1 mode FLAGC is gotdata and FLAGB is gotroom.
-        # At start FLAGB == True and FLAGC == False.  After a write
-        # FLAGC == True.
-        # Config1 onl
-        
-        assert fb.FLAGB == True
-        assert fb.FLAGC == False
-        assert not fm.isdata(fm.EP6)
-        
-        yield _write(fb, [0xCE])
-        assert fb.FLAGB == True
-        assert fb.FLAGC == False
-        assert fm.isdata(fm.EP6, num=1)
-        dd = fm.read(fm.EP6, num=1)
-        assert dd[0] == 0xCE
+    def _bench_host_read():
+        @instance
+        def tbstim():
+            fb.ADDR.next = 0
+            yield delay(3*fm.IFCLK_TICK)
+            fb.RST.next = False
+            yield delay(13*fm.IFCLK_TICK)
+            fb.RST.next = True
+            yield delay(13*fm.IFCLK_TICK)
+            fb.ADDR.next = 2
 
-        assert fb.FLAGB == True
-        assert fb.FLAGC == False
+            # FLAGC is gotdata
+            # FLAGB is gotroom
+            # In the config1 mode FLAGC is gotdata and FLAGB is gotroom.
+            # At start FLAGB == True and FLAGC == False.  After a write
+            # FLAGC == True.
+            # Config1 onl
 
-        data = [randint(0, 0xFF) for _ in range(512)]
-        yield _write(fb, data)
-        assert fb.FLAGB == False
-        assert fb.FLAGC == False
-        assert fm.isdata(fm.EP6, num=1)    # more than 1
-        assert fm.isdata(fm.EP6, num=512)  # more than 1
+            assert fb.FLAGB == True
+            assert fb.FLAGC == False
+            assert not fm.isdata(fm.EP6)
 
-        yield _write(fb, [0xCE])
-        assert fb.FLAGB == False
-        assert fb.FLAGC == False
-        assert fm.isdata(fm.EP6, num=1)    # more than 1
-        assert fm.isdata(fm.EP6, num=512)  # more than 1
+            yield _write(fb, [0xCE])
+            assert fb.FLAGB == True
+            assert fb.FLAGC == False
+            assert fm.isdata(fm.EP6, num=1)
+            dd = fm.read(fm.EP6, num=1)
+            assert dd[0] == 0xCE
 
-        rdata = fm.read(fm.EP6, num=512)
-        for wd, rd in zip(data, rdata):
-            assert wd == rd
-        yield delay(13*fm.IFCLK_TICK)
-        assert fb.FLAGB == True
-        assert fb.FLAGC == False
-        assert not fm.isdata(fm.EP6)
+            assert fb.FLAGB == True
+            assert fb.FLAGC == False
 
-        raise StopSimulation
+            data = [randint(0, 0xFF) for _ in range(512)]
+            yield _write(fb, data)
+            assert fb.FLAGB == False
+            assert fb.FLAGC == False
+            assert fm.isdata(fm.EP6, num=1)    # more than 1
+            assert fm.isdata(fm.EP6, num=512)  # more than 1
 
-    Simulation((tb_dut, tb_stimulus)).run()
-    if os.path.isfile('SlaveFifo.vcd'):
-        shutil.move('SlaveFifo.vcd', 'v_test_config1_host_read.vcd')
+            yield _write(fb, [0xCE])
+            assert fb.FLAGB == False
+            assert fb.FLAGC == False
+            assert fm.isdata(fm.EP6, num=1)    # more than 1
+            assert fm.isdata(fm.EP6, num=512)  # more than 1
+
+            rdata = fm.read(fm.EP6, num=512)
+            for wd, rd in zip(data, rdata):
+                assert wd == rd
+            yield delay(13*fm.IFCLK_TICK)
+            assert fb.FLAGB == True
+            assert fb.FLAGC == False
+            assert not fm.isdata(fm.EP6)
+
+            raise StopSimulation
+
+        return tbdut, tbstim
+
+    run_testbench(_bench_host_read)
 
 
 if __name__ == '__main__':

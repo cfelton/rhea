@@ -29,7 +29,7 @@ _default_pin_attr = {
 class Quartus(_toolflow):
     _name = "Altera Quartus"
 
-    def __init__(self, brd, top=None, path='./altera/'):
+    def __init__(self, brd, top=None, path='altera/'):
         """
         Given a board definition and a top-level module
         create an instance of the Quartus toolchain.

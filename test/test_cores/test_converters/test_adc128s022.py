@@ -9,7 +9,7 @@ from rhea.system import Clock
 from rhea.system import Reset
 from rhea.system import Global
 from rhea.models.converters import adc128s022_model
-from rhea.utils.test import tb_clean_vcd 
+from rhea.utils.test import run_testbench
 
 
 def test_adc128s022():
@@ -31,7 +31,7 @@ def test_adc128s022():
                 break
             yield clock.posedge
             
-    def _bench():
+    def _bench_adc128s022():
         tbdut = adc128s022(glbl, fifobus, spibus, channel)
         tbmdl = adc128s022_model(spibus, analog_channels, vref_pos=3.3, vref_neg=0.)
         tbclk = clock.gen()
@@ -64,11 +64,8 @@ def test_adc128s022():
             raise StopSimulation
             
         return tbdut, tbmdl, tbclk, tbstim
-    
-    # run the simulation        
-    vcd = tb_clean_vcd('_test_adc128')
-    traceSignals.name = vcd 
-    Simulation(traceSignals(_bench)).run()
+
+    run_testbench(_bench_adc128s022)
         
         
 if __name__ == '__main__':

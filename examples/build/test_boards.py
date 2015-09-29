@@ -5,7 +5,7 @@ definitions.  Each board has a mapping to the designs
 ports ...
 """
 
-import pytest
+import os
 
 import rhea.build as build
 from rhea.build.boards import get_board
@@ -23,6 +23,7 @@ def test_boards():
             brd.add_port(**led_port_pin_map[bn])
 
         flow = build.flow.Yosys(brd=brd, top=blinky)
+        flow.path = os.path.join('output', flow.path)
         flow.run()
 
 

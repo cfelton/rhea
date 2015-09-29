@@ -6,8 +6,8 @@
 # Packages
 *.egg
 *.egg-info
-dist
-build
+/dist
+/build
 eggs
 parts
 bin
@@ -24,6 +24,7 @@ lib64
 *.vhd
 *.png
 *.vcd
+*.vcd.*
 *.txt
 vcd
 
