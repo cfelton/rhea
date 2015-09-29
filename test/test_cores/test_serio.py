@@ -3,7 +3,7 @@ from myhdl import *
 
 from rhea.system import Clock, Reset
 from rhea.cores.misc import io_stub
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import run_testbench
 
 
 def test():
@@ -13,7 +13,7 @@ def test():
     pin = [Signal(intbv(0)[16:]) for _ in range(7)]
     pout = [Signal(intbv(0)[16:]) for _ in range(3)]
 
-    def _test():
+    def _bench_serio():
         tbclk = clock.gen()
         tbdut = io_stub(clock, reset, sdi, sdo, pin, pout)
 
@@ -30,9 +30,7 @@ def test():
 
         return tbdut, tbclk, tbstim
 
-    vcd = tb_clean_vcd('serio')
-    traceSignals.name = vcd
-    Simulation(traceSignals(_test)).run()
+    run_testbench(_bench_serio)
 
 
 if __name__ == '__main__':

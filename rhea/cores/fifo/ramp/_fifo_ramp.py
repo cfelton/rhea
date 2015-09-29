@@ -31,9 +31,9 @@ def fifo_ramp(
     g_regbus = regbus.add(glbl, regfile, 'fifo_ramp', base_address)    
     
     enable = Signal(False)
-    ramp =  Signal(intbv(0)[fifobus.width:])
+    ramp = Signal(intbv(0)[fifobus.width:])
     wcnt = Signal(intbv(0x3FF)[32:])
-    div  = Signal(intbv(0)[32:])
+    div = Signal(intbv(0)[32:])
     rcnt = Signal(intbv(0)[32:])
 
     # ?? not sure if this makes sense ??
@@ -44,7 +44,7 @@ def fifo_ramp(
         regfile.cnt3.next = (rcnt >> 24) & 0xFF
         regfile.cnt2.next = (rcnt >> 16) & 0xFF
         regfile.cnt1.next = (rcnt >> 8) & 0xFF
-        regfile.cnt0.next = (rcnt >> 0) & 0xFF
+        regfile.cnt0.next = rcnt & 0xFF
         
     @always_seq(clock.posedge, reset=reset)
     def rtl_reg():
@@ -52,12 +52,12 @@ def fifo_ramp(
         div.next = ((regfile.div3 << 24) | 
                     (regfile.div2 << 16) |
                     (regfile.div1 << 8) |
-                    (regfile.div0))
+                     regfile.div0)
         
     @always_seq(clock.posedge, reset=reset)
     def rtl_ramp():
         if regfile.enable and not fifobus.full:
-            if wcnt == 0 :
+            if wcnt == 0:
                 fifobus.wr.next = True
                 fifobus.wdata.next = ramp
                 if ramp+1 == ramp_mod:

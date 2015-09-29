@@ -1,8 +1,11 @@
 PYTHON=python
 
 
-all: xilinx altera
+all: xilinx altera lattice
 
+#########################################################
+# Xilinx boards
+#########################################################
 xilinx: xula pone #atlys ufo400 
 
 xula: #xilinx/xula.bit
@@ -14,6 +17,12 @@ xula: #xilinx/xula.bit
 pone: #xilinx/pone.bit
 	time $(PYTHON) ex_pone.py
 
+anvyl: #xilinx/anvyl.bit
+	time $(PYTHON) ex_anvyl.py
+
+mojo: #xilinx/anvyl.bit
+	time $(PYTHON) ex_mojo.py
+
 #atlys: #xilinx/atlys.bit
 #	$(PYTHON) ex_atlys.py
 
@@ -24,6 +33,10 @@ pone: #xilinx/pone.bit
 #parallela: #xilinx/parallela.bit
 #	$(PYTHON) ex_parallela.py
 
+
+#########################################################
+# Altera boards
+#########################################################
 altera: de0nano #de0
 
 de0nano: #altera/
@@ -35,7 +48,23 @@ de0nano: #altera/
 #de0: #altera/
 #	$(PYTHON) ex_de0.py
 
+
+#########################################################
+# Lattice boards
+#########################################################
+lattice: icestick
+
+icestick:
+	time $(PYTHON) ex_icestick.py 
+
+
+#########################################################
 clean:
-	rm -Rf altera/*
-	rm -Rf xilinx/*
+	rm -Rf altera
+	rm -Rf xilinx
+	rm -Rf yosys
+	rm -Rf iceriver
+	rm -f *.log
+
+
 

@@ -29,7 +29,7 @@ def _create_mask(n):
     return m
 
 
-def _create_test_regfile():
+def _create_regfile():
     global regdef
     print("creating test register file")
     regdef = collections.OrderedDict()
@@ -71,7 +71,7 @@ def m_per_top(clock, reset, mon):
 
 def m_per(glbl, regbus, mon):
     global regfile
-    regfile = _create_test_regfile()
+    regfile = _create_regfile()
     g_regfile = regbus.m_per_interface(glbl, regfile)
     clock, reset = glbl.clock, glbl.reset
 
@@ -86,7 +86,7 @@ def m_per(glbl, regbus, mon):
 
 def m_per_bits(glbl, regbus, mon):
     global regfile
-    regfile = _create_test_regfile()
+    regfile = _create_regfile()
     g_regfile = regbus.m_per_interface(glbl, regfile)
     count = modbv(0, min=0, max=1)
     clock, reset = glbl.clock, glbl.reset
@@ -114,7 +114,7 @@ def m_per_bits(glbl, regbus, mon):
 
 
 def test_register_def():
-    regfile = _create_test_regfile()
+    regfile = _create_regfile()
     assert len(regfile._rwregs) == 4
     assert len(regfile._roregs) == 2
 
@@ -127,11 +127,10 @@ def test_register_file():
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl) 
 
-    def _test_rf():
-        tb_dut = m_per(glbl, regbus, 0xAA)
-        tb_or = regbus.m_per_outputs()
-        tb_mclk = clock.gen(hticks=5)
-        #tb_rclk = regbus.clk_i.gen()
+    def _bench_regfile():
+        tbdut = m_per(glbl, regbus, 0xAA)
+        tbor = regbus.m_per_outputs()
+        tbmclk = clock.gen(hticks=5)
         asserr = Signal(bool(0))
 
         mon_ack = Signal(bool(0))
@@ -141,7 +140,7 @@ def test_register_file():
             mon_ack.next = regbus.ack_o
         
         @instance
-        def tb_stim():
+        def tbstim():
             try:
                 yield delay(100)
                 yield reset.pulse(110)
@@ -174,12 +173,9 @@ def test_register_file():
 
             raise StopSimulation
 
-        return tb_mclk, tb_stim, tb_dut, tbmon, tb_or  #, tb_rclk
+        return tbmclk, tbstim, tbdut, tbmon, tbor
 
-    vcd = tb_clean_vcd('_test_rf')
-    traceSignals.name = vcd
-    g = traceSignals(_test_rf)
-    Simulation(g).run()
+    run_testbench(_bench_regfile)
 
 
 def test_register_file_bits():
@@ -190,15 +186,15 @@ def test_register_file_bits():
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl) 
 
-    def _test():
-        tb_dut = m_per_bits(glbl, regbus, 0xAA)
-        tb_or = regbus.m_per_outputs()
-        tb_mclk = clock.gen()
-        tb_rclk = regbus.clk_i.gen()
+    def _bench_regfile_bits():
+        tbdut = m_per_bits(glbl, regbus, 0xAA)
+        tbor = regbus.m_per_outputs()
+        tbmclk = clock.gen()
+        tbrclk = regbus.clk_i.gen()
         asserr = Signal(bool(0))
 
         @instance
-        def tb_stim():
+        def tbstim():
             regfile.ok.next = True
             try:
                 yield reset.pulse(111)
@@ -222,19 +218,19 @@ def test_register_file_bits():
             
             raise StopSimulation
 
-        return tb_mclk, tb_stim, tb_dut, tb_or, tb_rclk
+        return tbmclk, tbstim, tbdut, tbor, tbrclk
 
-    vcd = tb_clean_vcd('_test')
-    traceSignals.name = vcd
-    g = traceSignals(_test)
-    Simulation(g).run()
+    run_testbench(_bench_regfile_bits)
 
 
 def test_convert():
     clock = Signal(bool(0))
     reset = ResetSignal(0, active=0, async=True)
     mon = Signal(intbv(0)[8:])
+<<<<<<< HEAD
     
+=======
+>>>>>>> master
     toVerilog.directory = 'output'
     toVerilog(m_per_top, clock, reset, mon)
     toVHDL.directory = 'output'
@@ -242,9 +238,8 @@ def test_convert():
 
     
 if __name__ == '__main__':
-    #parser = tb_arparser()
-    #args = parser.parse_args()
-    
+    # @todo: pass args to the testbenches
+    # @todo: tb_register_def(tb_args()) ...
     test_register_def()
     test_register_file()
     test_register_file_bits()

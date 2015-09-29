@@ -15,9 +15,9 @@ def vga_sync(
     vmem,  # the video memory interface
 
     # [parameters]
-    resolution = (640, 480,),  # resolution in pixels
-    refresh_rate = 60,         # refresh rate in Hz (vertical rate)
-    line_rate = 31250          # line rate in Hz (horizontal rate)
+    resolution=(640, 480,),  # resolution in pixels
+    refresh_rate=60,         # refresh rate in Hz (vertical rate)
+    line_rate=31250          # line rate in Hz (horizontal rate)
     ):
     """
     The following is the generation of the signals required 
@@ -48,10 +48,11 @@ def vga_sync(
       vga.green :
       vga.blue  :
       
-      vmem.addr  : pixel address
-      vmem.red   : read pixel value
-      vmem.green :
-      vmem.blue  :
+      vmem.hpxl : horizontal pixel address
+      vmem.vpxl : vertical pixel address
+      vmem.red   : red pixel value
+      vmem.green : green pixel value
+      vmem.blue  : blue pixel value
    
     Parameters:
     -----------
@@ -68,33 +69,35 @@ def vga_sync(
 
     # compute the limits (counter limits) for the vsync
     # and hsync timings.  Review the calc_timing function
-    # for definitions of A,B,C,D,E,O,P,Q,R,S, and Z
-    (A,B,C,D,E,O,
+    # for definitions of A,B,C,D,E,F,P,Q,R,S, and Z
+    (A,B,C,D,E,F,
      P,Q,R,S,X,Z,) = calc_timings(clock.frequency, resolution,
                                   refresh_rate, line_rate)
-    FullScreen = O
+    # full_screen pixels res[0]*res[1] (should be)
+    full_screen = F
 
     # counters to count the pixel clock (clock)
     HPXL, VPXL = res
-    xcnt = intbv(0, min=-1, max=X+1) # clock div
-    hcnt = intbv(0, min=0, max=A+1)  # hor count in ticks
-    vcnt = intbv(0, min=0, max=O+1)  # ver count in ticks
+    xcnt = intbv(0, min=-1, max=X+1)  # clock div
+    hcnt = intbv(0, min=0, max=A+1)   # hor count in ticks
+    vcnt = intbv(0, min=0, max=F+1)   # ver count in ticks
 
+    # local references to interface signals
     hpxl = vmem.hpxl
     vpxl = vmem.vpxl
 
     # debug stuff
-    hcd = Signal(hcnt)
-    vcd = Signal(vcnt)
+    hcd = Signal(hcnt)  # trace horizontal count
+    vcd = Signal(vcnt)  # trace vertical count
 
     # the hsync and vsync are periodic so we can start anywhere,
-    # it is convinient to start at the active pixel area
+    # it is convenient to start at the active pixel area
     @always_seq(clock.posedge, reset=reset)
     def rtl_sync():    
         # horizontal and vertical counters
-        hcnt[:] = hcnt + 1
-        vcnt[:] = vcnt + 1
-        if vcnt == FullScreen:
+        hcnt[:] = hcnt + 1  # horizontal count only
+        vcnt[:] = vcnt + 1  # all pixel count, horizontal and veritical
+        if vcnt == full_screen:
             vcnt[:] = 0
             hcnt[:] = 0
         elif vcnt > R:
@@ -115,7 +118,7 @@ def vga_sync(
         else:
             vga.pxlen.next = False
 
-        # genrate the VGA strobes
+        # generate the VGA strobes
         if hcnt >= (D+E) and hcnt < (D+E+B):
             vga.hsync.next = False
         else:
@@ -142,7 +145,6 @@ def vga_sync(
         vcd.next = vcnt
         # end debug stuff
 
-
     # logically define which VGA state currently in.  This is 
     # required for (simplified) verification but will be removed
     # by synthesis (outputs dangling)
@@ -158,7 +160,7 @@ def vga_sync(
             vga.state.next = vga.States.VER_FRONT_PORCH        
         elif vcd >= (R+S) and vcd < (R+S+P):
             pass # should be handled by above
-        elif vcd >= (R+S+P) and vcd < (FullScreen):
+        elif vcd >= (R+S+P) and vcd < (full_screen):
             vga.state.next = vga.States.VER_BACK_PORCH
         elif hcd >= D and hcd < (D+E):
             vga.state.next = vga.States.HOR_FRONT_PORCH
@@ -172,19 +174,16 @@ def vga_sync(
         else:
             vga.active.next = False
 
-
     #_state = Signal(intbv(0)[8:])
     #@always_comb
     #def tmon():
     #    _state.next = int(vga.state._val._index)
 
-    
     # map the video memory pixels to the VGA bus
     @always_comb
     def rtl_map():
         vga.red.next = vmem.red
         vga.green.next = vmem.green
         vga.blue.next = vmem.blue
-
 
     return rtl_sync, rtl_state, rtl_map

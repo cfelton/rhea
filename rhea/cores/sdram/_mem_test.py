@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 from myhdl import *
-from ..misc import random_generator
+#from ..misc import random_generator
 
 
 def mem_test(glbl, memmap, progress, error, done,

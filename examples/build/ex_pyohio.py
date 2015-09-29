@@ -6,6 +6,7 @@ from myhdl import *
 import rhea.build as build
 from rhea.build.boards import get_board
 
+
 def m_button_led(clock,button,led):
 
     @always(clock.posedge)
@@ -13,6 +14,7 @@ def m_button_led(clock,button,led):
         led.next = button
 
     return rtl
+
 
 def compile():
     brd = get_board('xula')

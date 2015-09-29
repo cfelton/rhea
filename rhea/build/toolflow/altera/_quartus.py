@@ -4,13 +4,13 @@
 
 from __future__ import division
 from __future__ import print_function
+from __future__ import absolute_import
 
 import sys
 import os
 from time import gmtime, strftime
 import subprocess
 import shlex
-from pprint import pprint
 
 from .._toolflow import _toolflow
 from .._convert import convert
@@ -27,16 +27,18 @@ _default_pin_attr = {
 
 
 class Quartus(_toolflow):
-    def __init__(self, brd, top=None, path='./altera/'):
+    _name = "Altera Quartus"
+
+    def __init__(self, brd, top=None, path='altera/'):
         """
-        Given a board definition and a top-level module 
+        Given a board definition and a top-level module
         create an instance of the Quartus toolchain.
         """
-        _toolflow.__init__(self, brd, top=top, path=path)
+        super(Quartus, self).__init__(brd=brd, top=top, path=path)
         self.sdc_file = ''
         self._core_file_list = set()
         self._default_project_file = None
-        
+
     def add_cores(self, filename):
         self._core_file_list.update(set(filename))
 
@@ -56,29 +58,27 @@ class Quartus(_toolflow):
             qsf += "set_global_assignment -name %s %s\n" % (type_file[use], f,)
         qsf += "set_global_assignment -name FAMILY \"%s\"\n" % (self.brd.family,)
         qsf += "set_global_assignment -name DEVICE %s\n" % (self.brd.device,)
-        # there is an issue here that needs to be resolved, with a version or 
-        # platform dependent the myhdl converters will rename the module to 
+        # there is an issue here that needs to be resolved, with a version or
+        # platform dependent the myhdl converters will rename the module to
         # the name specified with toV*.name and on another version/platform
         # it does not (self.brd.top.func_name,)
         qsf += "set_global_assignment -name TOP_LEVEL_ENTITY %s\n" % (self.name,)
         qsf += "set_global_assignment -name STRATIX_DEVICE_IO_STANDARD \"2.5 V\"\n"
 
-        for k,v in pattr.items():
+        for k, v in pattr.items():
             qsf += "set_global_assignment -name %s  %s\n" %(k, v)
 
         # Add pin constraints/assigments
-        for port_name,port in self.brd.ports.items():
+        for port_name, port in self.brd.ports.items():
             if port.inuse:
                 _pins = port.pins
-
-                for ii,pn in enumerate(_pins):
+                for ii, pn in enumerate(_pins):
                     qsf += "set_location_assignment PIN_%s -to " % (str(pn),)
                     if len(_pins) == 1:
                         qsf += "\"%s\" " % (port_name)
                     else:
-                        qsf += "\"%s\[%d\]\" " % (port_name,ii)
+                        qsf += "\"%s\[%d\]\" " % (port_name, ii)
                     qsf += "\n"
-
         qsf += "#\n"
 
         f = open(self.qsf_file, 'w')
@@ -94,7 +94,7 @@ class Quartus(_toolflow):
         # @todo: log setup information
         #print(qsf)
         return
-        
+
     def create_constraints(self):
         self.sdc_file = os.path.join(self.path, self.name+'.sdc')
         sdc  = '# -------------------------------------------------------------------------- #\n'
@@ -120,8 +120,7 @@ class Quartus(_toolflow):
         f.close()
         # @todo: log setup information
         #print(sdc)
-        return                
-    
+        return
 
     def create_flow_script(self):
         fn = os.path.join(self.path, self.name+'.tcl')
@@ -146,20 +145,20 @@ class Quartus(_toolflow):
         tcl += "execute_flow -compile\n"
         #tcl += "execute_flow -early_timing_estimate\n"
         tcl += "project_close\n"
-        
+
         fid = open(fn, 'w')
         fid.write(tcl)
-        fid.close() 
+        fid.close()
 
         return tcl_script
-        
+
     def run(self, use='verilog', name=None):
         """ Execute the tool-flow """
 
         self.pathexist(self.path)
 
         # convert the top-level
-        cfiles = convert(self.brd, name=self.name, 
+        cfiles = convert(self.brd, name=self.name,
                          use=use, path=self.path)
         self.add_files(cfiles)
 
@@ -169,35 +168,26 @@ class Quartus(_toolflow):
         tcl_name = self.create_flow_script()
 
         cmd = ['quartus_sh', '-t', tcl_name, '-project', self.name]
-        self.logfn = 'build_quartus.log'
-        try:
-            logfile = open(self.logfn, 'w')
-            subprocess.check_call(cmd,  #shell=True,
-                                  stderr=subprocess.STDOUT,
-                                  stdout=logfile)
-            logfile.close()
-        except Exception as err:
-            print(err)
-            raise err
+        self.logfn = self._execute_flow(cmd, "build_quartus.log")
 
         return self.logfn
 
     def program(self):
-        # @todo: some issue with this command or the verions
-        # @todo: of quartus tested?
-        #txt = subprocess.check_output(('quartus_pgm', '-a',))
+        txt = subprocess.check_output(('quartus_pgm', '-l',),
+                                      stderr=subprocess.STDOUT)
+        if 'No JTAG hardware' in txt:
+            print("No hardware detected")
+            return
+
         # @todo: check and see if the cable is attached!
 
         bitfile = os.path.join(self.path, self.name)
         for cmd in self.brd.program_device_cli:
-            try:
-                ucmd = cmd.substitute(dict(bitfile=bitfile))
-                ucmd = shlex.split(ucmd)
-                txt = subprocess.check_output(ucmd)
-            except Exception as err:
-                print(err)
-                raise err
-        
+            ucmd = cmd.substitute(dict(bitfile=bitfile))
+            ucmd = shlex.split(ucmd)
+            self._execute_flow(ucmd, "program_quartus.log")
+        return
+
     def get_utilization(self):
         fitlog = os.path.join(self.path, self.name+'.fit.rpt')
         info = get_utilization(fitlog)

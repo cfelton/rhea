@@ -42,15 +42,14 @@ class _fpga(object):
         self._extintfs = {}
 
         # walk through the default settings
-        for k,v in self.default_clocks.iteritems():
+        for k, v in self.default_clocks.items():
             self.add_clock(k, **v)
-        for k,v in self.default_resets.iteritems():
+        for k, v in self.default_resets.items():
             self.add_reset(k, **v)
-        for k,v in self.default_ports.iteritems():
+        for k, v in self.default_ports.items():
             self.add_port(k, **v)
-        for k,v in self.default_extintf.iteritems():
+        for k, v in self.default_extintf.items():
             self.add_extintf(k, v)
-
 
     @property
     def ports(self):
@@ -66,16 +65,14 @@ class _fpga(object):
         """ a top-level is set """
         return self.top is not None
 
-
     def set_top(self, top, **params):
         self.top = top
         self.top_params = params
         if self.top_name is None:
             self.top_name = top.func_name
 
-
     def get_flow(self):
-        pass
+        raise NotImplemented
 
     def _remove_embed_attr(self, pins, pattr):
         """ removed an embedded pin attribute def if present.
@@ -87,25 +84,22 @@ class _fpga(object):
                 break
         return pattr
 
-
     def add_clock(self, name, frequency=1, pins=None, **pattr):
         if isinstance(pins, (list,tuple)):
             pins = pins[0]
         assert isinstance(pins, (str,int)), "pins type %s" % (type(pins))
-        p = Port(name, pins, stype=Clock(0, frequency=frequency), **pattr)
+        p = Port(name, pins, sigtype=Clock(0, frequency=frequency), **pattr)
         self._clocks[name] = p
         self._ports[name] = p
 
-        
     def add_reset(self, name, active, async, pins, **pattr):
         assert isinstance(async, bool)
         assert active in (0,1,)
         p = Port(name, pins, 
-                 stype=Reset(0, active=active, async=async), **pattr)
+                 sigtype=Reset(0, active=active, async=async), **pattr)
         # add to the reset and port dicts
         self._resets[name] = p
         self._ports[name] = p
-
 
     def add_port(self, name, pins, **pattr):
         """ add a port definition
@@ -129,9 +123,8 @@ class _fpga(object):
         for v in pins:
             assert isinstance(v, (str, int))
         # @todo: raise an error vs. 
-        assert not self._ports.has_key(name)
+        assert name not in self._ports
         self._ports[name] = Port(name, pins, **pattr)
-
 
     def add_port_name(self, name, port, slc=None, **pattr):
         """ add a new name, *name*, to an existing port, *port*.
@@ -159,7 +152,6 @@ class _fpga(object):
         kws.update(pattr)
         self.add_port(name, pins, **kws)
 
-        
     def rename_port(self, port, name, slc=None, **pattr):
         """ rename a *port* to a new *name*
         This function is useful for *bootstrapping*, bootstrapping
@@ -169,7 +161,6 @@ class _fpga(object):
         """        
         pass
 
-        
     def add_extintf(self, name, extintf):
         """
         """
@@ -177,7 +168,6 @@ class _fpga(object):
         # @todo: extract all the ports from the extintf and 
         #    add them to the global port dict
         pass
-
 
     def get_portmap(self, top=None, **kwargs):
         """ given a top-level map the port definitions 
@@ -212,28 +202,27 @@ class _fpga(object):
         for pn in pp.args[:pl]:
             hdlports[pn] = None
         params = {}
-        for ii,kw in enumerate(pp.args[pl:]):
+        for ii, kw in enumerate(pp.args[pl:]):
             params[kw] = pp.defaults[ii]
-
 
         # see if any of the ports or parameters have been overridden
         if self.top_params is not None:
-            for k,v in self.top_params.iteritems():
-                if hdlports.has_key(k):
+            for k, v in self.top_params.items():
+                if k in hdlports:
                     hdlports[k] = v
-            for k,v in self.top_params.iteritems():
-                if params.has_key(k):
+            for k, v in self.top_params.items():
+                if k in params:
                     params[k] = v
 
-        for k,v in kwargs.items():
-            if hdlports.has_key(k):
+        for k, v in kwargs.items():
+            if k in hdlports:
                 hdlports[k] = v
-        for k,v in kwargs.items():
-            if params.has_key(k):
+        for k, v in kwargs.items():
+            if k in params:
                 params[k] = v
 
         # @todo: log this information, some parameters can be too large
-        #    to be useful dumpin to scree (print).
+        #    to be useful dumping to screen (print).
         # log.write("HDL PORTS   %s" % (hdlports,))
         # log.write("HDL PARAMS  %s" % (params,))
 
@@ -242,11 +231,11 @@ class _fpga(object):
         # @todo: this matching code needs to be enhanced, this should
         #    always match a top-level port to a port def.
         for port_name,port in self._ports.items():
-            if hdlports.has_key(port_name):
+            if port_name in hdlports:
                 hdlports[port_name] = port.sig
                 port.inuse = True
 
-        for k,v in hdlports.items():
+        for k, v in hdlports.items():
             assert v is not None, "Error unspecified port %s"%(k)
         
         # combine the ports and params

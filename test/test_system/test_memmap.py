@@ -2,26 +2,31 @@
 from __future__ import print_function
 from __future__ import division
 
-from rhea.system import RegisterFile
-from rhea.system import Register 
+import argparse
+
+from rhea.system import RegisterFile, Register
 from rhea.system import Barebone, Wishbone, AvalonMM, AXI4Lite
+from rhea.utils.test import run_testbench, tb_args, tb_default_args
 
-from regfilesys import 
+from regfilesys import regfilesys
 
-def test_memmap():
-    tb_memmap()
     
+def testbench_memmap(args=None):
+    """  """
+    args = tb_default_args(args)
     
-def tb_memmap(args=None):
-    """
-    """
+    clock = Clock(0, frequency=50e6)
+    reset = Reset(0, active=1, async=False)
     
+    def _bench_memmap():
+        tbdut = regfilesys()
+        tbclk = clock.gen()
+        
     
-    
-    
-    
+    run_testbench(_bench_memmap)
+
     
 if __name__ == '__main__':
-    tb_memmap()
+    testbench_memmap(args=tb_args())
     
     

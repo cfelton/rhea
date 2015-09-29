@@ -9,16 +9,22 @@ class Port(object):
     it with a port.
     """
 
-    def __init__(self, name, pins, stype=None, **pattr):
-        """ relate a port to a device pins and pin attributes"""
+    def __init__(self, name, pins, sigtype=None, **pattr):
+        """ relate a port to a device pins and pin attributes
+
+          name: name for the port
+          pins: a list (tuple) of the pins
+          sigtype: Signal type
+          **pattr: port attributes (vendor specific)
+        """
         self.name = name
         if isinstance(pins, (int, str)):
             pins = [pins]
         self.pins = pins
         self.inuse = False
 
-        if stype is not None:
-            self.sig = stype
+        if sigtype is not None:
+            self.sig = sigtype
         elif len(pins) == 1:
             self.sig = myhdl.Signal(bool(0))
         else:
