@@ -13,7 +13,7 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     specialized hardware in an FPGA (e.g. vertically chaining LUTs).
 
     This FIFO is intended to be used for small fast FIFOs.  But when
-    used for large 
+    used for large ...
     
     This FIFO is a small FIFO (currently fixed to 16) that is implemented
     to take advantage of some hardware implementations.

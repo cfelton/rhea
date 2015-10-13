@@ -10,21 +10,16 @@ from rhea.system impor Global
 from rhea.system import FIFOBus
 
 
-def icestick(
-    # ports
-    clock, reset, led, pmod, 
-    uart_tx, uart_rx
-    # parameters
-):
-    """
+def icestick(clock, reset, led, pmod, uart_tx, uart_rx):
+    """ Lattice Icestick example
     """
     
     glbl = Global(clock, reset)    
     gticks = glbl_timer_ticks(glbl, include_seconds=True)
 
     # get interfaces to the UART fifos
-    fbustx, fbusrx = (FIFOBus(width=8, size=8), 
-                      FIFOBus(width=8, size=8), )
+    fbustx = FIFOBus(width=8, size=8)
+    fbusrx = FIFOBus(width=8, size=8)
 
     # get the UART comm from PC
     guart = uart_lite(glbl, fbustx, fbusrx, uart_tx, uart_rx)
