@@ -4,6 +4,7 @@ import shutil
 from glob import glob
 import argparse
 
+import myhdl
 from myhdl import traceSignals, Simulation
 
 
@@ -24,21 +25,38 @@ def run_testbench(bench, timescale='1ns', args=None):
     else:
         gens = bench()
 
-    Simulation(gens).run()
+    sim = Simulation(gens)
+    sim.run()
+    del sim
 
 
-def tb_argparser():
+def tb_convert(toplevel, *ports, **params):
+    if not os.path.isdir('output/ver/'):
+        os.makedirs('output/ver/')
+    myhdl.toVerilog.directory = 'output/ver/'
+    myhdl.toVerilog(toplevel, *ports, **params)
+
+    if not os.path.isdir('output/vhd/'):
+        os.makedirs('output/vhd/')
+    myhdl.toVHDL.directory = 'output/vhd/'
+    myhdl.toVHDL(toplevel, *ports, **params)
+
+
+def tb_argparser(tests=None):
     """ common command line arguments
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--trace',action='store_true')
-    parser.add_argument('--test',action='store_true')
+    parser.add_argument('--trace', action='store_true')
     parser.add_argument('--convert', action='store_true')
+    if tests is not None and 'all' not in tests:
+        tests += ['all']
+    parser.add_argument('--test', choices=tests,
+                        help="select the test to run")
     return parser
 
 
-def tb_args():
-    parser = tb_argparser()
+def tb_args(tests=None):
+    parser = tb_argparser(tests=tests)
     return parser.parse_args()
 
 
@@ -52,12 +70,16 @@ def tb_move_generated_files():
     to use this function to clean up after a test.
     """
     # move all VHDL files
+    if not os.path.isdir('output/vhd'):
+        os.makedirs('output/vhd/')
     for vf in glob('*.vhd'):
         if os.path.isfile(os.path.join('output/vhd/', vf)):
             os.remove(os.path.join('output/vhd/', vf))
         shutil.move(vf, 'output/vhd/')
 
     # move all Verilog files
+    if not os.path.isdir('output/ver'):
+        os.makedirs('output/ver/')
     for vf in glob('*.v'):
         if os.path.isfile(os.path.join('output/ver/', vf)):
             os.remove(os.path.join('output/ver/', vf))

@@ -4,6 +4,7 @@
 
 import traceback
 import pytest
+import argparse
 
 from myhdl import *
 
@@ -16,7 +17,7 @@ from rhea.system import Global, Clock, Reset
 from rhea.system import Wishbone
 from rhea.system import FIFOBus
 
-from rhea.utils.test import run_testbench, tb_move_generated_files
+from rhea.utils.test import run_testbench, tb_convert, tb_args
 
 
 def m_test_top(clock, reset, sck, mosi, miso, ss):
@@ -32,15 +33,14 @@ def convert():
     mosi = Signal(bool(0))
     miso = Signal(bool(0))
     ss = Signal(bool(0))
-
-    toVerilog.directory = 'output/'
-    toVerilog(m_test_top, clock, reset, sck, mosi, miso, ss)
-    toVHDL.directory = 'output/'
-    toVHDL(m_test_top, clock, reset, sck, mosi, miso, ss)
-    tb_move_generated_files()
+    tb_convert(m_test_top, clock, reset, sck, mosi, miso, ss)
 
 
 def test_spi():
+    testbench_spi(argparse.Namespace())
+
+
+def testbench_spi(args=None):
     
     base_address = ba = 0x400
     clock = Clock(0, frequency=50e6)
@@ -140,7 +140,7 @@ def test_spi():
         
         return tbstim, tbdut, tbeep, tbclk, tbmap
 
-    run_testbench(_bench_spi)
+    run_testbench(_bench_spi, args=args)
 
 
 @pytest.mark.xfail
@@ -149,4 +149,4 @@ def test_convert():
 
 
 if __name__ == '__main__':
-    test_spi()
+    testbench_spi(tb_args())
