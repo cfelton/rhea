@@ -77,9 +77,9 @@ script:
   - py.test -s
 # There is some issue that causes the tests executed with py.test
 # to take 10x longer, run the tests individually until resolved.
-#  - py.test -s
   - cd ../test
-  - make test
+  - py.test -s
+#  - make test
 
 notifications:
   email: false
