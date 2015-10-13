@@ -66,8 +66,10 @@ class IceRiver(Yosys):
         vfile = os.path.join(self.path, v[0])
         sh += "yosys -p \"synth_ice40 -blif {}\" {}\n".format(
             self.blif_file, vfile)
-        
-        sh += "arachne-pnr -d 1k -p {} {} -o {} \n".format(self.pcf_file,
+
+        device = '1k' if '1K' in self.brd.device else '8k'
+        sh += "arachne-pnr -d {} -p {} {} -o {} \n".format(device,
+                                                           self.pcf_file,
                                                            self.blif_file,
                                                            self.txt_file)
         sh += "icepack {} {} \n".format(self.txt_file, self.bin_file)

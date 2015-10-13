@@ -10,7 +10,9 @@ from string import Template
 import subprocess
 
 _default_error_msg = Template("""
-ERROR: The $tool flow failed!  Error Code: $errcode
+ERROR: The $tool flow failed!  
+    Error Code: $errcode
+
     >> $cmd
 
     See the log file for more information:
