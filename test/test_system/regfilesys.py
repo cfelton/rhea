@@ -61,6 +61,7 @@ def regfilesys(clock, reset):
     """
     """
     glbl = Global(clock, reset)
-    csrbus = AXI4Lite(data_width=32, address_width=16)
+    csrbus = AXI4Lite(data_width=32, address_width=32)
+    
     
     
