@@ -1,9 +1,9 @@
 
-TIME=
+TIME=`which time`
 LOG=output/run_all_tests.log
 
 run:
-	py.test
+	$(TIME) py.test
 
 find: 
 	grep "def .*test_" -R * --include=*.py | cat -n
