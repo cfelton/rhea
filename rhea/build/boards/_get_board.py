@@ -13,6 +13,7 @@ from .altera._de0nano import DE0Nano
 from .altera._de0nano_soc import DE0NanoSOC
 
 from .lattice._icestick import Icestick
+from .lattice._catboard import CATBoard
 
 
 xbrd = {
@@ -29,7 +30,8 @@ abrd = {
 }
 
 lbrd = {
-    'icestick': Icestick
+    'icestick': Icestick,
+    'catboard': CATBoard
 }
 
 

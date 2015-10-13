@@ -19,6 +19,7 @@ class Icestick(_fpga):
     default_clocks = {
         'clock': dict(frequency=12e6, pins=(21,))
     }
+    
     default_ports = {
         'led': dict(pins=(99, 98, 97, 96, 95,)),
         'spi_sck': dict(pins=(70,)),
