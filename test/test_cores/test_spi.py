@@ -37,7 +37,7 @@ def convert():
 
 
 def test_spi():
-    testbench_spi(argparse.Namespace())
+    testbench_spi(argparse.Namespace(trace=False))
 
 
 def testbench_spi(args=None):
