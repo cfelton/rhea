@@ -78,8 +78,8 @@ script:
 # There is some issue that causes the tests executed with py.test
 # to take 10x longer, run the tests individually until resolved.
   - cd ../test
-  - py.test -s
-#  - make test
+  - make test
+#  - py.test -s  
 
 notifications:
   email: false

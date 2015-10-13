@@ -83,8 +83,8 @@ def tb_sdram(args):
                 saved_addr_data = {}
                 for ii in range(num_addr):
                     # get a random address and random data, save the address and data
-                    addr = randint(0, max_addr)
-                    data = randint(0, max_data)
+                    addr = randint(0, max_addr-1)
+                    data = randint(0, max_data-1)
                     saved_addr_data[addr] = data
                     yield ixbus.write(addr, data)
                     yield ixbus.read(addr)

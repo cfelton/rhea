@@ -335,4 +335,4 @@ def spi_controller(
     
     return gens
 
-spi_controller._debug = True
+spi_controller._debug = False

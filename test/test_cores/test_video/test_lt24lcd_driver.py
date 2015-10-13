@@ -86,7 +86,7 @@ def tb_lt24lcd_driver(args=None):
             for ii in range(lcd.number_of_pixels):
                 yield datasent.posedge
                 data.next = randint(0, data.max-1)
-                if ii % 100:
+                if (ii % 5000) == 0:
                     print("{} pixels xfer'd".format(ii))
             cmd.next = 0
             yield cmd_in_progress.negedge
