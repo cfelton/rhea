@@ -3,19 +3,20 @@ System
 ======
 
 The ``rhea`` package provides frameworks for building complex digital
-circuits.  These include modular and sclabable `interfaces`_ and 
+circuits.  These include modular and scalable `interfaces`_ and
 `modules`_.  The following describes the specification for the 
 frameworks being developed into the `rhea` package.
 
-.. _modules :
-.. _interfaces : 
+.. _modules : http://docs.myhdl.org/en/stable/manual/structure.html#structural-modeling
+.. _interfaces : http://docs.myhdl.org/en/stable/whatsnew/0.9.html#interfaces-conversion-of-attribute-accesses
 
 
 Register Files
 --------------
-When creating components for a design often a register file is include
-that is used for the control and status access (CSR) of the component.
-A regiter file is simply a collection of `register`_ that are used to 
+When creating components for a design often a register file is included
+The register file is used for the control and status access (CSR) of
+the component.
+A regiter file is simply a collection of `registers`_ that are used to
 control the component and read status. The register file is accessed by 
 a memory-mapped bus.  The register file provides dynamic control and
 status of the component.

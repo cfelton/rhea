@@ -7,7 +7,7 @@ from __future__ import print_function
 
 from argparse import Namespace
 
-from myhdl import *
+from myhdl import Signal, instance, delay, now, StopSimulation, modbv, always
 
 from rhea.cores.fifo import fifo_ramp
 
@@ -45,14 +45,12 @@ def tb_fifo_ramp(args):
                 yield delay(100)
                 yield reset.pulse(111)
 
-                # simply enable, enable the module and then
-                # verify an incrementing pattern over the
-                # fifobus
+                # verify an incrementing pattern over the fifobus
                 yield regbus.write(0x07, 2)  # div of two
                 yield regbus.read(0x07)
                 assert 2 == regbus.get_read_data()
 
-                yield regbus.write(0x00, 1)  # enable 
+                yield regbus.write(0x00, 1)  # enable
                 yield regbus.read(0x00)
                 assert 1 == regbus.get_read_data(), "cfg reg write failed"
 
