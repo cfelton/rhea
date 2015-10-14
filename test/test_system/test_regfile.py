@@ -72,7 +72,7 @@ def m_per_top(clock, reset, mon):
 def m_per(glbl, regbus, mon):
     global regfile
     regfile = _create_regfile()
-    g_regfile = regbus.m_per_interface(glbl, regfile)
+    regfile_inst = regbus.add(glbl, regfile, name='test1')
     clock, reset = glbl.clock, glbl.reset
 
     ## all "read-only" (status) bits if needed
@@ -81,13 +81,13 @@ def m_per(glbl, regbus, mon):
         if regfile.regro.rd:
             regfile.regro.next = mon
         
-    return g_regfile #, rtl_roregs
+    return regfile_inst #, rtl_roregs
 
 
 def m_per_bits(glbl, regbus, mon):
     global regfile
     regfile = _create_regfile()
-    g_regfile = regbus.m_per_interface(glbl, regfile)
+    regfile_inst = regbus.add(glbl, regfile, name='test2')
     count = modbv(0, min=0, max=1)
     clock, reset = glbl.clock, glbl.reset
     ## all "read-only" (status) bits if needed
@@ -110,7 +110,7 @@ def m_per_bits(glbl, regbus, mon):
 
         regfile.cnt.next = count[5:]
         
-    return g_regfile, rtl_roregs
+    return regfile_inst, rtl_roregs
 
 
 def test_register_def():
@@ -129,7 +129,7 @@ def test_register_file():
 
     def _bench_regfile():
         tbdut = m_per(glbl, regbus, 0xAA)
-        tbor = regbus.m_per_outputs()
+        tbor = regbus.interconnect()
         tbmclk = clock.gen(hticks=5)
         asserr = Signal(bool(0))
 
@@ -188,7 +188,7 @@ def test_register_file_bits():
 
     def _bench_regfile_bits():
         tbdut = m_per_bits(glbl, regbus, 0xAA)
-        tbor = regbus.m_per_outputs()
+        tbor = regbus.interconnect()
         tbmclk = clock.gen()
         tbrclk = regbus.clk_i.gen()
         asserr = Signal(bool(0))
@@ -227,10 +227,7 @@ def test_convert():
     clock = Signal(bool(0))
     reset = ResetSignal(0, active=0, async=True)
     mon = Signal(intbv(0)[8:])
-<<<<<<< HEAD
-    
-=======
->>>>>>> master
+
     toVerilog.directory = 'output'
     toVerilog(m_per_top, clock, reset, mon)
     toVHDL.directory = 'output'

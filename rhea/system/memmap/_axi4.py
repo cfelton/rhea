@@ -2,7 +2,8 @@
 from __future__ import absolute_import
 
 from math import log, ceil
-from myhdl import Signal, intbv
+
+from myhdl import Signal, intbv, always_seq
 
 from .. import Clock, Reset 
 from . import MemMap
@@ -12,18 +13,18 @@ class AXI4Lite(MemMap):
     def __init__(self, glbl, data_width=8, address_width=16):
         """ 
         """
-        super(AXI4, self).__init__(data_width=data_width,
-                                   address_width=address_width) 
+        super(AXI4Lite, self).__init__(data_width=data_width,
+                                       address_width=address_width) 
         self.aclk = glbl.clock
         self.aresetn = glbl.reset
         
         self.awaddr = Signal(intbv(0)[address_width:])
-        self.awprot = signal(intbv(0)[3:])
+        self.awprot = Signal(intbv(0)[3:])
         self.awvalid = Signal(bool(0))
         self.awready = Signal(bool(0))
         
         self.wdata = Signal(intbv(0)[data_width:])
-        num_strb_bits = int(ceil(len(data_width)/8))
+        num_strb_bits = int(ceil(data_width/8))
         self.wstrb = Signal(intbv(0)[num_strb_bits:])
         self.wvalid = Signal(bool(0))
         self.wready = Signal(bool(0))
@@ -83,7 +84,20 @@ class AXI4Lite(MemMap):
         pass
     
     def peripheral_regfile(self, glbl, regfile, name):
-        pass
+        clock, reset = glbl.clock, glbl.reset
+        readtrans = Signal(bool(0))
+        writetrans = Signal(bool(0))
+        
+        # @todo: incomplete finish
+        @always_seq(clock.posedge, reset=reset)
+        def beh_row():
+            if self.awvalid:
+                writetrans.next = True
+            
+            if self.arvalid:
+                readtrans.next = True
+                
+        return beh_row
     
     def controller(self, generic):
         pass

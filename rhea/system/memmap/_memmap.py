@@ -103,12 +103,28 @@ class MemMap(object):
     def add(self, glbl, regfile, name=''):
         """ add a peripheral register-file to the bus
         """
-
+        # @todo: regfile should be replaced by `memspace` (MemorySpace) which
+        # @todo: would be a simple object describing the address space occupied
+        # @todo: and the RegisterFile would be a subclass. 
         # want a copy of the register-file so that the
         # address can be adjusted.
         arf = deepcopy(regfile)
+        
+        base_address = regfile.base_address
+        # @todo: revisit the base_address assignment, the bus width needs
+        # @todo: to be taken into account.
+        if base_address is None:
+            maxaddr = 0
+            for k, v in self.regfiles.items():
+                maxaddr = max(maxaddr, v.base_address)
+            base_address = maxaddr + 0x100000
+                
+        for k, v in self.regfiles.items():
+            if base_address == v.base_address:
+                print("@E: Register file address collision")
+                # @todo: raise an exception 
 
-        for k,v in arf.__dict__.items():
+        for k, v in arf.__dict__.items():
             if isinstance(v, Register):
                 v.addr += base_address
 

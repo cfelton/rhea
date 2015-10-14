@@ -100,6 +100,10 @@ class Wishbone(MemMap):
         wb = self     # register bus
         rf = regfile  # register file definition
         clock, reset = wb.clk_i, wb.rst_i
+        # @todo: base address default needs to be revisited
+        base_address = regfile.base_address 
+        if base_address is None:
+            base_address = 0 
         
         # get the address list, regisiter list, read-only list, and the
         # default list.

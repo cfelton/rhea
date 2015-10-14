@@ -10,32 +10,37 @@ based off the "gemac_simple" core [1].
 [1]: @todo: background on the core 
 """
 
-from rhea.system import Global
+from myhdl import Signal, intbv
+
+from rhea.system import Global, Clock, Reset
 from rhea.system import RegisterFile
 from rhea.system import Register 
-from rhea.system import Barebone, Wishbone, Avalon, AXI4Lite
+from rhea.system import Barebone, Wishbone, AvalonMM, AXI4Lite
 
 
 def build_regfile():
     """ Build a register file definition.
     This register file definition is loosely based off the gemac_simple ... 
     """
-    regfile = RegisterFile(width=32)
+    regfile = RegisterFile()
     for ii in range(2):
-        reg = Register(name='macaddr{}'.format(ii), access='rw', defalut=0)
+        reg = Register(name='macaddr{}'.format(ii), width=32, access='rw', default=0)
         regfile.add_register(reg)   
     
-    for ii, dd in enumerate((,)):
-        reg = Register(name='ucastaddr{}'.format(ii), access='rw', default=dd)
+    for ii, dd in enumerate((0xFFFFFFFF, 0xFFFFFFFF)):
+        reg = Register(name='ucastaddr{}'.format(ii), width=32, access='rw', default=dd)
         regfile.add_register(reg)
 
-    for ii, dd in enumerate((,)):
-        reg = Register(name='mcastaddr{}'.format(ii), access='rw', default=dd)
+    for ii, dd in enumerate((0xFFFFFFFF, 0xFFFFFFFF)):
+        reg = Register(name='mcastaddr{}'.format(ii), width=32, access='rw', default=dd)
         regfile.add_register(reg)
         
-    reg = Register(name='control', access'rw', default=0)
+    reg = Register(name='control', width=32, access='rw', default=0)
     # @todo: add the named bits
+    
     regfile.add_register(reg)
+    
+    return regfile
 
 
 def memmap_component(glbl, csrbus, cio, user_regfile=None):
@@ -51,17 +56,23 @@ def memmap_component(glbl, csrbus, cio, user_regfile=None):
         regfile = build_regfile()
     else:
         regfile = user_regfile
-    greg = csrbus.add(regfile)
+        
+    regfile_inst = csrbus.add(glbl, regfile, name='TESTREG')
     
     
-    return greg
+    return regfile_inst
 
 
 def regfilesys(clock, reset):
     """
     """
     glbl = Global(clock, reset)
-    csrbus = AXI4Lite(data_width=32, address_width=32)
+    csrbus = AXI4Lite(glbl, data_width=32, address_width=32)
+    cio = Signal(intbv(0)[8:])
+    
+    mminst = memmap_component(glbl, csrbus, cio)
+    
+    return mminst
     
     
     

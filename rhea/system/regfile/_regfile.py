@@ -51,10 +51,13 @@ class Register(_Signal):
         self.rd = Signal(bool(0))
 
         # @todo: current limitation, future enhancement
-        if _width is None:
-            _width = width
-        else:
-            assert width == _width, "All registers must be the same width"
+        # @todo: this will be check in the RegisterFile.add_register
+        #if _width is None:
+        #    _width = width
+        #else:
+        #    assert width == _width, \
+        #    "All registers must be the same width {} != {}".format(
+        #        _width, width)
 
     def __copy__(self):
         reg = Register(self.name, self.width, self.access,
@@ -283,6 +286,6 @@ class RegisterFile(object):
 
     def get_assigns(self):
         gas = []
-        for aa,rr in self._roregs:
-            gas += [rr.m_assign()]
+        for aa, rr in self._roregs:
+            gas += [rr.assign()]
         return gas
