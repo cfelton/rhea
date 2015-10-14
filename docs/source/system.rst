@@ -57,17 +57,16 @@ The following is a short example building a simple register file.
 The above example defines a register file to be used.  This can be 
 used in a new component/peripheral.  
 
-.. code-block::python
 
-   def led_blinker(glbl, membus, leds):
-       
-       # instantiate the module to interface to the the regfile
-       
-       # instantiate different LED blinking modules
-       led_modules = (led_stroby, led_dance, led_count,)
-       mleds = [Signal(leds.val) for _ in led_modules]
-       mods = []
-       for ii, ledmod in enumerate(led_modules): 
-           mods += ledmod(glbl, mleds[ii])
-       
-       # 
+.. autofunction:: rhea.cores.misc.led_blinker
+
+.. literalinclude:: rhea.cores.misc.led_blinker 
+
+The `led_blinker` module demonstrates how to add the created `regfile` to 
+the memory-mapped bus and get myhdl instance that provides the logic 
+to read and write the register file from the bus interface passed to the 
+module. 
+
+When instantiating the :py:func:`led_blinker` _module  
+
+.. _module : http://docs.myhdl.org/en/stable/manual/structure.html#structural-modeling
