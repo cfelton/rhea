@@ -9,7 +9,7 @@ from btn_led_mm import m_btn_led_mm
 
 from rhea.system import Clock
 from rhea.system import Reset
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import run_testbench
 
 
 def test_btn_led():
@@ -19,7 +19,7 @@ def test_btn_led():
     leds = Signal(intbv(0)[8:])
     btns = Signal(intbv(0)[4:])
 
-    def _test():
+    def _bench_btn_led():
 
         # bus_type = ('A', 'B', 'W', 'X') # avalon, barebone, wishbon, AXI
         tbdut = m_btn_led_mm(clock, reset, leds, btns, bus_type='A')
@@ -61,11 +61,10 @@ def test_btn_led():
 
         return tbdut, tbclk, tbstim
 
-    tb_clean_vcd(_test.__name__)
-    Simulation(traceSignals(_test)).run()
-    #Simulation(_test()).run()
+    run_testbench(_bench_btn_led)
     # currently an error when converting to both at once,
     # only convert to one at a time.
+    toVerilog.directory = 'output'
     toVerilog(m_btn_led_mm, clock, reset, leds, btns)
     #toVHDL(m_btn_led_mm, clock, reset, leds, btns)
 

@@ -12,7 +12,8 @@ from myhdl import *
 
 from rhea.system import FIFOBus
 from rhea.cores.fifo import fifo_sync
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import run_testbench
+
 
 def test_sfifo(args=None):
     """ verify the synchronous FIFO
@@ -28,7 +29,7 @@ def test_sfifo(args=None):
     clock = Signal(bool(0))
     fbus = FIFOBus(width=args.width, size=args.size)
 
-    def _test():
+    def _bench_sync_fifo():
         
         # @todo: use args.fast, args.use_srl_prim
         tbdut = fifo_sync(clock, reset, fbus)
@@ -51,7 +52,6 @@ def test_sfifo(args=None):
 
                 # write some bytes
                 for ii in range(num_bytes):
-                    #print('nbyte %x wdata %x' % (num_bytes, ii))
                     yield clock.posedge
                     fbus.wdata.next = ii
                     fbus.wr.next = True
@@ -71,7 +71,6 @@ def test_sfifo(args=None):
                 for ii in range(num_bytes):
                     yield clock.posedge
                     fbus.rd.next = True
-                    #print("rdata %x ii %x " % (fbus.rdata, ii))
                     assert fbus.rvld
                     assert fbus.rdata == ii, "rdata %x ii %x " % (fbus.rdata, ii)
 
@@ -85,13 +84,10 @@ def test_sfifo(args=None):
 
             raise StopSimulation
 
-        
         return tbdut, tbclk, tbstim
 
-    vcd = tb_clean_vcd('test_fifo_sync_%d' % (args.size))
-    traceSignals.name = vcd
-    g = traceSignals(_test)
-    Simulation(g).run()
+    run_testbench(_bench_sync_fifo)
+
 
 if __name__ == '__main__':
     for size in (16, 64, 256):

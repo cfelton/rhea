@@ -59,7 +59,7 @@ def convert(brd, top=None, name=None, use='verilog', path='.'):
     pckfn = 'pck_myhdl_%s.vhd'%(ver)
     for src in (brd.vfn,tbfn,pckfn):
         dst = os.path.join(path, src)
-        print('   checking %s'%(dst))
+        #print('   checking %s'%(dst))
         if os.path.isfile(dst):
             print('   removing %s'%(dst))
             os.remove(dst)

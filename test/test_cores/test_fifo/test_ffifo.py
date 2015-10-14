@@ -14,7 +14,7 @@ from rhea.system import FIFOBus
 import rhea.cores as cores
 from rhea.cores.fifo import fifo_fast
 
-from rhea.utils.test import tb_clean_vcd
+from rhea.utils.test import run_testbench
 
 
 def test_ffifo(args=None):
@@ -31,7 +31,7 @@ def test_ffifo(args=None):
     clock = Signal(bool(0))
     fbus = FIFOBus(width=args.width, size=args.size)
 
-    def _test():
+    def _bench_ffifo():
         
         # @todo: use args.fast, args.use_srl_prim
         tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
@@ -89,12 +89,10 @@ def test_ffifo(args=None):
         
         return tbdut, tbclk, tbstim
 
-    vcd = tb_clean_vcd('test_fifo_fast_%d' % (args.size))
-    traceSignals.name = vcd
-    g = traceSignals(_test)
-    Simulation(g).run()
+    run_testbench(_bench_ffifo)
+
 
 if __name__ == '__main__':
-    for size in (4,8,16):
+    for size in (4, 8, 16):
         args = Namespace(width=8, size=size, name='test')
         test_ffifo(args=args)

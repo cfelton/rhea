@@ -4,7 +4,7 @@
 
 from __future__ import division
 from __future__ import print_function
-from __future__ import absolute_imports
+from __future__ import absolute_import
 
 import sys
 import os
@@ -18,7 +18,7 @@ from ..._fpga import _fpga
 
 
 class Vivado(_toolflow):
-
+    _name = "Xilinx Vivado"
     def __init__(self, brd, top=None, path='./xilinx/'):
         """
         Given a top-level module (function) and a board definition
@@ -33,7 +33,6 @@ class Vivado(_toolflow):
         self.xcf_file = ''
         self._default_project_file = None
 
-
     def create_project(self, use='verilog', **pattr):
         """ Geenrate the Vivado project file
         :param use: use verilog of vhdl
@@ -44,7 +43,6 @@ class Vivado(_toolflow):
         xpr = ''
 
         # file list
-
 
     def create_constraints(self):
         self.xcf_file = os.path.join(self.path, self.name+'.xcf')

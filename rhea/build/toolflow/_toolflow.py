@@ -6,8 +6,24 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+from string import Template
+import subprocess
+
+_default_error_msg = Template("""
+ERROR: The $tool flow failed!  Error Code: $errcode
+    >> $cmd
+
+    See the log file for more information:
+    $logfile
+    
+    Make sure the tool (quartus, ise, vivado, etc.) is installed
+    and accessible from the command line.
+"""
+)
+
 
 class _toolflow(object): 
+    _name = "not specified (bug in code)"
     def __init__(self, brd, top=None, name=None, path='.'):
         """
         Provided a myhdl top-level module and board definition
@@ -49,15 +65,9 @@ class _toolflow(object):
 
     def pathexist(self, pth):
         if os.path.isfile(pth):
-            pth,fn = os.path.split(pth)
-        fpth = ''
-        path_split = os.path.split(pth)
-        for ppth in pth.split(os.path.sep):
-            fpth = os.path.join(fpth,ppth)
-            if not os.path.isdir(fpth):
-                print("path create %s" % (fpth,))
-                os.mkdir(fpth)
-
+            pth, fn = os.path.split(pth)
+        if not os.path.isdir(pth):
+            os.makedirs(pth)
         return os.path.isdir(pth)
         
     def set_default_project_file(self, filename=None):
@@ -102,6 +112,22 @@ class _toolflow(object):
           name : user supplied name for project and top-level
         """
         raise NotImplemented()
+
+    def _execute_flow(self, cmd, logfn=None, logmode='w'):
+        logfn = os.path.join(self.path, logfn)
+        try:
+            assert logfn is not None, "toolflow failed to set logfn"
+            assert len(cmd) > 0, "invalid toolflow command {}".format(cmd)
+            with open(logfn, logmode) as logfile:
+                subprocess.check_call(
+                    cmd, stderr=subprocess.STDOUT, stdout=logfile)
+        except (subprocess.CalledProcessError, OSError) as err:
+            errmsg = _default_error_msg.substitute(
+                dict(tool=self._name, cmd=" ".join(cmd),
+                     errcode=str(err), logfile=logfn))
+            print(errmsg)
+
+        return logfn
 
     def program(self):
         """ Program the board with the bit-stream

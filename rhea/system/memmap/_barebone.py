@@ -10,28 +10,30 @@ from ._memmap import MemMap
 
 
 class Barebone(MemMap):
-    """ Generic memory-mapped interface.
-
-    This interface is the "generic" and most basic memory-map
-    interface.  This can be used for common but also limited
-    functionality.
-
-    Timing Diagram
-    ---------------
-    clock       /--\__/--\__/--\__/--\__/--\__/--\__/--\__/--\__
-    reset       /-----\_________________________________________
-    write       ____________/-----\_____________________________
-    read        _____________________________/------\___________
-    ack         ___________________/----\___________/-----\_____
-    done        ------------\______/---------\______/-----------
-    read_data   -----------------------------|read data |-------
-    write_data  ------------|write data |-----------------------
-    per_addr
-    reg_addr    ------------\write addr |----|read addr |-------
-
-    @todo: replace 'ack' with 'done'
-    """
     def __init__(self, num_peripherals=16, data_width=8, address_width=8):
+        """ Generic memory-mapped interface.
+
+        This interface is the "generic" and most basic memory-map
+        interface.  This can be used for common but also limited
+        functionality.
+
+        Timing Diagram
+        ---------------
+        clock       /--\__/--\__/--\__/--\__/--\__/--\__/--\__/--\__
+        reset       /-----\_________________________________________
+        write       ____________/-----\_____________________________
+        read        _____________________________/------\___________
+        ack         ___________________/----\___________/-----\_____
+        done        ------------\______/---------\______/-----------
+        read_data   -----------------------------|read data |-------
+        write_data  ------------|write data |-----------------------
+        per_addr
+        reg_addr    ------------\write addr |----|read addr |-------
+
+        @todo: replace 'ack' with 'done'
+        """        
+        super(Barebone, self).__init__(data_width=data_width,
+                                       address_width=address_width)
         self.write = Signal(bool(0))
         self.read = Signal(bool(0))
         # @todo: replace "ack" with "done" (?)
@@ -46,13 +48,10 @@ class Barebone(MemMap):
         pwidth = int(ceil(log(num_peripherals, 2)))
         self.per_addr = Signal(intbv(0)[pwidth:])
         self.reg_addr = Signal(intbv(0)[address_width:])
-        super(Barebone, self).__init__(data_width=data_width,
-                                       address_width=address_width)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Transactors
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
     def write(self, addr, val):
         self._start_transaction(write=True, address=addr, data=val)
         self.write.next = True
@@ -94,10 +93,10 @@ class Barebone(MemMap):
         generic.rdata = self.rdata
         return []
 
-    def m_per_regfile(self, glbl, regfile, name, base_address=0):
+    def peripheral_regfile(self, glbl, regfile, name, base_address=0):
         pass
 
-    def m_controller(self, generic):
+    def controller(self, generic):
         self.write = generic.write
         self.read = generic.read
         self.wdata = generic.wdata
@@ -107,7 +106,7 @@ class Barebone(MemMap):
 
         return []
 
-    def m_peripheral(self, generic):
+    def peripheral(self, generic):
         self.write = generic.write
         self.read = generic.read
         self.wdata = generic.wdata

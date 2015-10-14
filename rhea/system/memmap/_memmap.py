@@ -10,18 +10,18 @@ from ..regfile import Register
 from .._clock import Clock
 from .._reset import Reset
 
+
 # a count of the number of memory-map peripherals
 _mm_per = 0
 _mm_list = {}
 
 
 class MemMap(object):
-    """ Base class for the different memory-map interfaces.
-    This is a base class for the various memory-mapped (control and status (CSR)
-    register interfaces.
-    """
-
     def __init__(self, data_width, address_width):
+        """ Base class for the different memory-map interfaces.
+        This is a base class for the various memory-mapped (control and 
+        status (CSR)) register interfaces.
+        """
         self.data_width = data_width
         self.address_width = address_width
         self.names = {}
@@ -79,7 +79,6 @@ class MemMap(object):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # public transactor API
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
     def write(self, addr, val):
         raise NotImplementedError
 
@@ -92,7 +91,6 @@ class MemMap(object):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # keep track of all the components on the bus
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
     def _add_bus(self, name):
         """ globally keep track of all per bus
         """
@@ -102,7 +100,7 @@ class MemMap(object):
         _mm_per += 1
 
     # @todo: make name and base_address attributes of regfile
-    def add(self, glbl, regfile, name='', base_address=0):
+    def add(self, glbl, regfile, name=''):
         """ add a peripheral register-file to the bus
         """
 
@@ -124,8 +122,8 @@ class MemMap(object):
         self.regfiles[name] = arf       
 
         # return the peripheral generators for this bus
-        g = self.m_per_interface(glbl, regfile, name, base_address)
-
+        g = self.peripheral_regfile(glbl, regfile, name)
+    
         return g
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -140,8 +138,7 @@ class MemMap(object):
         """
         raise NotImplementedError
 
-    # @todo: rename to peripheral_regfile
-    def m_per_regfile(self, glbl, regfile, name, base_address=0):
+    def peripheral_regfile(self, glbl, regfile, name, base_address=0):
         """ override
         :param glbl: global signals, clock and reset
         :param regfile: register file interfacing to.
@@ -150,10 +147,25 @@ class MemMap(object):
         :return: myhdl generators
         """
         raise NotImplementedError
-
-    # @todo: rename to controller
-    def m_controller(self, generic):
+        
+    def peripheral(self, generic):
+        """ Simple peripheral memmap -> generic 
+        
+        Ports
+        -----
+        :param generic: 
+        
+        :return: myhdl generators
         """
+        raise NotImplementedError
+
+    def interconnect(self):
+        """ Connect all the components
+        """
+        raise NotImplementedError
+
+    def controller(self, generic):
+        """ Simple controller, generic -> memmap
         Bus controllers (masters) are typically custom and
         built into whatever the controller is (e.g a processor).
         This is a simple example with a simple interface to
@@ -161,12 +173,9 @@ class MemMap(object):
 
         Ports
         -----
-          generic: generic memory-map (Barebone) interface
+        :param generic: generic memory-map (Barebone) interface
 
         :return: myhdl generators
         """
         raise NotImplementedError
 
-    # @todo: rename to peripheral
-    def m_peripheral(self, generic):
-        raise NotImplementedError

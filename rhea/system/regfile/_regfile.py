@@ -31,8 +31,6 @@ class Register(_Signal):
         """
 
         global _width
-        # @todo: move addr to the end and add default addr=None, an address 
-        # @todo: is not required, the regfile builder will assign registers. 
         _Signal.__init__(self, intbv(default)[width:])
 
         self._nmb = [None for _ in range(width)]  # hold the named-bits
@@ -52,6 +50,7 @@ class Register(_Signal):
         self.wr = Signal(bool(0))
         self.rd = Signal(bool(0))
 
+        # @todo: current limitation, future enhancement
         if _width is None:
             _width = width
         else:
@@ -117,12 +116,12 @@ class Register(_Signal):
         else:
             raise TypeError
 
-    def m_assign(self):
+    def assign(self):
         """ assign the named 'ro' bits to the register """
 
         # check for any missing bits and add a stub
-        # @todo: ? create warning for missing bits, these 
-        #    will be dangling ?
+        # @todo: ? create warning for missing bits, these will 
+        # @todo: be dangling ?
         for ii, namedbits in enumerate(self._nmb):
             # if a namedbit does not exist stub it out
             if not isinstance(namedbits, SignalType):                
@@ -143,18 +142,23 @@ class Register(_Signal):
 class RegisterFile(object):
     def __init__(self, regdef=None):
         """
+        
         Arguments
         ---------
         regdef : register file dictionary definition        
         
+        
         """
-        self._offset = 0
-        self._rwregs = []  # read-write registers
-        self._roregs = []  # read-only registers
-        self.registers = {}
-
+        self._offset = 0           # current register offset`
+        self._rwregs = []          # read-write registers
+        self._roregs = []          # read-only registers
+        self.registers = {}        # collection of all registers added 
+        self.base_address  = None  # base_address of this register file
+        
         # @todo: if the regdef is dict-of-dict definiton, first
-        #    build the registers
+        # @todo: build the registers
+        
+        # register is a name, register dictionary
         if regdef is not None:
             for k, v in regdef.items():
                 if isinstance(v, Register):

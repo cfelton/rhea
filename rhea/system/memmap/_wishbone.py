@@ -73,8 +73,7 @@ class Wishbone(MemMap):
         self._pdat_o.append(dat)
         self._pack_o.append(ack)
 
-    # @todo: rename to "interconnect"
-    def m_per_outputs(self):
+    def interconnect(self):
         """ combine all the peripheral outputs
         """
         assert len(self._pdat_o) == len(self._pack_o)
@@ -93,7 +92,7 @@ class Wishbone(MemMap):
             
         return rtl_or_combine
 
-    def m_per_interface(self, glbl, regfile, name='', base_address=0x00):
+    def peripheral_regfile(self, glbl, regfile, name=''):
         """ memory-mapped wishbone peripheral interface
         """
 
