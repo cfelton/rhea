@@ -30,7 +30,7 @@ pronoucned the same as the bird or moon.
  
 dependencies
 ------------
-   - [myhdl](www.myhdl.org) 0.9 or later
+   - [myhdl](www.myhdl.org) 1.0 or later
    - [pytest](www.pytest.org) for the test suite
    - [Pillow]() some video tests utilize the imaging library
    - FPGA vendor tools, only for automated build tools.
@@ -131,9 +131,8 @@ build examples can be run to generate bitstreams.
 ```
   # try to compile one of the examples 
   # (requires FPGA tools installed)
-  >> cd ../examples/boards/nexys/fpgalink
-  >> python test_fpgalink.py
-  >> python compile_fpgalink.py
+  >> cd ../examples/build/
+  >> python ex_xula.py
 ```
 
 
@@ -156,7 +155,7 @@ Run the tests in the examples directory:
 
 examples
 --------
-In the examples directory are projects that demonstrate how to build 
+In the example directory are projects that demonstrate how to build 
 systems using the cores and various tools and target a particular FPGA 
 development board.  
 

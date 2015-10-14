@@ -65,7 +65,7 @@ def testbench_uart_model(args=None):
 
 def testbench_uart(args=None):
     # @todo: get numbytes from args
-    numbytes = 27
+    numbytes = 7
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=0, async=True)
     glbl = Global(clock, reset)
