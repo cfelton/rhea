@@ -8,23 +8,23 @@ from myhdl import *
 
 
 class SDRAMModel(object):
-    """ SDRAM Model
-    This will model the behavior and cycle accurate interface to
-    an SDRAM device.
-
-    Usage:
-      extmembus = SDRAMInterface()          # interface and transactors
-      sdram_model = SDRAMModel(extmembus)   # model
-      sdram_proc = sdram_model.process()    # send to simulator
-
-    This model implements the functionality described in the Micron
-    datasheet for a 256Mb device.
-    http://www.micron.com/parts/dram/sdram/mt48lc16m16a2b4-6a-it?pc=%7B5144650B-31FA-410A-993E-BADF981C54DD%7D
-
-    Not convertible.
-    """
-
     def __init__(self, intf):
+        """ SDRAM Model
+        This will model the behavior and cycle accurate interface to
+        an SDRAM device.
+
+        Usage:
+            extmembus = SDRAMInterface()          # interface and transactors
+            sdram_model = SDRAMModel(extmembus)   # model
+            sdram_proc = sdram_model.process()    # send to simulator
+
+        This model implements the functionality described in the Micron
+        datasheet for a 256Mb device:
+        http://www.micron.com/parts/dram/sdram/mt48lc16m16a2b4-6a-it?pc=%7B5144650B-31FA-410A-993E-BADF981C54DD%7D
+
+        Not convertible.
+        """
+
         # external interface to the controller, the SDRAM interface
         # also contains the SDRAM timing parameters.
         self.intf = intf
@@ -76,7 +76,6 @@ class SDRAMModel(object):
                     elif cmd == Commands.ACT:
                         pass #print("[SDRAM] ack commands")
                     elif cmd == Commands.WR:
-                        #print("[SDRAM] wr commands")
                         # @todo look at the intf.dq bus and only get if valid
                         data = 0
                         if intf.dq is not None:
@@ -84,7 +83,6 @@ class SDRAMModel(object):
                         assert intf.dq == intf.wdq
                         self.banks[bs][addr] = data
                     elif cmd == Commands.RD:
-                        #print("[SDRAM] rd commands")
                         data = 0
                         if addr in self.banks[bs]:
                             data = self.banks[bs][addr]

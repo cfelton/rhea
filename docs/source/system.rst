@@ -3,7 +3,7 @@ System
 ======
 
 The ``rhea`` package provides frameworks for building complex digital
-circuits.  These include modular and sclabable `interfaces`_ and 
+circuits.  These include modular and scalable `interfaces`_ and 
 `modules`_.  The following describes the specification for the 
 frameworks being developed into the `rhea` package.
 
