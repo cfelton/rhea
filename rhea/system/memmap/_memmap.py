@@ -147,14 +147,21 @@ class MemoryMapped(MemorySpace):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # module (component) implementations
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def map_generic(self):
+    def to_generic(self):
         """ Map this bus to the generic (Barebone) bus
-        This is a bus adapter, it will adapt the 
+        This is a bus adapter, it will adapt the
         :return: generic bus, myhdl generators
         """
         raise NotImplementedError
 
-    def map_
+    def from_generic(self, generic):
+        """ Map the generic bus (Barebone) to this bus
+        This is a bus adapter that will adapt the generic bus to this
+        bus.  This is a module and returns myhdl generators
+        :param generic:
+        :return:
+        """
+        raise NotImplementedError
 
     def peripheral_regfile(self, glbl, regfile, name, base_address=0):
         """ override

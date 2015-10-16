@@ -32,7 +32,7 @@ def memmap_controller_basic(generic, memmap):
     tocnt = Signal(intbv(0, min=0, max=timeout_max))
 
     # map the generic bus to the bus in use
-    conv_inst = memmap.map_generic(generic)
+    conv_inst = memmap.from_generic(generic)
 
     @always_seq(memmap.clock.posedge, reset=memmap.reset)
     def rtl_sm():
