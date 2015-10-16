@@ -7,7 +7,7 @@ from myhdl import *
 from myhdl._Signal import _Signal
 from myhdl import SignalType
 
-_width = None
+from . import MemorySpace
 
 
 class RegisterBits(object):
@@ -30,8 +30,7 @@ class Register(_Signal):
         The 'ro' registers can only be modified by the peripheral.
         """
 
-        global _width
-        _Signal.__init__(self, intbv(default)[width:])
+        super(Register, self).__init__(self, intbv(default)[width:])
 
         self._nmb = [None for _ in range(width)]  # hold the named-bits
 
@@ -49,15 +48,6 @@ class Register(_Signal):
         # the register read and write strobes to the peripheral        
         self.wr = Signal(bool(0))
         self.rd = Signal(bool(0))
-
-        # @todo: current limitation, future enhancement
-        # @todo: this will be check in the RegisterFile.add_register
-        #if _width is None:
-        #    _width = width
-        #else:
-        #    assert width == _width, \
-        #    "All registers must be the same width {} != {}".format(
-        #        _width, width)
 
     def __copy__(self):
         reg = Register(self.name, self.width, self.access,
@@ -85,7 +75,7 @@ class Register(_Signal):
         a copy of the signals is created.
 
         :param name:
-        :param slc:
+        :param bits:
         :param comment:
         :return:
         """
@@ -119,7 +109,7 @@ class Register(_Signal):
         else:
             raise TypeError
 
-    def assign(self):
+    def assign_namedbits(self):
         """ assign the named 'ro' bits to the register """
 
         # check for any missing bits and add a stub
@@ -142,7 +132,7 @@ class Register(_Signal):
         return rtl_assign
 
 
-class RegisterFile(object):
+class RegisterFile(MemorySpace):
     def __init__(self, regdef=None):
         """
         
@@ -175,7 +165,7 @@ class RegisterFile(object):
         # that conforms to a particular structure or using the Register
         # object (the dict method is not implemented yet).
         if regdef is not None:
-            for k,v in regdef.items():
+            for k, v in regdef.items():
                 self._append_register(k, v)
 
     @property
@@ -200,7 +190,7 @@ class RegisterFile(object):
             # reg = Register(reg['name'],...)
             raise NotImplementedError("dict description TBC");
         if not isinstance(reg, Register):
-            raise ValueError("Invalid type in regdef %s"%(type(reg)))
+            raise ValueError("Invalid type in regdef {}".format(type(reg)))
                              
         self.__dict__[name] = reg
         if reg.access == 'rw':  # @todo: remove or reg['access'] == 'wt':
@@ -212,7 +202,7 @@ class RegisterFile(object):
         # will be accessible from the regfile
         for kb, vb in reg.bits.items():
             if kb in self.__dict__:
-                raise Exception("bit(s) name, %s, already exists"%(kb))
+                raise Exception("bit(s) name, {}, already exists".format(kb))
             self.__dict__[kb] = reg.__dict__[kb]
 
     def add_register(self, reg):
@@ -224,17 +214,17 @@ class RegisterFile(object):
     def get_reglist(self):
         """ return a list of addresses and a list of registers.        
         """
-        rwa = [aa for aa,rr in self._rwregs]       # rw address
-        rwr = [rr for aa,rr in self._rwregs]       # rw register
-        _rrw = [False for aa,rr in self._rwregs]
-        roa = [aa for aa,rr in self._roregs]       # ro address
-        ror = [rr for aa,rr in self._roregs]       # ro register
-        _rro = [True for aa,rr in self._rwregs]
+        rwa = [aa for aa, rr in self._rwregs]       # rw address
+        rwr = [rr for aa, rr in self._rwregs]       # rw register
+        _rrw = [False for aa, rr in self._rwregs]
+        roa = [aa for aa, rr in self._roregs]       # ro address
+        ror = [rr for aa, rr in self._roregs]       # ro register
+        _rro = [True for aa, rr in self._rwregs]
         self._allregs = rwr+ror
         dl = [rr.default for aa,rr in self._rwregs+self._roregs]
-        #@todo: order the list from low address to high address
-        #@todo: set flag if addresses are contiguous
-        return (tuple(rwa+roa), rwr+ror, tuple(_rrw+_rro), tuple(dl))
+        # @todo: order the list from low address to high address
+        # @todo: set flag if addresses are contiguous
+        return tuple(rwa+roa), rwr+ror, tuple(_rrw+_rro), tuple(dl)
 
     def get_strobelist(self):
         assert self._allregs is not None
@@ -242,50 +232,8 @@ class RegisterFile(object):
         rd = [rr.rd for rr in self._allregs]
         return wr, rd
 
-
-    #def get_readonly(self, name=None, addr=None):
-    #    roreg = None
-    #    if name is not None:
-    #        if self._regdef is None:
-    #            # @todo: need to search for the name
-    #            raise NotImplemented
-    #        else:
-    #            addr = self._regdef[name].addr
-    #    assert addr is not None
-    #    for aa,rr in self._roregs:
-    #        print(aa,rr)
-    #        if addr == aa:
-    #            roreg = rr
-    #            break
-    #    assert roreg is not None, "Invalid register %s %x"%(name,addr)
-    #    return roreg
-    
-    # @todo: remove, use regbus.add/regbus.m_per_interface
-    # def m_per_interface(self, clock, reset, regbus,
-    #                     name = '',
-    #                     base_address = 0x00):
-    #     """ Memory-mapped peripheral interface
-    #     The register bus access to the register file, external
-    #     to the module reads and writes.
-    #
-    #     """
-    #
-    #     # @todo: use *glbl* and figure out *args*
-    #     # get the memmap bus specific read/write
-    #     busi = regbus.m_per_interface(clock, reset,
-    #                                   regfile=self,
-    #                                   name=name,
-    #                                   base_address=base_address)
-    #
-    #     # get the generators that assign the named-bits
-    #     gas = []
-    #     for aa,rr in self._roregs:
-    #         gas += [rr.m_assign()]
-    #
-    #     return busi, gas
-
     def get_assigns(self):
-        gas = []
+        assign_inst = []
         for aa, rr in self._roregs:
-            gas += [rr.assign()]
-        return gas
+            assign_inst += [rr.assign_namedbits()]
+        return assign_inst

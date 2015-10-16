@@ -27,7 +27,7 @@ def run_testbench(bench, timescale='1ns', args=None):
 
     sim = Simulation(gens)
     sim.run()
-    de
+    del gens
     del sim
 
 

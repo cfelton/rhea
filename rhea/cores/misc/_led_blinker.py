@@ -2,18 +2,17 @@
 from __future__ import division
 from __future__ import absolute_import
 
-from myhdl import Signal, intbv, always_seq
+from myhdl import Signal, intbv, always
 
 from ...system import RegisterFile
 from ...system import Register
 
-from . import assign
 from . import led_stroby
 from . import led_count
 from . import led_dance
 
 
-# create a registrer file
+# create a register file
 regfile = RegisterFile()
 
 # create a status register and add it to the register file
@@ -24,12 +23,12 @@ regfile.add_register(reg)
 reg = Register('control', width=8, access='rw', default=1)
 reg.add_named_bits('enable', bits=0, comment="enable the compoent")
 reg.add_named_bits('pause', bits=1, comment="pause current operation")
-reg.add_named_bits('mode', bits=(4,2), comment="select mode")
+reg.add_named_bits('mode', bits=(4, 2), comment="select mode")
 regfile.add_register(reg)
 
 
 def led_blinker(glbl, membus, leds):
-    
+    clock = glbl.clock
     # instantiate the register interface module and add the 
     # register file to the list of memory-spaces
     regfile.base_address = 0x8240

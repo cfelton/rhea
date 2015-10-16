@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from myhdl import enum, Signal, intbv, always_seq
 
-from ...system.memmap import MemMap
+from ...system.memmap import MemoryMapped
 from ...system.memmap import Barebone
 
 
@@ -22,7 +22,7 @@ def memmap_controller_basic(generic, memmap):
     """
 
     assert isinstance(generic, Barebone)
-    assert isinstance(memmap, MemMap)
+    assert isinstance(memmap, MemoryMapped)
 
     States = enum('Idle', 'Wait', 'Write', 'WriteAck', 'Read',
                   'ReadDone', 'End')
