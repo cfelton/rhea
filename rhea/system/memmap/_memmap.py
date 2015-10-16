@@ -6,7 +6,8 @@ from copy import deepcopy
 
 from myhdl import Signal, intbv
 
-from ..regfile import Register
+from . import MemorySpace
+from . import Register
 from .._clock import Clock
 from .._reset import Reset
 
@@ -16,12 +17,13 @@ _mm_per = 0
 _mm_list = {}
 
 
-class MemMap(object):
+class MemoryMapped(MemorySpace):
     def __init__(self, data_width, address_width):
         """ Base class for the different memory-map interfaces.
         This is a base class for the various memory-mapped (control and 
-        status (CSR)) register interfaces.
+        status (CSR)) interfaces.  These interfaces all
         """
+        super(MemoryMapped, self).__init__()
         self.data_width = data_width
         self.address_width = address_width
         self.names = {}
@@ -145,12 +147,19 @@ class MemMap(object):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # module (component) implementations
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def map_generic(self, generic):
+    def to_generic(self):
+        """ Map this bus to the generic (Barebone) bus
+        This is a bus adapter, it will adapt the
+        :return: generic bus, myhdl generators
+        """
+        raise NotImplementedError
+
+    def from_generic(self, generic):
         """ Map the generic bus (Barebone) to this bus
-
-        :param generic: generic Barebone bus
-        :return: myhdl generators
-
+        This is a bus adapter that will adapt the generic bus to this
+        bus.  This is a module and returns myhdl generators
+        :param generic:
+        :return:
         """
         raise NotImplementedError
 
@@ -163,35 +172,10 @@ class MemMap(object):
         :return: myhdl generators
         """
         raise NotImplementedError
-        
-    def peripheral(self, generic):
-        """ Simple peripheral memmap -> generic 
-        
-        Ports
-        -----
-        :param generic: 
-        
-        :return: myhdl generators
-        """
-        raise NotImplementedError
 
     def interconnect(self):
         """ Connect all the components
         """
         raise NotImplementedError
 
-    def controller(self, generic):
-        """ Simple controller, generic -> memmap
-        Bus controllers (masters) are typically custom and
-        built into whatever the controller is (e.g a processor).
-        This is a simple example with a simple interface to
-        invoke bus cycles.
-
-        Ports
-        -----
-        :param generic: generic memory-map (Barebone) interface
-
-        :return: myhdl generators
-        """
-        raise NotImplementedError
 

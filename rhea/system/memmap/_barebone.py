@@ -6,10 +6,10 @@ from __future__ import absolute_import
 
 from math import log, ceil
 from myhdl import Signal, intbv
-from ._memmap import MemMap
+from ._memmap import MemoryMapped
 
 
-class Barebone(MemMap):
+class Barebone(MemoryMapped):
     def __init__(self, num_peripherals=16, data_width=8, address_width=8):
         """ Generic memory-mapped interface.
 
@@ -75,26 +75,21 @@ class Barebone(MemMap):
         self._end_transaction(self.rdata)
 
     def ack(self, data=None):
-        self.ack.next = True
+        self.done.next = False
         if data is not None:
-            self.rdata.next = data
+            self.read_data.next = data
         yield self.clock.posedge
-        self.ack.next = False
+        self.done.next = True
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Modules
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def map_generic(self, generic):
-        self.write = generic.write
-        self.read = generic.read
-        self.wdata = generic.wdata
-        self.addr = generic.addr
-        generic.ack = self.ack
-        generic.rdata = self.rdata
-        return []
+    def map_generic(self):
+        return self, []
 
     def peripheral_regfile(self, glbl, regfile, name, base_address=0):
-        pass
+
+        return []
 
     def controller(self, generic):
         self.write = generic.write

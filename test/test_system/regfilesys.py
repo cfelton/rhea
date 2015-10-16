@@ -4,13 +4,13 @@ from __future__ import print_function
 from __future__ import division
 
 """
-This modules defienes a component with a complex reigster file, loosely
+This modules defines a component with a complex register file, loosely
 based off the "gemac_simple" core [1].  
 
 [1]: @todo: background on the core 
 """
 
-from myhdl import Signal, intbv
+from myhdl import Signal, intbv, always_comb, concat
 
 from rhea.system import Global, Clock, Reset
 from rhea.system import RegisterFile
@@ -58,9 +58,13 @@ def memmap_component(glbl, csrbus, cio, user_regfile=None):
         regfile = user_regfile
         
     regfile_inst = csrbus.add(glbl, regfile, name='TESTREG')
-    
-    
-    return regfile_inst
+
+    @always_comb
+    def beh_assign():
+        s = concat(regfile.macaddr0[:2], regfile.control[6:])
+        cio.next = s
+
+    return regfile_inst, beh_assign
 
 
 def regfilesys(clock, reset):
@@ -73,6 +77,4 @@ def regfilesys(clock, reset):
     mminst = memmap_component(glbl, csrbus, cio)
     
     return mminst
-    
-    
     

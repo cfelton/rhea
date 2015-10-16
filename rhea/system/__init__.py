@@ -10,16 +10,16 @@ from ._clock import Clock
 from ._reset import Reset
 from ._glbl import Global
 
-from .regfile._regfile import RegisterBits
-from .regfile._regfile import Register
-from .regfile._regfile import RegisterFile
+from .memmap import RegisterBits
+from .memmap import Register
+from .memmap import RegisterFile
 
 # different buses supported by the register file interface
-from .memmap._memmap import MemMap
-from .memmap._barebone import Barebone
-from .memmap._wishbone import Wishbone
-from .memmap._avalonmm import AvalonMM
-from .memmap._axi4 import AXI4Lite
+from .memmap import MemoryMapped
+from .memmap import Barebone
+from .memmap import Wishbone
+from .memmap import AvalonMM
+from .memmap import AXI4Lite
 
 # streaming interfaces
-from .fifobus._fifobus import FIFOBus
+from .fifobus import FIFOBus

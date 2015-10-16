@@ -6,10 +6,10 @@ from math import log, ceil
 from myhdl import Signal, intbv, always_seq
 
 from .. import Clock, Reset 
-from . import MemMap
+from . import MemoryMapped
 
 
-class AXI4Lite(MemMap):
+class AXI4Lite(MemoryMapped):
     def __init__(self, glbl, data_width=8, address_width=16):
         """ 
         """
@@ -52,7 +52,7 @@ class AXI4Lite(MemMap):
         enhancements are needed to verify/validate of features of 
         the AXI4Lite bus. 
         
-        @todo: add pritority  (not often used)
+        @todo: add priority  (not often used)
         @todo: add byte strobe
         @todo: add response checks
         @todo: and checks for all channel acks
@@ -80,7 +80,7 @@ class AXI4Lite(MemMap):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Modules
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def map_generic(self, generic):
+    def map_generic(self):
         pass
     
     def peripheral_regfile(self, glbl, regfile, name):

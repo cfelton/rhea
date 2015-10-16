@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from myhdl import enum, Signal, intbv, always_seq
 
-from ...system.memmap import MemMap
+from ...system.memmap import MemoryMapped
 from ...system.memmap import Barebone
 
 
@@ -22,7 +22,7 @@ def memmap_controller_basic(generic, memmap):
     """
 
     assert isinstance(generic, Barebone)
-    assert isinstance(memmap, MemMap)
+    assert isinstance(memmap, MemoryMapped)
 
     States = enum('Idle', 'Wait', 'Write', 'WriteAck', 'Read',
                   'ReadDone', 'End')
@@ -32,7 +32,7 @@ def memmap_controller_basic(generic, memmap):
     tocnt = Signal(intbv(0, min=0, max=timeout_max))
 
     # map the generic bus to the bus in use
-    conv_inst = memmap.map_generic(generic)
+    conv_inst = memmap.from_generic(generic)
 
     @always_seq(memmap.clock.posedge, reset=memmap.reset)
     def rtl_sm():
