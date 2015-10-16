@@ -1,0 +1,38 @@
+[*]
+[*] GTKWave Analyzer v3.3.58 (w)1999-2014 BSI
+[*] Fri Oct 16 15:49:29 2015
+[*]
+[dumpfile] "/Users/cfelton/Projects/active_projects/rhea/test/test_system/output/vcd/_bench_to_generic.vcd"
+[dumpfile_mtime] "Fri Oct 16 15:48:59 2015"
+[dumpfile_size] 3009
+[savefile] "/Users/cfelton/Projects/active_projects/rhea/test/test_system/output/vcd/_bench_to_generic.gtkw"
+[timestart] 38
+[size] 1266 654
+[pos] -1 -1
+*-4.764406 145 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] output/vcd/_bench_to_generic.
+[treeopen] output/vcd/_bench_to_generic.tbclk.
+[treeopen] output/vcd/_bench_to_generic.tbdut.
+[sst_width] 193
+[signals_width] 226
+[sst_expanded] 1
+[sst_vpaned_height] 187
+@28
+output/vcd/_bench_to_generic.clock
+output/vcd/_bench_to_generic.tbdut.clock
+@22
+output/vcd/_bench_to_generic.tbdut.mm_per_addr[3:0]
+@25
+output/vcd/_bench_to_generic.tbdut.mm_mem_addr[3:0]
+@28
+output/vcd/_bench_to_generic.tbdut.mm_write
+@22
+output/vcd/_bench_to_generic.tbdut.mm_write_data[31:0]
+@28
+output/vcd/_bench_to_generic.tbdut.mm_read
+@22
+output/vcd/_bench_to_generic.tbdut.mm_read_data[31:0]
+@28
+output/vcd/_bench_to_generic.tbdut.mm_done
+[pattern_trace] 1
+[pattern_trace] 0

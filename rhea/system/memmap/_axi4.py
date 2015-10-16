@@ -5,7 +5,6 @@ from math import log, ceil
 
 from myhdl import Signal, intbv, always_seq
 
-from .. import Clock, Reset 
 from . import MemoryMapped
 
 

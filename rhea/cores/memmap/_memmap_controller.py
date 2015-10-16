@@ -24,58 +24,55 @@ def memmap_controller_basic(generic, memmap):
     assert isinstance(generic, Barebone)
     assert isinstance(memmap, MemoryMapped)
 
-    States = enum('Idle', 'Wait', 'Write', 'WriteAck', 'Read',
-                  'ReadDone', 'End')
-    state = Signal(States.Idle)
+    states = enum('idle', 'wait', 'write', 'writeack', 'read',
+                  'readdone', 'end')
+    state = Signal(states.Idle)
 
     timeout_max = 33
     tocnt = Signal(intbv(0, min=0, max=timeout_max))
 
     # map the generic bus to the bus in use
-    conv_inst = memmap.from_generic(generic)
+    conv_inst = memmap.map_from_generic(generic)
 
     @always_seq(memmap.clock.posedge, reset=memmap.reset)
-    def rtl_sm():
+    def beh_sm():
 
         # ~~~[Idle]~~~
-        if state == States.Idle:
+        if state == states.idle:
             if not generic.done:
-                state.next = States.Wait
+                state.next = states.wait
             elif generic.write:
-                state.next = States.Write
+                state.next = states.write
             elif generic.read:
-                state.next = States.Read
+                state.next = states.read
 
         # ~~~[Wait]~~~
-        elif state == States.Wait:
-
+        elif state == states.wait:
             if generic.done:
                 tocnt.next = 0
                 if generic.write:
-                    state.next = States.Done
+                    state.next = states.done
                 elif generic.read:
-                    state.next = States.ReadValid
+                    state.next = states.readvalid
 
         # ~~~[Write]~~~
-        elif state == States.Write:
+        elif state == states.write:
             pass
 
         # ~~~[Read]~~~
-        elif state == States.Read:
+        elif state == states.read:
             pass
 
         # ~~~~[ReadDone]~~~
-        elif state == States.ReadDone:
+        elif state == states.readdone:
             pass
 
         # ~~~[Done]~~~
-        elif state == States.Done:
+        elif state == states.done:
             pass
 
         # ~~~[]~~~
         else:
             assert False, "Invalid state %s" % (state,)
 
-        return conv_inst, rtl_sm
-
-    return conv_inst
+    return conv_inst, beh_sm

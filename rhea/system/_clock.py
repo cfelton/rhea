@@ -3,10 +3,10 @@ from __future__ import division
 
 import myhdl
 from myhdl import instance, delay
-from myhdl import now
 
 _clock_num = 0
 ClockList = []
+
 
 class Clock(myhdl.SignalType): 
     """
@@ -50,8 +50,8 @@ class Clock(myhdl.SignalType):
         return self._period
 
     def _set_hticks(self):
-        #self._nts = self._convert_timescale(self._timescale)
-        #self._hticks = int(round(self._period/self._nts))
+        # self._nts = self._convert_timescale(self._timescale)
+        # self._hticks = int(round(self._period/self._nts))
         self._hticks = 3
 
     def _convert_timescale(self, ts):
@@ -68,7 +68,6 @@ class Clock(myhdl.SignalType):
         else:
             self._hticks = hticks
 
-        #print('hticks %d'%(hticks))
         @instance
         def gclock():
             self.next = False

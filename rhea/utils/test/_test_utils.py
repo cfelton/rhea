@@ -18,7 +18,6 @@ def run_testbench(bench, timescale='1ns', args=None):
         args = argparse.Namespace(trace=False)
     vcd = tb_clean_vcd(bench.__name__)
     if args.trace:
-        # @todo: the following (timescale) needs to be set
         traceSignals.timescale = timescale
         traceSignals.name = vcd
         gens = traceSignals(bench)

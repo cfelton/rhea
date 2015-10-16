@@ -9,11 +9,11 @@ from myhdl import (Signal, intbv, always_seq, always, always_comb,
 
 from .. import Clock
 from .. import Reset
-from . import MemMap
+from . import MemoryMapped
 from . import Barebone
 
 
-class AvalonMM(MemMap):
+class AvalonMM(MemoryMapped):
     name = 'avalon'
 
     def __init__(self, glbl=None, data_width=8, address_width=16, name=None):
@@ -301,33 +301,7 @@ class AvalonMM(MemMap):
         yield self.clock.posedge
         self.readdatavalid.next = False
 
-    # @todo: map_generic(self, generic)
+    # @todo: map_to_generic(self)
+    # @todo: map_from_generic(self, generic)
     # @todo: peripheral_regfile(self, glbl, regfile, name, base_address)
-    # @todo: controller(self, generic)
-    # @todo: peripheral(self, generic)
-
-
-# -----------------------------------------------------------------------------
-def m_controller(generic, memmap):
-    """ Generic memap interface to Wishbone controller
-
-    :return: myhdl generators
-    """
-    assert isinstance(generic, Barebone)
-    assert isinstance(memmap, MemMap)
-    raise NotImplementedError
-
-
-def m_peripherial(memmap, generic):
-    """ Wishbone to generic memmap interface
-
-    Ports
-    -----
-      gen:
-      memmap:
-
-    :return: myhdl generators
-    """
-    assert isinstance(memmap, MemMap)
-    assert isinstance(generic, Barebone)
-    raise NotImplementedError
+    # @todo: interconnect(self)

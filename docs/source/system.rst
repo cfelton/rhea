@@ -108,9 +108,9 @@ Each of these implement a memory-map bus type/specification and each
 can be passed as and interface to a module.
 
 When interfacing to a register file, the register file is added to the
-bus as shown in the previous example with the :py:func:`MemMap.add`
+bus as shown in the previous example with the :py:func:`MemoryMapped.add`
 function.  The register file covers many use cases for adding control
 and status interfaces to different components.  Each interface also
 contains a module to adapt the memory-map interface to a *generic*
 interface.  In this case each bus is mapped to the :py:class:`Barebone`
-bus with the :py:func:`MemMap.map_generic` function / `myhdl`_ `module`_.
+bus with the :py:func:`MemoryMapped.map_to_generic` function / `myhdl`_ `module`_.

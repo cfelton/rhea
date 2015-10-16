@@ -4,10 +4,7 @@ from __future__ import print_function
 
 from copy import deepcopy
 
-from myhdl import Signal, intbv
-
-from . import MemorySpace
-from . import Register
+from . import MemorySpace, RegisterFile, Register
 from .._clock import Clock
 from .._reset import Reset
 
@@ -18,7 +15,7 @@ _mm_list = {}
 
 
 class MemoryMapped(MemorySpace):
-    def __init__(self, data_width, address_width):
+    def __init__(self, glbl=None, data_width=8, address_width=16):
         """ Base class for the different memory-map interfaces.
         This is a base class for the various memory-mapped (control and 
         status (CSR)) interfaces.  These interfaces all
@@ -29,8 +26,11 @@ class MemoryMapped(MemorySpace):
         self.names = {}
         self.regfiles = {}
 
-        self.clock = Clock(bool(0))
-        self.reset = Reset(0, active=1, async=False)
+        if glbl is None:
+            self.clock = Clock(bool(0))
+            self.reset = Reset(0, active=1, async=False)
+        else:
+            self.clock, self.reset = glbl.clock, glbl.reset
 
         # transaction information (simulation only)
         self._write = False    # write command in progress
@@ -39,6 +39,9 @@ class MemoryMapped(MemorySpace):
         self._data = 0         # ??? @todo: is this used ???
         self._write_data = -1  # holds the data written
         self._read_data = -1   # holds the data read
+
+        self.num_peripherals = 0
+        self.num_controllers = 0
 
         # bus transaction timeout in clock ticks
         self.timeout = 100
@@ -81,13 +84,16 @@ class MemoryMapped(MemorySpace):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # public transactor API
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def write(self, addr, val):
+    def writetrans(self, addr, data):
+        """ Write transaction """
         raise NotImplementedError
 
-    def read(self, addr):
+    def readtrans(self, addr):
+        """ Read transaction """
         raise NotImplementedError
 
-    def ack(self, data=None):
+    def acktrans(self, data=None):
+        """ Acknowledge transaction """
         raise NotImplementedError
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -101,60 +107,68 @@ class MemoryMapped(MemorySpace):
         _mm_list[name] = self
         _mm_per += 1
 
-    # @todo: make name and base_address attributes of regfile
-    def add(self, glbl, regfile, name=''):
+    def add(self, memspace, name=''):
         """ add a peripheral register-file to the bus
         """
-        # @todo: regfile should be replaced by `memspace` (MemorySpace) which
-        # @todo: would be a simple object describing the address space occupied
-        # @todo: and the RegisterFile would be a subclass. 
-        # want a copy of the register-file so that the
-        # address can be adjusted.
-        arf = deepcopy(regfile)
-        
-        base_address = regfile.base_address
-        # @todo: revisit the base_address assignment, the bus width needs
-        # @todo: to be taken into account.
-        if base_address is None:
-            maxaddr = 0
+        assert isinstance(memspace, MemorySpace)
+        self.num_peripherals += 1
+        base_address = memspace.base_address
+
+        if isinstance(memspace, RegisterFile):
+            regfile = memspace
+            # want a copy of the register-file so that the
+            # address can be adjusted.
+            arf = deepcopy(regfile)
+
+            # @todo: revisit the base_address assignment, the bus width needs
+            # @todo: to be taken into account.
+            if base_address is None:
+                maxaddr = 0
+                for k, v in self.regfiles.items():
+                    maxaddr = max(maxaddr, v.base_address)
+                base_address = maxaddr + 0x100000
+
             for k, v in self.regfiles.items():
-                maxaddr = max(maxaddr, v.base_address)
-            base_address = maxaddr + 0x100000
-                
-        for k, v in self.regfiles.items():
-            if base_address == v.base_address:
-                print("@E: Register file address collision")
-                # @todo: raise an exception 
+                if base_address == v.base_address:
+                    print("@E: Register file address collision")
+                    # @todo: raise an exception
 
-        for k, v in arf.__dict__.items():
-            if isinstance(v, Register):
-                v.addr += base_address
+            for k, v in arf.__dict__.items():
+                if isinstance(v, Register):
+                    v.addr += base_address
 
-        if name in self.regfiles:
-            self.names[name] += 1
-            name = name.upper() + "_{:03d}".format(self.names[name])
+            if name in self.regfiles:
+                self.names[name] += 1
+                name = name.upper() + "_{:03d}".format(self.names[name])
+            else:
+                self.names = {name: 0}
+                name = name.upper() + "_000"
+
+            self.regfiles[name] = arf
+
+            # return the peripheral generators for this bus
+            g = self.peripheral_regfile(regfile, name)
+
         else:
-            self.names = {name : 0}
-            name = name.upper() + "_000"
-
-        self.regfiles[name] = arf       
-
-        # return the peripheral generators for this bus
-        g = self.peripheral_regfile(glbl, regfile, name)
+            g = []
     
-        return g
+        return self.num_peripherals, g
+
+    # @todo: add `add_master` (`add_controller`), adds master/controller
+    # @todo: to the bus.
+
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # module (component) implementations
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def to_generic(self):
+    def map_to_generic(self):
         """ Map this bus to the generic (Barebone) bus
         This is a bus adapter, it will adapt the
         :return: generic bus, myhdl generators
         """
         raise NotImplementedError
 
-    def from_generic(self, generic):
+    def map_from_generic(self, generic):
         """ Map the generic bus (Barebone) to this bus
         This is a bus adapter that will adapt the generic bus to this
         bus.  This is a module and returns myhdl generators
@@ -163,7 +177,7 @@ class MemoryMapped(MemorySpace):
         """
         raise NotImplementedError
 
-    def peripheral_regfile(self, glbl, regfile, name, base_address=0):
+    def peripheral_regfile(self, regfile, name, base_address=0):
         """ override
         :param glbl: global signals, clock and reset
         :param regfile: register file interfacing to.

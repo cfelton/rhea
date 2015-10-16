@@ -6,16 +6,13 @@ from __future__ import absolute_import
 
 from myhdl import *
 
-from .. import Clock
-from .. import Reset
-
-from . import MemMap
+from . import MemoryMapped
 from . import Barebone
 
 
-class Wishbone(MemMap):
+class Wishbone(MemoryMapped):
     name = 'wishbone'
-    
+
     def __init__(self, glbl=None, data_width=8, address_width=16, name=None):
         """ Wishbose bus object
         Parameters (kwargs):
@@ -359,29 +356,3 @@ class Wishbone(MemMap):
             self.dat_o.next = data
         yield self.clk_i.posedge
         self.ack_o.next = False
-
-
-# -----------------------------------------------------------------------------
-def m_controller(generic, memmap):
-    """ Generic memap interface to Wishbone controller
-
-    :return: myhdl generators
-    """
-    assert isinstance(generic, Barebone)
-    assert isinstance(memmap, MemMap)
-    raise NotImplementedError
-
-
-def m_peripherial(memmap, generic):
-    """ Wishbone to generic memmap interface
-
-    Ports
-    -----
-      gen:
-      memmap:
-
-    :return: myhdl generators
-    """
-    assert isinstance(memmap, MemMap)
-    assert isinstance(generic, Barebone)
-    raise NotImplementedError

@@ -1,3 +1,3 @@
 
 from ._memmap_controller import memmap_controller_basic
-from ._memmap_peripheral import memmap_peripheral_basic
+from ._memmap_peripheral import memmap_peripheral_memory
