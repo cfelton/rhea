@@ -2,6 +2,7 @@
 # Copyright (c) 2006-2013 Christopher L. Felton
 #
 
+from copy import deepcopy
 
 from myhdl import *
 from myhdl._Signal import _Signal
@@ -30,7 +31,7 @@ class Register(_Signal):
         The 'ro' registers can only be modified by the peripheral.
         """
 
-        super(Register, self).__init__(self, intbv(default)[width:])
+        super(Register, self).__init__(intbv(default)[width:])
 
         self._nmb = [None for _ in range(width)]  # hold the named-bits
 
@@ -53,13 +54,13 @@ class Register(_Signal):
         reg = Register(self.name, self.width, self.access,
                        self.default, self.addr,  self.comment)
         for k, v in self.bits.items():
-            reg.add_named_bits(k, v.b, v.comment)
+            reg.add_namedbits(k, v.b, v.comment)
         return reg
 
     def __deepcopy__(self, memo):
         return self.__copy__()
 
-    def add_named_bits(self, name, bits, comment=""):
+    def add_namedbits(self, name, bits, comment=""):
         """ Add a named bit
         A named bit allows named access to a bit
 
@@ -142,13 +143,14 @@ class RegisterFile(MemorySpace):
         
         
         """
+        super(RegisterFile, self).__init__()
+
         self._offset = 0           # current register offset`
         self._rwregs = []          # read-write registers
         self._roregs = []          # read-only registers
-        self.registers = {}        # collection of all registers added 
-        self.base_address  = None  # base_address of this register file
+        self.registers = {}        # collection of all registers added
         
-        # @todo: if the regdef is dict-of-dict definiton, first
+        # @todo: if the regdef is dict-of-dict definition, first
         # @todo: build the registers
         
         # register is a name, register dictionary
@@ -176,6 +178,14 @@ class RegisterFile(MemorySpace):
     def rwregs(self):
         return self._rwregs
 
+    def get_regdef(self):
+        regdef = {}
+        for k, v in self.__dict__.items():
+            if isinstance(v, Register):
+                regdef[k] = deepcopy(v)
+
+        return regdef
+
     def _append_register(self, name, reg):
         """ append a register to the list 
         """
@@ -184,6 +194,8 @@ class RegisterFile(MemorySpace):
         if reg.addr is None:
             reg.addr = self._offset
             self._offset += 4
+        else:
+            self._offset = reg.addr + 4
 
         if isinstance(reg, dict):
             # @todo: _check_register_def

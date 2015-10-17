@@ -89,7 +89,7 @@ class Wishbone(MemoryMapped):
             
         return rtl_or_combine
 
-    def peripheral_regfile(self, glbl, regfile, name=''):
+    def peripheral_regfile(self, regfile, name=''):
         """ memory-mapped wishbone peripheral interface
         """
 
@@ -97,6 +97,7 @@ class Wishbone(MemoryMapped):
         wb = self     # register bus
         rf = regfile  # register file definition
         clock, reset = wb.clk_i, wb.rst_i
+
         # @todo: base address default needs to be revisited
         base_address = regfile.base_address 
         if base_address is None:
@@ -131,11 +132,11 @@ class Wishbone(MemoryMapped):
                     yield clock.posedge
                     print("{:8d}: c:{}, r:{}, {} {} {} sel:{}, wr:{} n:{} "
                           "acnt {}, @{:04X}, i:{:02X} o:{:02X} ({:02X})".format(
-                          now(), int(clock), int(reset),
-                          int(wb.cyc_i), int(wb.we_i), int(wb.ack_o),
-                          int(lwb_sel), int(lwb_wr),
-                          int(newcyc), int(ackcnt), int(wb.adr_i),
-                          int(wb.dat_i), int(wb.dat_o), int(lwb_do), ))
+                           now(), int(clock), int(reset),
+                           int(wb.cyc_i), int(wb.we_i), int(wb.ack_o),
+                           int(lwb_sel), int(lwb_wr),
+                           int(newcyc), int(ackcnt), int(wb.adr_i),
+                           int(wb.dat_i), int(wb.dat_o), int(lwb_do), ))
 
         @always_comb
         def rtl_assign():
@@ -225,22 +226,26 @@ class Wishbone(MemoryMapped):
 
         return instances()
 
-    def get_controller_intf(self):
-        return Barebone(self.data_width, self.address_width)
-
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def map_generic(self, generic):
-        wb = self
+    def get_generic(self):
+        pass
+
+    def map_to_generic(self):
+        pass
+
+    def map_from_generic(self, generic):
+        wb, bb = self, generic
 
         @always_comb
         def rtl_assign():
-            if generic.write or generic.read:
+            if bb.write or bb.read:
                 wb.cyc_i.next = True
-                wb.we_i.next = True if generic.write else False
+                wb.we_i.next = True if bb.write else False
 
-            wb.adr_i.next = concat(generic.per_addr, generic.reg_addr)
+            wb.adr_i.next = concat(bb.per_addr, bb.reg_addr)
 
-            generic.ack = wb.ack_o
+            # @todo: implement done
+            # bb.ack = wb.ack_o
 
         return rtl_assign
 
@@ -307,7 +312,7 @@ class Wishbone(MemoryMapped):
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    def write(self, addr, val):
+    def writetrans(self, addr, val):
         """ write accessor for testbenches
         Not convertible.
         """
@@ -330,7 +335,7 @@ class Wishbone(MemoryMapped):
         yield self.clk_i.posedge
         self._end_transaction()
 
-    def read(self, addr):
+    def readtrans(self, addr):
         """ read accessor for testbenches
         """
         self._start_transaction(write=False, address=addr)
@@ -346,7 +351,7 @@ class Wishbone(MemoryMapped):
         self.stb_i.next = False
         self._end_transaction(self.dat_o)
 
-    def ack(self, data=None):
+    def acktrans(self, data=None):
         """ acknowledge accessor for testbenches
         :param data:
         :return:

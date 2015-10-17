@@ -21,9 +21,9 @@ regfile.add_register(reg)
 
 # create a control register with named bits and add
 reg = Register('control', width=8, access='rw', default=1)
-reg.add_named_bits('enable', bits=0, comment="enable the compoent")
-reg.add_named_bits('pause', bits=1, comment="pause current operation")
-reg.add_named_bits('mode', bits=(4, 2), comment="select mode")
+reg.add_namedbits('enable', bits=0, comment="enable the compoent")
+reg.add_namedbits('pause', bits=1, comment="pause current operation")
+reg.add_namedbits('mode', bits=(4, 2), comment="select mode")
 regfile.add_register(reg)
 
 

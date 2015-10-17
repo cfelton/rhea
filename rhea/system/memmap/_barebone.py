@@ -27,7 +27,7 @@ class Barebone(MemoryMapped):
         finished any previous operations and that it is ready to
         retrieve any new operations.  A master can pulse the write
         or read at anytime the done signals is active, the slave
-        will process one or more writes (upto max_burst).  At that
+        will process one or more writes (up to max_burst).  At that
         point the master needs to relinquish and wait for done.
 
         The address bus is separated into two separate address buses,
@@ -38,7 +38,7 @@ class Barebone(MemoryMapped):
 
         In multi-master mode the interconnect simply round-robins
         the masters, only asserting the masters done during its
-        time-slice.  The master will maintian bus control until
+        time-slice.  The master will maintain bus control until
         the transaction is completed (at most max_burst clock
         cycles).
 
@@ -48,6 +48,7 @@ class Barebone(MemoryMapped):
         reset       /-----\_________________________________________
         write       ____________/-----\_____________________________
         read        _____________________________/------\___________
+        valid       ____________________________________/-----\_____
         done        ------------\______/---------\______/-----------
         read_data   -----------------------------|read data |-------
         write_data  ------------|write data |-----------------------
@@ -105,7 +106,7 @@ class Barebone(MemoryMapped):
     def readtrans(self, addr):
         self._start_transaction(write=False, address=addr)
         assert self.done
-        print("Barebone: read trasaction to {:08X}".format(addr), end='')
+        print("Barebone: read transaction to {:08X}".format(addr), end='')
         self.read.next = True
         self.mem_addr.next = addr
         to = 0
@@ -128,13 +129,16 @@ class Barebone(MemoryMapped):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Modules
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    def get_generic(self):
+        return self
+
     def map_to_generic(self):
         """
         In this case *this* is the generic bus, there is no mapping that
         needs to be done.  Simply return ourself and all is good.
         :return:
         """
-        return self, []
+        return []
 
     def map_from_generic(self, generic):
         """

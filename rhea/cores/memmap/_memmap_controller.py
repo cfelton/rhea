@@ -57,19 +57,23 @@ def memmap_controller_basic(generic, memmap):
 
         # ~~~[Write]~~~
         elif state == states.write:
-            pass
+            state.next = states.done
+            tocnt.next = 0
 
         # ~~~[Read]~~~
         elif state == states.read:
-            pass
+            state.next = states.readdone
 
         # ~~~~[ReadDone]~~~
         elif state == states.readdone:
-            pass
+            if generic.done:
+                state.next = states.done
 
         # ~~~[Done]~~~
         elif state == states.done:
-            pass
+            # wait for transaction signals to be release
+            if not (generic.write or generic.read):
+                state.next = states.idle
 
         # ~~~[]~~~
         else:

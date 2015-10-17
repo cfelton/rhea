@@ -20,7 +20,10 @@ def memmap_peripheral_memory(memmap, depth=128):
     """
     width = 32
     mem = [Signal(intbv(0)[width:]) for _ in range(depth)]
-    per_addr, g = memmap.add(MemorySpace())
+    memspace = MemorySpace()
+    memmap.add(memspace)
+    per_addr = memspace.base_address
+    print("memmap_peripheral_memory base address {:08X}".format(per_addr))
 
     # @todo: add MemorySpace to the memmap bus, so the memmap object
     # @todo: knows the address space occupied by this peripheral
@@ -29,7 +32,8 @@ def memmap_peripheral_memory(memmap, depth=128):
 
     assert isinstance(memmap, MemoryMapped)
     clock = memmap.clock
-    mm, conv_inst = memmap.map_to_generic()
+    conv_inst = memmap.map_to_generic()
+    mm = memmap.get_generic()
 
     @always(clock.posedge)
     def beh_write():
@@ -65,4 +69,16 @@ def memmap_peripheral_memory(memmap, depth=128):
 
 def memmap_peripheral_regfile(memmap):
     # @todo: move regfilesys to here!
-    pass
+    memspace = MemorySpace()
+    memmap.add(memspace)
+    mm = memmap.get_generic()
+    placeholder = Signal(bool(0))
+
+    @always_comb
+    def beh_todo():
+        if mm.write:
+            placeholder.next = True
+        else:
+            placeholder.next = False
+
+    return beh_todo

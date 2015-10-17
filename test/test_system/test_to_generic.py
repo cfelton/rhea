@@ -28,11 +28,8 @@ def testbench_to_generic(args=None):
     maxval = 2**width
     address_width = int(ceil(log(depth, 2)))
 
-    if args is None:
-        run = False
-        args = tb_default_args(args)
-    else:
-        run = True
+    run = False if args is None else True
+    args = tb_default_args(args)
 
     if not hasattr(args, 'num_loops'):
         args.num_loops = 10

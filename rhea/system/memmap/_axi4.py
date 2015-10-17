@@ -12,10 +12,12 @@ class AXI4Lite(MemoryMapped):
     def __init__(self, glbl, data_width=8, address_width=16):
         """ 
         """
-        super(AXI4Lite, self).__init__(data_width=data_width,
+        super(AXI4Lite, self).__init__(glbl,
+                                       data_width=data_width,
                                        address_width=address_width) 
         self.aclk = glbl.clock
-        self.aresetn = glbl.reset
+        # not used, use
+        # self.aresetn = glbl.reset
         
         self.awaddr = Signal(intbv(0)[address_width:])
         self.awprot = Signal(intbv(0)[3:])
@@ -45,7 +47,7 @@ class AXI4Lite(MemoryMapped):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Transactors
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        
-    def write(self, addr, val):
+    def writetrans(self, addr, val):
         """ Emulate a write transfer from a master
         The following is a very basic write transaction, future 
         enhancements are needed to verify/validate of features of 
@@ -70,10 +72,10 @@ class AXI4Lite(MemoryMapped):
         self.wvalid.next = False 
         self.bready.next = False 
     
-    def read(self, addr):
+    def readtrans(self, addr):
         pass
     
-    def ack(self, data=None):
+    def acktrans(self, data=None):
         pass
     
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -57,13 +57,11 @@ class AvalonMM(MemoryMapped):
         self._readdatavalid.append(readdatavalid)
         self._waitrequest.append(waitrequest)
 
-    # @todo: rename to "interconnect"
-    def m_per_outputs(self):
+    def interconnect(self):
         """ combine all the peripheral outputs
         """
         assert len(self._readdata) == len(self._readdatavalid)
         ndevs = len(self._readdata)
-
         av = self
 
         @always_seq(self.clk.posedge, reset=self.reset)
@@ -80,7 +78,7 @@ class AvalonMM(MemoryMapped):
 
         return rtl_or_combine
 
-    def m_per_interface(self, glbl, regfile, name='', base_address=0x0):
+    def peripheral_regfile(self, regfile, name='', base_address=0x0):
         """ memory-mapped avalon peripheral interface
         """
 
@@ -113,7 +111,7 @@ class AvalonMM(MemoryMapped):
             else:
                 selected.next = False
 
-        # @todo: scan hte register list, if it is contiguous remove
+        # @todo: scan the register list, if it is contiguous remove
         #        the base and use the offset directly to access the
         #        register list instead of the for loop
         # if regfile.contiguous:
@@ -167,101 +165,8 @@ class AvalonMM(MemoryMapped):
 
         return instances()
 
-    def get_controller_intf(self):
-        return Barebone(self.data_width, self.address_width)
-            
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # @todo: remove the following and use translation function
-    def m_controller(self, ctl):
-        """
-        Bus controllers (master) are typically custom and
-        built into whatever the controller is (e.g. a processor).
-        This is a simple example with a simple interface to
-        invoke bus cycles.
 
-        :param ctl:
-        :return:
-        """
-        av = self
-        clock = av.clk
-        reset = av.reset
-        States = enum('Idle', 'Wait', 'Write', 'Read', 'ReadValid', 'Done')
-        state = Signal(States.Idle)
-        TOMAX = 33
-        tocnt = Signal(intbv(0, min=0, max=TOMAX))
-
-        @always_comb
-        def assign():
-            av.address.next = concat(ctl.per_addr, ctl.reg_addr)
-            av.writedata.next = ctl.write_data
-            ctl.read_data.next = av.readdata
-
-        @always_seq(clock.posedge, reset=reset)
-        def rtl():
-            # ~~~[Idle]~~~
-            if state == States.Idle:
-                av.write.next = False
-                av.read.next = False
-                ctl.done.next = False
-                if av.waitrequest:
-                    state.next = States.Wait
-                elif ctl.write:
-                    state.next = States.Write
-                elif ctl.read:
-                    state.next = States.Read
-                else:
-                    ctl.done.next = True
-
-            # ~~~[Wait]~~~
-            elif state == States.Wait:
-                if ctl.write:
-                    av.write.next = True
-                    av.read.next = False
-                elif ctl.read:
-                    av.write.next = False
-                    av.read.next = True
-
-                if not av.waitrequest:
-                    tocnt.next = 0
-                    if ctl.write:
-                        state.next = States.Done
-                    elif ctl.read:
-                        state.next = States.ReadValid
-
-            # ~~~[Write]~~~
-            elif state == States.Write:
-                av.write.next = True
-                # @todo byteenables !!!
-                state.next = States.Done
-                tocnt.next = 0
-
-            # ~~~[Read]~~~
-            elif state == States.Read:
-                av.read.next = True
-                state.next = States.ReadValid
-
-            # ~~~[ReadValid]~~~
-            elif state == States.ReadValid:
-                av.read.next = False
-                if av.readdatavalid:
-                    state.next = States.Done
-
-            # ~~~[Done]~~~
-            elif state == States.Done:
-                ctl.done.next = True
-                av.write.next = False
-                av.read.next = False
-                if not (ctl.write or ctl.read):
-                    state.next = States.Idle
-
-            else:
-                assert False, "Invalid state %s" % (state,)
-
-        return assign, rtl
-
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    def write(self, addr, val):
+    def writetrans(self, addr, val):
         """ write accessor for testbenches
         :param addr: address to write
         :param val: value to write to the address
@@ -280,7 +185,7 @@ class AvalonMM(MemoryMapped):
         self.writedata.next = 0
         self._end_transaction(self.writedata)
                       
-    def read(self, addr):
+    def readtrans(self, addr):
         """ read accessor for testbenches
         :param addr:
         :return:
@@ -294,7 +199,7 @@ class AvalonMM(MemoryMapped):
         self.read.next = False
         self._end_transaction(self.readdata)
 
-    def ack(self, data=None):
+    def acktrans(self, data=None):
         self.readdatavalid.next = True
         if data is not None:
             self.readdata.next = data

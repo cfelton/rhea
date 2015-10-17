@@ -17,8 +17,8 @@ from rhea.system import Wishbone
 
 from rhea.utils.test import *
 
-
-regdef = None
+# only one register-file under test at a time, allow the generated
+# register-file to be accessible from the testbench
 regfile = None
 
 
@@ -29,68 +29,70 @@ def _create_mask(n):
     return m
 
 
-def _create_regfile():
+def create_regfile():
+    """
+    [0] 0x0018: control register
+    [1] 0x0020:
+    [2] 0x0040:
+    [3] 0x0080:
+    [4] 0x0100: regro (read-only)
+    [5] 0x0200: status (read-only, with namedbits)
+    :return:
+    """
     global regdef
     print("creating test register file")
-    regdef = collections.OrderedDict()
+    regfile = RegisterFile()
+    regfile.base_address = 0
+
     # --register 0--
     reg = Register('control', width=8, access='rw', default=0, addr=0x0018)
     reg.comment = "register 0"
-    reg.add_named_bits('enable', slice(1, 0))  # read-only namedbit
-    reg.add_named_bits('loop', slice(2, 1))    # read-only namedbit
-    regdef[reg.name] = reg
+    reg.add_namedbits('enable', slice(1, 0))  # read-only namedbit
+    reg.add_namedbits('loop', slice(2, 1))    # read-only namedbit
+    regfile.add_register(reg)
     
     # -- more registers register --
     for addr, default in zip((0x20, 0x40, 0x80),
                              (0xDE, 0xCA, 0xFB)):
         reg = Register('reg%s' % (addr,), 8, 'rw', default, addr)
-        regdef[reg.name] = reg
+        regfile.add_register(reg)
 
     # -- read only register --
     reg = Register('regro', 8, 'ro', 0xAA, 0x100)
-    regdef[reg.name] = reg
+    regfile.add_register(reg)
 
     # another read only register, with named bits
     reg = Register('status', 8, 'ro', 0, 0x200)
-    reg.add_named_bits('error', slice(1, 0))  # bit 0, read-write namedbit
-    reg.add_named_bits('ok', slice(2, 1))     # bit 1, read-write namedbit
-    reg.add_named_bits('cnt', slice(8, 2))    # bits 7-2, read-write namedbit
-    regdef[reg.name] = reg
+    reg.add_namedbits('error', slice(1, 0))  # bit 0, read-write namedbit
+    reg.add_namedbits('ok', slice(2, 1))     # bit 1, read-write namedbit
+    reg.add_namedbits('cnt', slice(8, 2))    # bits 7-2, read-write namedbit
+    regfile.add_register(reg)
 
-    regfile = RegisterFile(regdef)
     return regfile
 
 
-def m_per_top(clock, reset, mon):
+def peripheral_top(clock, reset, mon):
     glbl = Global(clock, reset)
     wb = Wishbone(glbl)
-    #gpm = wb.m_controller(wb)
-    gp1 = m_per(glbl, wb, mon)
+    gp1 = memmap_peripheral(glbl, wb, mon)
     return gp1
 
 
-def m_per(glbl, regbus, mon):
+def memmap_peripheral(glbl, regbus, mon):
     global regfile
-    regfile = _create_regfile()
-    regfile_inst = regbus.add(glbl, regfile, name='test1')
+    regfile = create_regfile()
+    regfile_inst = regbus.add(regfile, name='test1')
+
+    return regfile_inst
+
+
+def memmap_peripheral_bits(glbl, regbus, mon):
+    global regfile
+
     clock, reset = glbl.clock, glbl.reset
-
-    ## all "read-only" (status) bits if needed
-    @always_seq(clock.posedge, reset=reset)
-    def rtl_roregs():
-        if regfile.regro.rd:
-            regfile.regro.next = mon
-        
-    return regfile_inst #, rtl_roregs
-
-
-def m_per_bits(glbl, regbus, mon):
-    global regfile
-    regfile = _create_regfile()
-    regfile_inst = regbus.add(glbl, regfile, name='test2')
+    regfile = create_regfile()
+    regfile_inst = regbus.add(regfile, name='test2')
     count = modbv(0, min=0, max=1)
-    clock, reset = glbl.clock, glbl.reset
-    ## all "read-only" (status) bits if needed
 
     @always(clock.posedge)
     def rtl_roregs():
@@ -114,13 +116,15 @@ def m_per_bits(glbl, regbus, mon):
 
 
 def test_register_def():
-    regfile = _create_regfile()
+    regfile = create_regfile()
     assert len(regfile._rwregs) == 4
     assert len(regfile._roregs) == 2
 
 
-def test_register_file():
+def test_register_file(args=None):
     global regfile
+    args = tb_default_args(args)
+
     # top-level signals and interfaces
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
@@ -128,7 +132,7 @@ def test_register_file():
     regbus = Wishbone(glbl) 
 
     def _bench_regfile():
-        tbdut = m_per(glbl, regbus, 0xAA)
+        tbdut = memmap_peripheral(glbl, regbus, 0xAA)
         tbor = regbus.interconnect()
         tbmclk = clock.gen(hticks=5)
         asserr = Signal(bool(0))
@@ -138,7 +142,9 @@ def test_register_file():
         @always_comb
         def tbmon():
             mon_ack.next = regbus.ack_o
-        
+
+        regdef = regfile.get_regdef()
+
         @instance
         def tbstim():
             try:
@@ -148,16 +154,16 @@ def test_register_file():
                 
                 for k, reg in regdef.items():
                     if reg.access == 'ro':
-                        yield regbus.read(reg.addr)
+                        yield regbus.readtrans(reg.addr)
                         rval = regbus.get_read_data()
                         assert rval == reg.default, \
                             "ro: {:02x} != {:02x}".format(rval, reg.default)
                     else:
                         wval = randint(0, (2**reg.width)-1)
-                        yield regbus.write(reg.addr, wval)
+                        yield regbus.writetrans(reg.addr, wval)
                         for _ in range(4):
                             yield clock.posedge
-                        yield regbus.read(reg.addr)
+                        yield regbus.readtrans(reg.addr)
                         rval = regbus.get_read_data()
                         assert rval == wval, \
                             "rw: {:02x} != {:02x} @ {:04X}".format(
@@ -175,7 +181,7 @@ def test_register_file():
 
         return tbmclk, tbstim, tbdut, tbmon, tbor
 
-    run_testbench(_bench_regfile)
+    run_testbench(_bench_regfile, args=args)
 
 
 def test_register_file_bits():
@@ -187,7 +193,7 @@ def test_register_file_bits():
     regbus = Wishbone(glbl) 
 
     def _bench_regfile_bits():
-        tbdut = m_per_bits(glbl, regbus, 0xAA)
+        tbdut = memmap_peripheral_bits(glbl, regbus, 0xAA)
         tbor = regbus.interconnect()
         tbmclk = clock.gen()
         tbrclk = regbus.clk_i.gen()
@@ -201,13 +207,13 @@ def test_register_file_bits():
                 yield clock.posedge
                 yield clock.posedge           
                 truefalse = True
-                yield regbus.write(regfile.control.addr, 0x01)
+                yield regbus.writetrans(regfile.control.addr, 0x01)
                 for _ in range(100):
                     assert regfile.enable == truefalse
                     assert regfile.loop == (not truefalse)
-                    yield regbus.read(regfile.control.addr)
+                    yield regbus.readtrans(regfile.control.addr)
                     invertbits = ~intbv(regbus.get_read_data())[8:]
-                    yield regbus.write(regfile.control.addr, invertbits)
+                    yield regbus.writetrans(regfile.control.addr, invertbits)
                     truefalse = not truefalse
                     yield clock.posedge
             except AssertionError as err:
@@ -229,17 +235,17 @@ def test_convert():
     mon = Signal(intbv(0)[8:])
 
     toVerilog.directory = 'output'
-    toVerilog(m_per_top, clock, reset, mon)
+    toVerilog(peripheral_top, clock, reset, mon)
     toVHDL.directory = 'output'
-    toVHDL(m_per_top, clock, reset, mon)
+    toVHDL(peripheral_top, clock, reset, mon)
 
     
 if __name__ == '__main__':
     # @todo: pass args to the testbenches
     # @todo: tb_register_def(tb_args()) ...
+    args = tb_args()
+
     test_register_def()
-    test_register_file()
+    test_register_file(args)
     test_register_file_bits()
     test_convert()
-    
-
