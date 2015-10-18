@@ -3,6 +3,7 @@
 #
 
 from __future__ import absolute_import
+from __future__ import print_function
 
 from math import log, ceil
 from myhdl import Signal, intbv
