@@ -11,9 +11,9 @@ from ...toolflow import IceRiver
 
 class Icestick(_fpga):
     vendor = 'lattice'
-    family = 'ice'
-    device = 'ice40'
-    package = ''
+    family = 'ice40'
+    device = 'HX1K'
+    package = 'TQ144'
     _name = 'icestick'
 
     default_clocks = {
@@ -26,6 +26,9 @@ class Icestick(_fpga):
         'spi_si': dict(pins=(68,)),
         'spi_so': dict(pins=(67,)),
         'spi_ss': dict(pins=(71,)),
+        'uart_tx': dict(pins=(8,)),
+        'uart_rx': dict(pins=(9,)),
+        'pmod': dict(pins=(78, 79, 80, 81, 87, 88, 90, 91,)),
     }
 
     def get_flow(self, top=None):
