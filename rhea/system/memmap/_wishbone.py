@@ -4,8 +4,10 @@
 
 from __future__ import absolute_import
 
-from myhdl import *
+from myhdl import (Signal, intbv, always, always_seq, always_comb,
+                   instance, instances, concat, enum, now)
 
+from .._glbl import Global
 from . import MemoryMapped
 from . import Barebone
 
@@ -58,15 +60,9 @@ class Wishbone(MemoryMapped):
 
         self.timeout = 1111
 
-        # @todo: remove, using properties from memmap
-        # accessors (transactors) are generators, they don't return
-        # only yield.  Need a mechanism to return data
-        # self.wval = 0
-        # self.rval = 0
-
         self._add_bus(name)
         
-    def add_output_bus(self, name, dat, ack):
+    def add_output_bus(self, dat, ack):
         self._pdat_o.append(dat)
         self._pack_o.append(ack)
 
@@ -99,12 +95,13 @@ class Wishbone(MemoryMapped):
         clock, reset = wb.clk_i, wb.rst_i
 
         # @todo: base address default needs to be revisited
+        # if the base_address is not set, simply set to 0 for now ...
         base_address = regfile.base_address 
         if base_address is None:
             base_address = 0 
         
-        # get the address list, regisiter list, read-only list, and the
-        # default list.
+        # get the address list (al), register list (rl), read-only list (rol),
+        # and the default list (dl).
         al, rl, rol, dl = rf.get_reglist()
         addr_list, regs_list = al, rl
         pwr, prd = rf.get_strobelist()
@@ -114,11 +111,11 @@ class Wishbone(MemoryMapped):
 
         lwb_do = Signal(intbv(0)[self.data_width:])
         (lwb_sel, lwb_acc, lwb_wr,
-         lwb_wrd, lwb_ack,) = [Signal(bool(0)) for ii in range(5)]
-        wb.add_output_bus(name, lwb_do, lwb_ack)
+         lwb_wrd, lwb_ack,) = [Signal(bool(0)) for _ in range(5)]
+        wb.add_output_bus(lwb_do, lwb_ack)
 
-        ACNT = 1  # the number of cycle delays after cyc_i
-        ackcnt = Signal(intbv(ACNT, min=0, max=ACNT+1))
+        num_ackcyc = 1  # the number of cycle delays after cyc_i
+        ackcnt = Signal(intbv(num_ackcyc, min=0, max=num_ackcyc+1))
         newcyc = Signal(bool(0))
 
         if self._debug:
@@ -161,7 +158,7 @@ class Wishbone(MemoryMapped):
                     if ackcnt == 1:
                         newcyc.next = True
             else:
-                ackcnt.next = ACNT
+                ackcnt.next = num_ackcyc
 
         @always_comb
         def rtl_ack():
@@ -179,7 +176,7 @@ class Wishbone(MemoryMapped):
         # else:
 
         # Handle a bus read (transfer the addressed register to the
-        # data bus) nad generate the register read pulse (let the 
+        # data bus) and generate the register read pulse (let the
         # peripheral know the register has been read).
         # @always_seq(clock.posedge, reset=reset)
         @always_comb
@@ -196,7 +193,7 @@ class Wishbone(MemoryMapped):
                 for ii in range(nregs):
                     prd[ii].next = False
                         
-        # Handle a bus write (trasfer the data bus to the addressed 
+        # Handle a bus write (transfer the data bus to the addressed
         # register) and generate a register write pulse (let the 
         # peripheral know the register has been written).
         @always(clock.posedge)
@@ -228,24 +225,77 @@ class Wishbone(MemoryMapped):
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def get_generic(self):
-        pass
+        generic = Barebone(Global(self.clock, self.reset),
+                           data_width=self.data_width,
+                           address_width=self.address_width)
+        return generic
 
-    def map_to_generic(self):
-        pass
+    def map_to_generic(self, generic):
+        clock = self.clock
+        wb, bb = self, generic
+        inprog = Signal(bool(0))
+
+        # the output signals need to be local and then the "interconnect"
+        # will combine all the outputs back to the master(s)
+        lwb_do = Signal(intbv(0)[self.data_width:])
+        lwb_ack = Signal(bool(0))
+        wb.add_output_bus(lwb_do, lwb_ack)
+
+        @always_comb
+        def rtl_assign():
+            bb.write.next = wb.cyc_i and wb.we_i
+            bb.read.next = wb.cyc_i and not wb.we_i
+            bb.write_data.next = wb.dat_i
+            lwb_do.next = bb.read_data
+            bb.per_addr.next = wb.adr_i[:16]
+            bb.mem_addr.next = wb.adr_i[16:]
+
+        @always(clock.posedge)
+        def rtl_ack():
+            if not lwb_ack and wb.cyc_i and not inprog:
+                lwb_ack.next = True
+                inprog.next = True
+            elif lwb_ack and wb.cyc_i:
+                lwb_ack.next = False
+            elif not wb.cyc_i:
+                inprog.next = False
+
+        return rtl_assign, rtl_ack
 
     def map_from_generic(self, generic):
+        clock = self.clock
         wb, bb = self, generic
+        inprog = Signal(bool(0))
+        iswrite = Signal(bool(0))
 
         @always_comb
         def rtl_assign():
             if bb.write or bb.read:
                 wb.cyc_i.next = True
                 wb.we_i.next = True if bb.write else False
+            elif inprog:
+                wb.cyc_i.next = True
+                wb.we_i.next = True if iswrite else False
+            else:
+                wb.cyc_i.next = False
+                wb.we_i.next = False
 
             wb.adr_i.next = concat(bb.per_addr, bb.reg_addr)
+            wb.dat_i.next = bb.write_data
+            bb.read_data.next = wb.dat_o
 
-            # @todo: implement done
-            # bb.ack = wb.ack_o
+        @always(clock.posedge)
+        def rtl_delay():
+            if not inprog and (bb.read or bb.write):
+                inprog.next = True
+                iswrite.next = bb.write
+            if inprog and wb.ack_o:
+                inprog.next = False
+                iswrite.next = False
+
+        @always_comb
+        def rtl_done():
+            bb.done.next = not inprog
 
         return rtl_assign
 

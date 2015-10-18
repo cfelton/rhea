@@ -42,7 +42,7 @@ def tb_convert(toplevel, *ports, **params):
     myhdl.toVHDL(toplevel, *ports, **params)
 
 
-def tb_argparser(tests=None):
+def tb_argparser(tests=None, parser=None):
     """ common command line arguments 
     Testbenches can use this function to retrieve a parser with the 
     default options.  The testbench can add specific command-line 
@@ -53,7 +53,8 @@ def tb_argparser(tests=None):
         parser.add_argument('--num_loops', default=10, type=int)
         args = tb_args(parser=parser)
     """
-    parser = argparse.ArgumentParser()
+    if parser is None:
+        parser = argparse.ArgumentParser()
     parser.add_argument('--trace', action='store_true')
     parser.add_argument('--convert', action='store_true')
     if tests is not None and 'all' not in tests:
@@ -65,8 +66,7 @@ def tb_argparser(tests=None):
 
 def tb_args(tests=None, parser=None):
     """ Retrieve the command-line arguments """
-    if parser is None:
-        parser = tb_argparser(tests=tests)
+    parser = tb_argparser(tests=tests, parser=parser)
     return parser.parse_args()
     
     

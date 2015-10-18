@@ -132,7 +132,7 @@ class Barebone(MemoryMapped):
     def get_generic(self):
         return self
 
-    def map_to_generic(self):
+    def map_to_generic(self, generic):
         """
         In this case *this* is the generic bus, there is no mapping that
         needs to be done.  Simply return ourself and all is good.
@@ -166,6 +166,9 @@ class Barebone(MemoryMapped):
         :return:
         """
         return []
+
+    def add_output_bus(self, read_data, done):
+        pass
 
     def interconnect(self):
         """

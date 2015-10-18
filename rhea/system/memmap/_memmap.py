@@ -45,6 +45,9 @@ class MemoryMapped(MemorySpace):
 
         # bus transaction timeout in clock ticks
         self.timeout = 100
+
+        # the generic shadow of this bus, each
+        self.generic = None
         
         # _debug is used to enable bus tracing prints etc.
         self._debug = False
@@ -172,7 +175,7 @@ class MemoryMapped(MemorySpace):
         """
         raise NotImplementedError
 
-    def map_to_generic(self):
+    def map_to_generic(self, generic):
         """ Map this bus to the generic (Barebone) bus
         This is a bus adapter, it will adapt the
         :return: generic bus, myhdl generators

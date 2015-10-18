@@ -32,8 +32,8 @@ def memmap_peripheral_memory(memmap, depth=128):
 
     assert isinstance(memmap, MemoryMapped)
     clock = memmap.clock
-    conv_inst = memmap.map_to_generic()
     mm = memmap.get_generic()
+    conv_inst = memmap.map_to_generic(mm)
 
     @always(clock.posedge)
     def beh_write():

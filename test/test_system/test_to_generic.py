@@ -26,7 +26,6 @@ def testbench_to_generic(args=None):
     depth = 16    # number of memory address
     width = 32    # memory-mapped bus data width
     maxval = 2**width
-    address_width = int(ceil(log(depth, 2)))
 
     run = False if args is None else True
     args = tb_default_args(args)
@@ -39,14 +38,17 @@ def testbench_to_generic(args=None):
     glbl = Global(clock, reset)
 
     if hasattr(args, 'bustype'):
+        address_width = 18
         membus = busmap[args.bustype](glbl, data_width=width,
                                       address_width=address_width)
     else:
+        address_width = int(ceil(log(depth, 2)))
         membus = Barebone(glbl, data_width=width,
                           address_width=address_width)
 
     def _bench_to_generic():
         tbdut = memmap_peripheral_memory(membus, depth=depth)
+        tbitx = membus.interconnect()
         tbclk = clock.gen()
         testvals = {}
 
@@ -59,10 +61,14 @@ def testbench_to_generic(args=None):
             # address to the first ...
             if isinstance(membus, Barebone):
                 membus.per_addr.next = 1
+                peraddr = 0
+            else:
+                peraddr = 0x10000
+
             yield clock.posedge
 
             for ii in range(args.num_loops):
-                randaddr = randint(0, depth-1)
+                randaddr = randint(0, depth-1) | peraddr
                 randdata = randint(0, maxval-1)
                 testvals[randaddr] = randdata
                 yield membus.writetrans(randaddr, randdata)
@@ -71,13 +77,14 @@ def testbench_to_generic(args=None):
             for addr, data in testvals.items():
                 yield membus.readtrans(addr)
                 read_data = membus.get_read_data()
-                assert read_data == data, "{:08X} != {:08X}".format(read_data, data)
+                assert read_data == data, "{:08X} != {:08X}".format(read_data,
+                                                                    data)
             yield clock.posedge
 
             yield delay(100)
             raise StopSimulation
 
-        return tbdut, tbclk, tbstim
+        return tbdut, tbitx, tbclk, tbstim
 
     if run:
         run_testbench(_bench_to_generic, args=args)
@@ -87,6 +94,17 @@ def test_barebone():
     testbench_to_generic(argparse.Namespace(bustype='barebone'))
 
 
+def test_wishbone():
+    testbench_to_generic(argparse.Namespace(bustype='wishbone'))
+
+
+def tb_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--bustype', type=str, choices=busmap.keys(),
+                        help="The memory-mapped bus type to test")
+    return parser
+
+
 if __name__ == '__main__':
-    args = tb_args()
+    args = tb_args(parser=tb_parser())
     testbench_to_generic(args)
