@@ -14,7 +14,7 @@ from rhea.system import Global
 from rhea.system import Barebone
 from rhea.system import Wishbone
 from rhea.system import AvalonMM
-from rhea.system import AXI4
+from rhea.system import AXI4Lite
 
 
 def m_btn_led_mm(clock, reset, leds, btns, bus_type='W'):
@@ -42,13 +42,13 @@ def m_btn_led_mm(clock, reset, leds, btns, bus_type='W'):
     elif bus_type == 'A':
         regbus = AvalonMM(glbl, data_width=8, address_width=16)
     #elif bus_type == 'X':
-    #    regbus = AXI4(glbl, data_wdith=8, address_width=16)
+    #    regbus = AXI4Lite(glbl, data_wdith=8, address_width=16)
     else:
         raise Exception("Invalid bus type {}".format(bus_type))
 
     gbtn = button_controller(glbl, regbus, btns)  # memmap controller
     gled = led_peripheral(glbl, regbus, leds)     # memmap peripheral
-    gmap = regbus.m_per_outputs()                 # bus combiner
+    gmap = regbus.interconnect()                  # bus combiner
 
     print(vars(regbus.regfiles['LED_000']))
 

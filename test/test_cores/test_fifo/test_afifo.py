@@ -10,7 +10,7 @@ from argparse import Namespace
 from myhdl import *
 
 from rhea.system import FIFOBus
-import rhea.cores as cores
+from rhea.cores.fifo import fifo_async
 
 from rhea.utils.test import run_testbench
 
@@ -39,6 +39,7 @@ def test_afifo(args=None):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # FIFO writer and reader
     _wr = Signal(bool(0))
+
     @instance
     def tb_always_wr():
         was_full = False
@@ -96,7 +97,7 @@ def test_afifo(args=None):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def _test1():
         
-        tbdut = cores.fifo.fifo_async(reset, wclk, rclk, fbus)
+        tbdut = fifo_async(reset, wclk, rclk, fbus)
                 
         @instance
         def tbstim():
@@ -154,7 +155,7 @@ def test_afifo(args=None):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def _test2():
         
-        tbdut = cores.fifo.fifo_async(reset, wclk, rclk, fbus)
+        tbdut = fifo_async(reset, wclk, rclk, fbus)
          
         @instance
         def tbstim():

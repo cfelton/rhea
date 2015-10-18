@@ -50,6 +50,7 @@ def spi_controller(
     ena = Signal(False)
     clkcnt = Signal(modbv(0, min=0, max=2**12))
     bcnt = Signal(intbv(0, min=0, max=8))
+
     # separate tx and rx shift-registers (could be one in the same)
     treg = Signal(intbv(0)[8:])  # tx shift register
     rreg = Signal(intbv(0)[8:])  # rx shift register
@@ -72,7 +73,8 @@ def spi_controller(
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # memory- mapped registers
     # add the peripheral's regfile to the bus (informational only)
-    g_regbus = regbus.add(glbl, regfile, 'spi', base_address)
+    regfile.base_address = base_address
+    g_regbus = regbus.add(regfile, 'spi')
 
     # FIFO for the wishbone data transfer
     if include_fifo:

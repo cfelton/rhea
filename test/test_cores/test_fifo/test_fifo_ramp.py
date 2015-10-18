@@ -33,7 +33,7 @@ def tb_fifo_ramp(args):
     def _bench_fifo_ramp():
         tbdut = fifo_ramp(clock, reset, regbus, fifobus,
                            base_address=0x0000)
-        tbrbor = regbus.m_per_outputs()
+        tbrbor = regbus.interconnect()
         tbclk = clock.gen()
         
         asserr = Signal(bool(0))
@@ -46,12 +46,12 @@ def tb_fifo_ramp(args):
                 yield reset.pulse(111)
 
                 # verify an incrementing pattern over the fifobus
-                yield regbus.write(0x07, 2)  # div of two
-                yield regbus.read(0x07)
+                yield regbus.writetrans(0x07, 2)  # div of two
+                yield regbus.readtrans(0x07)
                 assert 2 == regbus.get_read_data()
 
-                yield regbus.write(0x00, 1)  # enable
-                yield regbus.read(0x00)
+                yield regbus.writetrans(0x00, 1)  # enable
+                yield regbus.readtrans(0x00)
                 assert 1 == regbus.get_read_data(), "cfg reg write failed"
 
                 # monitor the bus until ?? ramps
@@ -60,7 +60,7 @@ def tb_fifo_ramp(args):
                     cnt = 0
                     for ii, sh in enumerate((24, 16, 8, 0,)):
                         yield delay(1000)
-                        yield regbus.read(0x08+ii)
+                        yield regbus.readtrans(0x08+ii)
                         cntpart = regbus.get_read_data()
                         cnt = cnt | (cntpart << sh)
                         print("{:<8d}: ramp count[{:<4d}, {:d}]: {:08X}, {:02X} - timeout {:d}".format(

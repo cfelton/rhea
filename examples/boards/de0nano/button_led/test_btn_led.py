@@ -12,6 +12,7 @@ from rhea.system import Reset
 from rhea.utils.test import run_testbench
 
 
+@pytest.mark.xfail()
 def test_btn_led():
 
     clock = Clock(0, frequency=500e3)

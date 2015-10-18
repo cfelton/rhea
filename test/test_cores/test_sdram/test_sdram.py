@@ -86,8 +86,8 @@ def tb_sdram(args):
                     addr = randint(0, max_addr-1)
                     data = randint(0, max_data-1)
                     saved_addr_data[addr] = data
-                    yield ixbus.write(addr, data)
-                    yield ixbus.read(addr)
+                    yield ixbus.writetrans(addr, data)
+                    yield ixbus.readtrans(addr)
                     read_data = ixbus.get_read_data()
                     assert read_data == data, "{:08X} != {:08X}".format(read_data, data)
 
@@ -95,7 +95,7 @@ def tb_sdram(args):
 
                 # verify all the addresses have the last written data
                 for addr, data in saved_addr_data.items():
-                    yield ixbus.read(addr)
+                    yield ixbus.readtrans(addr)
                     read_data = ixbus.get_read_data()
                     assert read_data == data
                     yield clock.posedge

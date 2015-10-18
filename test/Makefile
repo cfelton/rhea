@@ -37,6 +37,9 @@ test:
 	$(TIME) $(PYTHON) ./test_cosim/test_fpgalink/test_fpgalink.py >> $(LOG)
 	$(TIME) $(PYTHON) ./test_models/test_fx2_model.py >> $(LOG)
 	$(TIME) $(PYTHON) ./test_system/test_regfile.py >> $(LOG)
+	$(TIME) $(PYTHON) ./test_system/test_regfile_api.py >> $(LOG)
+	$(TIME) $(PYTHON) ./test_system/test_memmap.py >> $(LOG)
+	$(TIME) $(PYTHON) ./test_system/test_to_generic.py >> $(LOG)
 
 
 clean:

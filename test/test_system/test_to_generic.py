@@ -101,6 +101,7 @@ def test_wishbone():
 def tb_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--bustype', type=str, choices=busmap.keys(),
+                        default='barebone',
                         help="The memory-mapped bus type to test")
     return parser
 

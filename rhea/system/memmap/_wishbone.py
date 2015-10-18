@@ -299,69 +299,7 @@ class Wishbone(MemoryMapped):
 
         return rtl_assign
 
-    # @todo: remove this ???
-    def m_controller(self, ctl):
-        """
-        Bus controllers (masters) are typically custom and 
-        built into whatever the controller is (e.g a processor).
-        This is a simple example with a simple interface to 
-        invoke bus cycles.
-        """
-        wb = self
-        States = enum('Idle', 'Write', 'WriteAck', 'Read', 'ReadAck', 'Done')
-        state = Signal(States.Idle)
-        TOMAX = 33
-        tocnt = Signal(intbv(0, min=0, max=TOMAX))
-
-        @always(wb.clock.posedge)
-        def assign():
-            wb.adr_i.next = concat(ctl.per_addr, ctl.reg_addr)
-            wb.dat_i.next = ctl.write_data
-            ctl.read_data.next = wb.dat_o
-
-        @always_seq(wb.clock.posedge, reset=wb.reset)
-        def rtl():
-            # ~~~[Idle]~~~ 
-            if state == States.Idle:
-                if ctl.write:
-                    state.next = States.Write
-                    ctl.done.next = False
-                elif ctl.read:
-                    state.next = States.Read
-                    ctl.done.next = False
-                else:
-                    ctl.done.next = True
-                    
-            # ~~~[Write]~~~
-            elif state == States.Write:
-                if not wb.ack_o:
-                    wb.we_i.next = True
-                    wb.cyc_i.next = True
-                    wb.stb_i.next = True
-                    state.next = States.WriteAck
-                    tocnt.next = 0
-
-            # ~~~[WriteAck]~~~
-            elif state == States.WriteAck:
-                if wb.ack_o:
-                    wb.we_i.next = False
-                    wb.cyc_i.next = False
-                    wb.stb_i.next = False
-                    state.next = States.Done
-
-            # ~~~[Done]~~~
-            elif state == States.Done:
-                ctl.done.next = True
-                if not (ctl.write or ctl.read):
-                    state.next = States.Idle
-
-            else:
-                assert False, "Invalid state %s" % (state,)
-
-        return assign, rtl
-
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
     def writetrans(self, addr, val):
         """ write accessor for testbenches
         Not convertible.

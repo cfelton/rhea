@@ -59,7 +59,7 @@ def testbench_spi(args=None):
         tbeep = spiee.gen(clock, reset, spibus)
         tbclk = clock.gen(hticks=5)
         # grab all the register file outputs
-        tbmap = regbus.m_per_outputs()
+        tbmap = regbus.interconnect()
 
         # get a reference to the SPI register file
         rf = regbus.regfiles['SPI_000']
@@ -80,7 +80,7 @@ def testbench_spi(args=None):
                 # loop through the registers and check the default 
                 # values, these are the offset values.
                 for addr, sig in rf.roregs:
-                    yield regbus.read(addr+ba)
+                    yield regbus.readtrans(addr+ba)
                     assert regbus.get_read_data() == int(sig), \
                         "Invalid read-only value"
 
@@ -89,33 +89,33 @@ def testbench_spi(args=None):
                     if addr in (rf.sptx.addr, rf.sprx.addr,):
                         pass
                     else:
-                        yield regbus.read(addr+ba)
+                        yield regbus.readtrans(addr+ba)
                         assert regbus.get_read_data() == int(sig), \
                             "Invalid default value"
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # enable the system         
                 print("enable the SPI core")
-                yield regbus.write(rf.spst.addr, 0x02)  # register data drives fifo
-                yield regbus.write(rf.spcr.addr, 0x9A)  # default plus enable (98 + 02)
+                yield regbus.writetrans(rf.spst.addr, 0x02)  # register data drives fifo
+                yield regbus.writetrans(rf.spcr.addr, 0x9A)  # default plus enable (98 + 02)
 
                 print("write to the transmit register")
                 for data in (0x02, 0x00, 0x00, 0x00, 0x55):
                     print("\nwriting to sptx {:02x}".format(data))
-                    yield regbus.write(rf.sptx.addr, data)
+                    yield regbus.writetrans(rf.sptx.addr, data)
 
                 print("")
-                yield regbus.read(rf.sptc.addr)
+                yield regbus.readtrans(rf.sptc.addr)
                 print("TX FIFO count {}".format(regbus.get_read_data()))
 
-                yield regbus.read(rf.sprc.addr)
+                yield regbus.readtrans(rf.sprc.addr)
                 print("RX FIFO count {}".format(regbus.get_read_data()))
 
                 yield delay(1000)
 
                 print("wait for return bytes")
                 for ii in range(1000):
-                    yield regbus.read(rf.sprc.addr)
+                    yield regbus.readtrans(rf.sprc.addr)
                     if regbus.get_read_data() == 5:
                         break
                     yield delay(10)
@@ -126,7 +126,7 @@ def testbench_spi(args=None):
                 
                 print("read the returned bytes")
                 for ii in range(5):
-                    yield regbus.read(rf.sprx.addr)
+                    yield regbus.readtrans(rf.sprx.addr)
                     print("spi readback {0}".format(regbus.get_read_data()))
 
             except Exception as err:

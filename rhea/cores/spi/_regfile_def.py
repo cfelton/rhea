@@ -57,29 +57,29 @@ from ...system import RegisterFile, Register
 regfile = RegisterFile()
 # -- SPI Setup Register 
 spst = Register('spst', 8, 'rw', 0x00, addr=0x58)
-spst.add_named_bits('freeze', slice(1,0), 
-                    "freeze the core")
-spst.add_named_bits('rdata', slice(2,1), 
-                    "1 : register file (memmap) feeds TX/RX FIFO")
+spst.add_namedbits('freeze', slice(1,0),
+                   "freeze the core")
+spst.add_namedbits('rdata', slice(2,1),
+                   "1 : register file (memmap) feeds TX/RX FIFO")
 regfile.add_register(spst)
 
 # -- SPI Control Register (Control Register 0) --
 spcr = Register('spcr', 8, 'rw', 0x98, addr=0x60)
 spcr.comment = "SPI control register"
-spcr.add_named_bits('loop', slice(1,0), "internal loopback")
-spcr.add_named_bits('spe', slice(2,1), "system enable")
-spcr.add_named_bits('cpol', slice(4,3), "clock polarity")
-spcr.add_named_bits('cpha', slice(5,4), "clock phase")
-spcr.add_named_bits('msse', slice(8,7), "manual slave select enable")
+spcr.add_namedbits('loop', slice(1,0), "internal loopback")
+spcr.add_namedbits('spe', slice(2,1), "system enable")
+spcr.add_namedbits('cpol', slice(4,3), "clock polarity")
+spcr.add_namedbits('cpha', slice(5,4), "clock phase")
+spcr.add_namedbits('msse', slice(8,7), "manual slave select enable")
 regfile.add_register(spcr)
 
 # -- SPI status register --
 spsr = Register('spsr', 8, 'ro', 0, addr=0x64)
-spsr.add_named_bits('rxe', slice(1,0), "RX FIFO empty")
-spsr.add_named_bits('rxf', slice(2,1), "RX FIFO full")
-spsr.add_named_bits('txe', slice(3,2), "TX FIFO empty")
-spsr.add_named_bits('txf', slice(4,3), "TX FIFO full")
-spsr.add_named_bits('modf', slice(5,4), "SS line driven external fault")
+spsr.add_namedbits('rxe', slice(1,0), "RX FIFO empty")
+spsr.add_namedbits('rxf', slice(2,1), "RX FIFO full")
+spsr.add_namedbits('txe', slice(3,2), "TX FIFO empty")
+spsr.add_namedbits('txf', slice(4,3), "TX FIFO full")
+spsr.add_namedbits('modf', slice(5,4), "SS line driven external fault")
 regfile.add_register(spsr)
 
 # -- The rest of the registers --

@@ -28,7 +28,8 @@ def fifo_ramp(
     rates.
     """
     glbl = Global(clock=clock, reset=reset)
-    g_regbus = regbus.add(glbl, regfile, 'fifo_ramp', base_address)    
+    regfile.base_address = base_address
+    g_regbus = regbus.add(regfile, 'fifo_ramp')
     
     enable = Signal(False)
     ramp = Signal(intbv(0)[fifobus.width:])

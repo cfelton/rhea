@@ -165,7 +165,11 @@ class AvalonMM(MemoryMapped):
 
         return instances()
 
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # @todo: map_to_generic(self)
+    # @todo: map_from_generic(self, generic)
 
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def writetrans(self, addr, val):
         """ write accessor for testbenches
         :param addr: address to write
@@ -205,8 +209,3 @@ class AvalonMM(MemoryMapped):
             self.readdata.next = data
         yield self.clock.posedge
         self.readdatavalid.next = False
-
-    # @todo: map_to_generic(self)
-    # @todo: map_from_generic(self, generic)
-    # @todo: peripheral_regfile(self, glbl, regfile, name, base_address)
-    # @todo: interconnect(self)

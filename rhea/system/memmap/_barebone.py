@@ -15,8 +15,8 @@ class Barebone(MemoryMapped):
         """ Generic memory-mapped interface.
 
         This interface is the "generic" and most basic memory-map
-        interface.  This can be used for common but also limited
-        functionality.  A bus cycle is instigated with a `write`
+        interface.  This can be used for a common bus but also limited
+        functionality bus.  A bus cycle is instigated with a `write`
         or `read` strobe.  The `write` and `read` strobes should
         only be asserted if the `done` signal is active (high). As
         soon as the peripheral (slave) detects the read or write
@@ -36,11 +36,9 @@ class Barebone(MemoryMapped):
         to select a peripheral and the `mem_addr` is used to access
         the memory-space in the peripheral.
 
-        In multi-master mode the interconnect simply round-robins
-        the masters, only asserting the masters done during its
-        time-slice.  The master will maintain bus control until
-        the transaction is completed (at most max_burst clock
-        cycles).
+        The Barebone bus is point-to-point, only a single master
+        and slave can be connected to a bus.  The interconnect is
+        used to enable multiple slaves and masters
 
         Timing Diagram
         ---------------
@@ -48,13 +46,14 @@ class Barebone(MemoryMapped):
         reset       /-----\_________________________________________
         write       ____________/-----\_____________________________
         read        _____________________________/------\___________
-        valid       ____________________________________/-----\_____
-        done        ------------\______/---------\______/-----------
+        *valid      ____________________________________/-----\_____
+        done        ------------\______/---------\____________/-----
         read_data   -----------------------------|read data |-------
         write_data  ------------|write data |-----------------------
         per_addr
         reg_addr    ------------\write addr |----|read addr |-------
 
+        * currently not implemented but envisioned it will be added
 
         :param glbl: system clock and reset
         :param data_width: data bus width
