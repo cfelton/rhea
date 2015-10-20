@@ -7,8 +7,9 @@ class AXI4StreamChannel(Streamers):
     def __init__(self, glbl, data_width=32):
         """ Interface for AXI4 streaming protocol """
         super(AXI4StreamChannel, self).__init__(glbl, data_width)
+        vmax = 2**data_width
         self.valid = Signal(bool(0))
-        self.data = Signal(intbv(0)[data_width:])
+        self.data = Signal(intbv(vmax-1)[data_width:])
         self.accept = Signal(bool(1))
 
     def register(self, upstream):
@@ -46,7 +47,7 @@ class AXI4StreamLite(Streamers):
         self.r = AXI4StreamChannel(glbl, data_width)      # read data channel
         self.b = AXI4StreamChannel(glbl, response_width)  # response channel
 
-    def assign_port(self, pobj):
+    def assign_upstream_port(self, pobj):
         """
         The need for the function should be removed in the future the
         myhdl converter will support nested interfaces.
@@ -77,16 +78,19 @@ class AXI4StreamLite(Streamers):
 
         return beh_assign
 
+    def assign_downstream_port(self, pobj):
+        assert isinstance(pobj, AXI4StreamLitePort)
+
+
     def register(self, upstream):
-        sti = upstream
-        gens = []
+        sti, gens = upstream, []
         for ch in ('aw', 'w', 'ar'):
             chintf = getattr(self, ch)
             gens.append(chintf.register(getattr(sti, ch)))
 
         for ch in ('r', 'b'):
-            chintf = getattr(self, ch)
-            gens.append(chintf.register(getattr(sti, ch)))
+            chintf = getattr(sti, ch)
+            gens.append(chintf.register(getattr(self, ch)))
         return gens
 
 

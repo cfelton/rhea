@@ -5,7 +5,7 @@ from random import randint
 import argparse
 
 import myhdl
-from myhdl import (instance, always, delay, StopSimulation)
+from myhdl import (instance, always, always_comb, delay, StopSimulation)
 
 from rhea.system import Global, Clock, Reset
 from rhea.system.stream import AXI4StreamLite
@@ -36,8 +36,8 @@ def streamer_top(clock, reset, upstreamport, downstreamport,
     downstream = streamtype(glbl, downstreamport.data_width)
 
     gens = []
-    gens.append(upstream.assign_port(upstreamport))
-    gens.append(downstream.assign_port(downstreamport))
+    #gens.append(upstream.assign_port(upstreamport))
+    #gens.append(downstream.assign_port(downstreamport))
 
     if keep:
         keep_inst = keep_port_names(upstreamport=upstreamport,
@@ -53,7 +53,54 @@ def streamer_top(clock, reset, upstreamport, downstreamport,
 
     gens.append(downstream.register(up))
 
-    return gens
+    # The following is included in the top-level (kinda a pain) to preserve
+    # the top-level port names and to utilize nested interfaces internally.
+    # This is a current limitation and will be enhanced in the future.
+    @always_comb
+    def beh_upstream_assign():
+        upstream.aw.valid.next = upstreamport.awvalid
+        upstream.aw.data.next = upstreamport.awdata
+        upstreamport.awaccept.next = upstream.aw.accept
+
+        upstream.w.valid.next = upstreamport.wvalid
+        upstream.w.data.next = upstreamport.wdata
+        upstreamport.waccept.next = upstream.w.accept
+
+        upstream.ar.valid.next = upstreamport.arvalid
+        upstream.ar.data.next = upstreamport.ardata
+        upstreamport.araccept.next = upstream.ar.accept
+
+        upstreamport.rvalid.next = upstream.r.valid
+        upstreamport.rdata.next = upstream.r.data
+        upstream.r.accept.next = upstreamport.raccept
+
+        upstreamport.bvalid.next = upstream.b.valid
+        upstreamport.bdata.next = upstream.b.data
+        upstream.b.accept.next = upstreamport.baccept
+
+    @always_comb
+    def beh_downstream_assign():
+        downstreamport.awvalid.next = downstream.aw.valid
+        downstreamport.awdata.next = downstream.aw.data
+        downstream.aw.accept.next = downstreamport.awaccept
+
+        downstreamport.wvalid.next = downstream.w.valid
+        downstreamport.wdata.next = downstream.w.data
+        downstream.w.accept.next = downstreamport.waccept
+
+        downstreamport.arvalid.next = downstream.ar.valid
+        downstreamport.ardata.next = downstream.ar.data
+        downstream.ar.accept.next = downstreamport.araccept
+
+        downstream.r.valid.next = downstreamport.rvalid
+        downstream.r.data.next = downstreamport.rdata
+        downstreamport.raccept.next = downstream.r.accept
+
+        downstream.b.valid.next = downstreamport.bvalid
+        downstream.b.data.next = downstreamport.bdata
+        downstreamport.baccept.next = downstream.b.accept
+
+    return gens, beh_upstream_assign, beh_downstream_assign
 
 
 def testbench_streamer(args=None):
@@ -77,21 +124,24 @@ def testbench_streamer(args=None):
         @instance
         def tbstim():
             yield reset.pulse(42)
-            downstream.waccept.next = True
             downstream.awaccept.next = True
+            downstream.waccept.next = True
             data = [randint(0, (2**32)-1) for _ in range(10)]
             for dd in data:
                 upstream.awvalid.next = True
-                upstream.awdata.next = 0
+                upstream.awdata.next = 0xA
                 upstream.wvalid.next = True
                 upstream.wdata.next = dd
                 yield clock.posedge
             upstream.awvalid.next = False
             upstream.wvalid.next = False
 
+            # @todo: wait the appropriate delay given the number of
+            # @todo: streaming registers
             yield delay(100)
             print(data)
             print(dataout)
+            assert False not in [di == do for di, do in zip(data, dataout)]
             raise StopSimulation
 
         @always(clock.posedge)
@@ -99,7 +149,7 @@ def testbench_streamer(args=None):
             if downstream.wvalid:
                 dataout.append(int(downstream.wdata))
 
-        return tbdut, tbclk, tbstim
+        return tbdut, tbclk, tbstim, tbcap
 
     run_testbench(_bench_streamer, args=args)
 
