@@ -23,4 +23,4 @@ from .memmap import AvalonMM
 from .memmap import AXI4Lite
 
 # streaming interfaces
-from .fifobus import FIFOBus
+from .stream import FIFOBus
