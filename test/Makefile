@@ -40,6 +40,7 @@ test:
 	$(TIME) $(PYTHON) ./test_system/test_regfile_api.py >> $(LOG)
 	$(TIME) $(PYTHON) ./test_system/test_memmap.py >> $(LOG)
 	$(TIME) $(PYTHON) ./test_system/test_to_generic.py >> $(LOG)
+	$(TIME) $(PYTHON) ./test_system/test_streamers.py >> $(LOG)
 
 
 clean:
