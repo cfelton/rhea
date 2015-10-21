@@ -9,7 +9,9 @@ from .xilinx._papilio import Pone
 from .xilinx._anvyl import Anvyl
 from .xilinx._mojo import Mojo
 from .xilinx._nexys import Nexys 
-from .xilinx._atlys import Atlys 
+from .xilinx._atlys import Atlys
+from .xilinx._zybo import Zybo
+from .xilinx._parallella import Parallella
 from .xilinx._sx1 import SX1 
 from .xilinx._ufo400 import UFO400 
 from .xilinx._xupv2p import XUPV2P 
@@ -29,6 +31,8 @@ xbrd = {
     'mojo': Mojo,
     'atlys': Atlys,
     'nexys': Nexys,
+    'zybo': Zybo,
+    'parallella': Parallella,
     'sx1': SX1,
     'ufo400': UFO400,
     'xupv2p': XUPV2P

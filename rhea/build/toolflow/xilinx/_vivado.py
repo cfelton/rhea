@@ -41,7 +41,7 @@ class Vivado(_toolflow):
         """
         self.xcl_file = os.path.join(self.path, self.name+'.tcl')
         xpr = ''
-
+        
         # file list
 
     def create_constraints(self):
@@ -69,7 +69,10 @@ class Vivado(_toolflow):
                     # additional pin constraints
                     for kp, vp in port.pattr.items():
                         print(kp, vp)
-                        raise NotImplemented("additional constraints not supported yet")
+                        if kp == 'iostandard':
+                            ustr += "set_property "
+                        else:
+                           raise NotImplemented("additional constraints not supported yet")
         ustr += "#\n"
 
         fid = open(self.xcd_file, 'w')

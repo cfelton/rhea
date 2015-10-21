@@ -27,6 +27,7 @@ lib64
 *.vcd.*
 *.txt
 vcd
+*.log
 
 # Installer logs
 pip-log.txt

@@ -122,8 +122,10 @@ class _fpga(object):
         # make sure the pin list is a number or string
         for v in pins:
             assert isinstance(v, (str, int))
+            
         # @todo: raise an error vs. 
-        assert name not in self._ports
+            assert name not in self._ports, \
+                "{} already exists in {}".format(name, self._name)
         self._ports[name] = Port(name, pins, **pattr)
 
     def add_port_name(self, name, port, slc=None, **pattr):
