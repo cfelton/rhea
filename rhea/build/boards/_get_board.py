@@ -8,6 +8,11 @@ from .xilinx._xula import Xula, Xula2
 from .xilinx._papilio import Pone
 from .xilinx._anvyl import Anvyl
 from .xilinx._mojo import Mojo
+from .xilinx._nexys import Nexys 
+from .xilinx._atlys import Atlys 
+from .xilinx._sx1 import SX1 
+from .xilinx._ufo400 import UFO400 
+from .xilinx._xupv2p import XUPV2P 
 
 from .altera._de0nano import DE0Nano
 from .altera._de0nano_soc import DE0NanoSOC
@@ -21,7 +26,12 @@ xbrd = {
     'xula2': Xula2,
     'pone': Pone,
     'anvyl': Anvyl,
-    'mojo': Mojo
+    'mojo': Mojo,
+    'atlys': Atlys,
+    'nexys': Nexys,
+    'sx1': SX1,
+    'ufo400': UFO400,
+    'xupv2p': XUPV2P
 }
 
 abrd = {
