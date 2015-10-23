@@ -4,6 +4,9 @@ from myhdl import Signal, intbv, SignalType
 from ..system import Clock
 from . import Vendor
 
+# keep track of the number of PLLInterfaces created
+_pll_cnt = 0
+
 
 class PLLClock(object):
     def __init__(self, clockin, clockout):
@@ -36,8 +39,11 @@ class PLLInterface(object):
         self.pll_num = _pll_cnt
         _pll_cnt += 1
         number_of_outputs = len(output_frequencies)
+
         self.clockin = clockin
-        self.input_frequency = clockin.frequency / 1e6 
+        self.clockin_out = Signal(bool(0))
+        self.input_frequency = clockin.frequency
+
         self.reset = reset
         self.enable = Signal(bool(0))
         self.output_frequencies = output_frequencies
@@ -46,5 +52,3 @@ class PLLInterface(object):
         for ii, clk in enumerate(self.clocks):
             self.__dict__['clock{:02d}'.format(ii)] = clk
         self.locked = Signal(bool(0))
-        
-    
