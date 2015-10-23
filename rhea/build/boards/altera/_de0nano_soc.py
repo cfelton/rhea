@@ -22,7 +22,7 @@ class DE0NanoSOC(_fpga):
     }
     
     default_ports = {
-        'led': dict(pins=('W15', 'AA24', 'V16', 'V15'
+        'led': dict(pins=('W15', 'AA24', 'V16', 'V15',
                           'AF26', 'AE26', 'Y16', 'AA23',)),
         'key': dict(pins=('AH17')),
         'sw': dict(pins=('L10', 'L9', 'H5', 'H6')),
