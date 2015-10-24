@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-from . import altera, xilinx, lattice
+from . import altera, xilinx
 
 
 def device_pll(pll_intf):

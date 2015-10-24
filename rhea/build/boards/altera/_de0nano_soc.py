@@ -2,6 +2,10 @@
 # Copyright (c) 2015 Christopher L. Felton
 #
 
+from __future__ import absolute_import
+
+from string import Template
+
 from ..._fpga import _fpga
 from ...toolflow import Quartus
 
@@ -34,6 +38,12 @@ class DE0NanoSOC(_fpga):
         'gpio': dict(pins=('V12', 'AF7', 'W12', 'AF8', 'Y8', 'AB4',
                            'W8', 'Y4', 'Y5', 'U11', 'T8', 'T12')),
     }
+
+    program_device_cli = (
+        Template("quartus_pgm -c \"DE-SoC [1-1]\" -m jtag -o \"p;$bitfile.sof@2\" "),
+             )
+    # example quartus_pgm -c USB-Blaster -m jtag -o bpv:design.pof
+    program_nonvolatile_cli = (Template(""),)
 
     def get_flow(self):
         return Quartus(brd=self)

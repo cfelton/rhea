@@ -15,7 +15,8 @@ class PLLClock(object):
         
 
 class PLLInterface(object):
-    def __init__(self, clockin, reset=None, output_frequencies=None):
+    def __init__(self, clockin, reset=None, output_frequencies=None,
+                 vendor='none'):
         """ An interface to various vendor embedded PLL primitives 
         This interface is used with the "vendor.*.pll" modules.  This 
         interface is intended to provide a generic interface to the 
@@ -40,13 +41,15 @@ class PLLInterface(object):
         _pll_cnt += 1
         number_of_outputs = len(output_frequencies)
 
+        self.vendor = vendor
+
         self.clockin = clockin
         self.clockin_out = Signal(bool(0))
-        self.input_frequency = clockin.frequency
+        self.input_frequency = int(clockin.frequency)
 
         self.reset = reset
         self.enable = Signal(bool(0))
-        self.output_frequencies = output_frequencies
+        self.output_frequencies = tuple(map(int,output_frequencies))
         self.clocks = [Clock(0, f) for f in output_frequencies]
         self.clocksout = Signal(intbv(0)[number_of_outputs:])
         for ii, clk in enumerate(self.clocks):

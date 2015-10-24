@@ -34,8 +34,9 @@ def device_pll_prim(pll_intf):
     primitives are not available
     """
     pif = pll_intf
-    clockin, enable, clocksout, locked = (pif.clockin, pif.enable,
-                                          pif.clocksout, pif.locked,)
+    (clockin, reset, enable, 
+     clocksout, locked,) = (pif.clockin, pif.reset, pif.enable, 
+                            pif.clocksout, pif.locked,)
     clocksout.driven = True
     locked.driven = True
 
