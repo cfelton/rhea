@@ -36,8 +36,8 @@ dependencies
    - FPGA vendor tools, only for automated build tools.
    
    
-quick start
------------
+resources
+---------
 If you are not familiar with [myhdl](www.myhdl.org) starting with the
 [myhdl manual](http://docs.myhdl.org/en/stable/) and 
 [examples](http://www.myhdl.org/examples/) is recommended.  General myhdl 
@@ -88,12 +88,8 @@ The following are the definition of some terms used in this README :
 getting started
 -------------------
 To get started with the latest version (repo version) checkout out the
-code and run setup in *develop* mode.
-
-Dependencies:
-  * myhdl
-  * py.test
-  
+code and run setup in *develop* mode.  The dependencies listed above 
+need to be installed.
 
 Install the latest myhdl.
 
