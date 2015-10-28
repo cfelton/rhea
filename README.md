@@ -36,11 +36,14 @@ dependencies
    - FPGA vendor tools, only for automated build tools.
    
    
-quick start
------------
+resources
+---------
 If you are not familiar with [myhdl](www.myhdl.org) starting with the
-[myhdl manual]() and [examples]() is recommended.  General myhdl questions 
-can be answered on the [#myhdl IRC channel]() or on the [myhdl mailing-list]().  
+[myhdl manual](http://docs.myhdl.org/en/stable/) and 
+[examples](http://www.myhdl.org/examples/) is recommended.  General myhdl 
+questions 
+can be answered on the [#myhdl IRC channel](https://webchat.freenode.net) 
+or on the [myhdl mailing-list](http://dir.gmane.org/gmane.comp.python.myhdl).  
 I am often available to answer `rhea` specific questions on the previously
 mentioned communications or the `rhea` gitter can be used.
 
@@ -56,8 +59,8 @@ need to clone it and install the source).  The first
 later).
 
 This code/package is licensed under the MIT license.  This allows 
-anyone to use the package in their projects with no limitations.  Questions 
-and other license options email me.
+anyone to use the package in their projects with no limitations.  
+Questions and other license options email me.
 
 The following are the definition of some terms used in this README :
 
@@ -85,12 +88,8 @@ The following are the definition of some terms used in this README :
 getting started
 -------------------
 To get started with the latest version (repo version) checkout out the
-code and run setup in *develop* mode.
-
-Dependencies:
-  * myhdl
-  * py.test
-  
+code and run setup in *develop* mode.  The dependencies listed above 
+need to be installed.
 
 Install the latest myhdl.
 
@@ -117,13 +116,23 @@ to get started.
   >> python setup.py develop
 ```
 
+
+### running tests
+
 The tests can be run from the test directory.
 
 ```
   # attempt to run the tests
   >> cd test
-  >> py.test
+  >> make test
+  # >> py.test
 ```
+
+**Note** currently an issue exists where the py.test takes an 
+extremely long time (more time than it should).  The py.test
+test runner is currently not used. 
+
+### generating bitstreams
 
 If the FPGA vendor tools (Xilinx or Altera) are installed the
 build examples can be run to generate bitstreams.
@@ -157,5 +166,6 @@ examples
 --------
 In the example directory are projects that demonstrate how to build 
 systems using the cores and various tools and target a particular FPGA 
-development board.  
+development board.  The [examples/build](https://github.com/cfelton/rhea/examples/build)
+contains LED blinky examples for many different boards. 
 
