@@ -10,15 +10,16 @@ from rhea.build.boards import get_board
                    
 
 led_port_pin_map = {
-    'xula':  dict(name='led', pins=(36, 37, 39, 50)),
-    'xula2': dict(name='led', pins=('R7', 'R15', 'R16', 'M15',)),
+    'xula':  dict(name='led', pins=(32,)),
+    'xula2': dict(name='led', pins=('R7',)),
 }
 
                    
-def xula_blink(led, clock, reset=None):
-    
-    assert len(led) >= 2
-    
+def xula_blink(led, button, clock, reset=None):
+    """ a simple LED blinks example.
+    This is intended to be used with the Xula, Stickit motherboard
+    and an LED / button pmod board.
+    """    
     maxcnt = int(clock.frequency)
     cnt = Signal(intbv(0, min=0, max=maxcnt))
     toggle = Signal(bool(0))
@@ -32,10 +33,10 @@ def xula_blink(led, clock, reset=None):
             
     @always_comb
     def rtl_assign():
-        led.next[0] = toggle
-        led.next[1] = not toggle
-        led.next[2] = 0
-        led.next[3] = 0
+        if button:
+            led.next = True
+        else:
+            led.next = toggle
         
     return rtl, rtl_assign
     
@@ -43,7 +44,10 @@ def xula_blink(led, clock, reset=None):
     
 def build(args):
     brd = get_board(args.brd)
+    # the design port names don't match the board pin names,
+    # add the ports here (all the IO are a generic "chan")
     brd.add_port(**led_port_pin_map[args.brd])
+    brd.add_port(name='button', pins=(33,))
     flow = brd.get_flow(xula_blink)
     flow.run()
     info = flow.get_utilization()

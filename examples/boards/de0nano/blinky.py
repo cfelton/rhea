@@ -10,7 +10,7 @@ from rhea.build.boards import get_board
 
                    
 def de0nano_blink(led, clock, reset=None):
-    
+    """ simple de0nano LED blink """
     assert len(led) == 8
     
     maxcnt = int(clock.frequency)
