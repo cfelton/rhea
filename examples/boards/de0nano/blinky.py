@@ -21,8 +21,9 @@ def de0nano_blink(led, clock, reset=None):
     def rtl():
         if cnt == maxcnt-1:
             toggle.next = not toggle
+            cnt.next = 0
         else:
-            cnt.next = cnt + maxcnt+1 
+            cnt.next = cnt + 1 
             
     @always_comb
     def rtl_assign():
