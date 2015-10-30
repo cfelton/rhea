@@ -7,7 +7,9 @@ from __future__ import print_function
 
 from argparse import Namespace
 
-from myhdl import Signal, instance, delay, now, StopSimulation, modbv, always
+import pytest
+from myhdl import (Signal, instance, delay, now, StopSimulation,
+                   modbv, always)
 
 from rhea.cores.fifo import fifo_ramp
 
@@ -18,6 +20,7 @@ from rhea.system import FIFOBus
 from rhea.utils.test import run_testbench, tb_args
 
 
+@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
 def test_fifo_ramp():
     tb_fifo_ramp(Namespace(trace=False))
 
@@ -32,7 +35,7 @@ def tb_fifo_ramp(args):
 
     def _bench_fifo_ramp():
         tbdut = fifo_ramp(clock, reset, regbus, fifobus,
-                           base_address=0x0000)
+                          base_address=0x0000)
         tbrbor = regbus.interconnect()
         tbclk = clock.gen()
         

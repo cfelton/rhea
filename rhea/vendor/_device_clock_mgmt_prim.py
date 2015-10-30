@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from myhdl import instance, delay, always_comb
 
-from ..system import timespec
+from rhea.system import timespec
 
 
 def _clock_generate(clock, enable, ticks):
@@ -25,7 +25,7 @@ def _clock_generate(clock, enable, ticks):
     return mdlclk
 
 
-def device_pll_prim(pll_intf):
+def device_clock_mgmt_prim(clkmgmt):
     """ This is the generic device PLL module
     The vendor specific implementations will set the v*_code attribute
     for this function to the specific template needed to instantiate
@@ -33,9 +33,9 @@ def device_pll_prim(pll_intf):
     module also creates the clocks for MyHDL simulation when the device
     primitives are not available
     """
-    pif = pll_intf
-    (clockin, reset, enable, 
-     clocksout, locked,) = (pif.clockin, pif.reset, pif.enable, 
+    pif = clkmgmt
+    (clockin, reset, enable,
+     clocksout, locked,) = (pif.clockin, pif.reset, pif.enable,
                             pif.clocksout, pif.locked,)
     clocksout.driven = True
     locked.driven = True
@@ -43,7 +43,7 @@ def device_pll_prim(pll_intf):
     # for simulation and modeling create the clocks defined
     # by the `pll_intf`.  For the implementation use verilog_code
     clk_inst = []
-    for ii, clk in enumerate(pll_intf.clocks):
+    for ii, clk in enumerate(clkmgmt.clocks):
         totalticks = 1/(clk.frequency*timespec)
         t1 = int(totalticks // 2)
         # @todo: add detailed warnings about qunatization and timespec
@@ -55,8 +55,8 @@ def device_pll_prim(pll_intf):
 
     @always_comb
     def clk_assign():
-        pll_intf.clockin_out.next = clockin
-        for ii, clk in enumerate(pll_intf.clocks):
+        clkmgmt.clockin_out.next = clockin
+        for ii, clk in enumerate(clkmgmt.clocks):
             clocksout.next[ii] = clk
 
     return clk_inst, clk_assign

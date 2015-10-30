@@ -11,37 +11,37 @@ from myhdl import (Signal, ResetSignal, intbv, instance,
 
 from rhea.system import Clock
 from rhea.system import timespec, ticks_per_ns
-from rhea.vendor import PLLInterface
-from rhea.vendor import device_pll
+from rhea.vendor import ClockManagement
+from rhea.vendor import device_clock_mgmt
 from rhea.utils.test import run_testbench, tb_args, tb_default_args
 
 
-def top_pll_wrap(clockext, resetext, dripple, status, args):
+def top_clock_mgmt_wrap(clockext, resetext, dripple, status, args):
     # note: the model will have errors for many frequencies the test
     # will only work for rational periods (inverse of the freq).
-    pll_intf = PLLInterface(clockext, reset=resetext,
-                            output_frequencies=(125e6, 200e6,))
-    pll_intf.vendor = args.vendor
+    clkmgmt = ClockManagement(clockext, reset=resetext,
+                              output_frequencies=(125e6, 200e6,))
+    clkmgmt.vendor = args.vendor
 
     # @todo: add external_reset_sync module
     # rst_inst = external_reset_sync(clockext, resetext, reset)
 
     # create the pll instance
-    pll_inst = device_pll(pll_intf)
+    pll_inst = device_clock_mgmt(clkmgmt)
 
     clockcsr = Signal(bool(0))
     clockdat = Signal(bool(0))
-    dcnt = Signal(intbv(0, min=0, max=int(pll_intf.clocks[0].frequency/1e6)))
+    dcnt = Signal(intbv(0, min=0, max=int(clkmgmt.clocks[0].frequency/1e6)))
     dmax = dcnt.max
 
     @always_comb
     def beh_clock_assign():
-        clockcsr.next = pll_intf.clocksout[0]
-        clockdat.next = pll_intf.clocksout[1]
+        clockcsr.next = clkmgmt.clocksout[0]
+        clockdat.next = clkmgmt.clocksout[1]
 
     @always(clockext.posedge)
     def beh_assign():
-        pll_intf.enable.next = True
+        clkmgmt.enable.next = True
 
     @always_seq(clockcsr.posedge, reset=resetext)
     def beh_cnt():
@@ -53,21 +53,23 @@ def top_pll_wrap(clockext, resetext, dripple, status, args):
 
     @always_seq(clockdat.posedge, reset=resetext)
     def beh_led_drv():
-        status.next[0] = pll_intf.locked
+        status.next[0] = clkmgmt.locked
 
     return pll_inst, beh_assign, beh_clock_assign, beh_cnt, beh_led_drv
 
 
-def test_device_pll(args=None):
+def test_device_clock_mgmt(args=None):
     args = tb_default_args(args)
-
+    if not hasattr(args, 'vendor'):
+        args.vendor = 'altera'
     clockext = Clock(0, frequency=50e6)
     resetext = ResetSignal(0, active=0, async=True)
     dripple = Signal(bool(0))
     status = Signal(intbv(0)[4:])
 
     def _bench_device_pll():
-        tbdut = top_pll_wrap(clockext, resetext, dripple, status, args)
+        tbdut = top_clock_mgmt_wrap(clockext, resetext, dripple,
+                                    status, args)
 
         @always(delay(10*ticks_per_ns))
         def tbclk():
@@ -94,12 +96,12 @@ def test_device_pll(args=None):
         return tbdut, tbclk, tbstim
 
     run_testbench(_bench_device_pll, args)
-    myhdl.toVerilog.name = top_pll_wrap.__name__ + '_' + args.vendor
+    myhdl.toVerilog.name = top_clock_mgmt_wrap.__name__ + '_' + args.vendor
     myhdl.toVerilog.directory = 'output'
-    myhdl.toVerilog(top_pll_wrap, clockext, resetext, dripple, status, args)
+    myhdl.toVerilog(top_clock_mgmt_wrap, clockext, resetext, dripple, status, args)
 
 
 if __name__ == '__main__':
     args = tb_args()
     args.vendor = 'altera'
-    test_device_pll(args)
+    test_device_clock_mgmt(args)

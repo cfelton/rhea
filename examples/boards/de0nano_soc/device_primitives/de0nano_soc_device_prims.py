@@ -6,8 +6,8 @@ from myhdl import (Signal, intbv, always, always_comb, instances,
                    concat, instance, delay, StopSimulation)
 
 from rhea.system import Global, Clock, Reset
-from rhea.vendor import PLLInterface
-from rhea.vendor import device_pll
+from rhea.vendor import ClockManagement
+from rhea.vendor import device_clock_mgmt
 from rhea.utils.test import run_testbench, tb_args, tb_default_args
 import rhea.build as build
 from rhea.build.boards import get_board
@@ -17,24 +17,24 @@ flow = None
 
 def de0nano_soc_device_prims(clock, reset, led):
     
-    pllintf = PLLInterface(clock, reset,
-                           output_frequencies=(100e6, 200e6),
-                           vendor='altera')
+    clkmgmt = ClockManagement(clock, reset,
+                              output_frequencies=(100e6, 200e6),
+                              vendor='altera')
 
-    pll_inst = device_pll(pllintf)
+    pll_inst = device_clock_mgmt(clkmgmt)
     maxcnt0 = int(clock.frequency)
-    maxcnt1 = int(pllintf.clocks[0].frequency)
-    maxcnt2 = int(pllintf.clocks[1].frequency)
+    maxcnt1 = int(clkmgmt.clocks[0].frequency)
+    maxcnt2 = int(clkmgmt.clocks[1].frequency)
 
     cnt0, cnt1, cnt2 = [Signal(intbv(0, min=0, max=mx)) 
                         for mx in (maxcnt0, maxcnt1, maxcnt2)]
     led0, led1, led2 = [Signal(bool(0)) for _ in range(3)]
 
-    clock1, clock2 = pllintf.clocks
+    clock1, clock2 = clkmgmt.clocks
 
     @always(clock.posedge)
     def beh_toggle0():
-        pllintf.enable.next = True
+        clkmgmt.enable.next = True
         if cnt0 >= maxcnt0-1:
             led0.next = not led0
             cnt0.next = 0
@@ -63,7 +63,6 @@ def de0nano_soc_device_prims(clock, reset, led):
 
     return instances()
         
-
 
 def test_devprim(args=None):
     args = tb_default_args(args)
@@ -117,6 +116,8 @@ def main():
     parser.add_argument("--program", action='store_true', default=False)
     parser.add_argument("--trace", action='store_true', default=False)
     args = parser.parse_args()
+
+    # run a simple tests to check all is ok
     test_devprim(args=args)
 
     if args.compile:

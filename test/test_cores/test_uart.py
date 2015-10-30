@@ -63,6 +63,7 @@ def testbench_uart_model(args=None):
     run_testbench(_bench_uart_model, args=args)
 
 
+@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
 def testbench_uart(args=None):
     # @todo: get numbytes from args
     numbytes = 7

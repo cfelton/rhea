@@ -4,33 +4,33 @@ from __future__ import absolute_import
 from myhdl import always_comb
 
 from rhea.system import Reset
-from .._device_pll_prim import device_pll_prim
+from .._device_clock_mgmt_prim import device_clock_mgmt_prim
 
 
-def device_pll(pll_intf):
+def device_clock_mgmt(clkmgmt):
 
     # assign the individual clocks in the pll_intf to the
     # to clock bit-vector (interface mappings)
-    number_of_outputs = len(pll_intf.output_frequencies)
-    
+    number_of_outputs = len(clkmgmt.output_frequencies)
+
     # generate the correct polarity reset regardless of the reset
-    # type attached to the interface.  If the interface does not 
-    # have a reset create a static "no reset).  Reset syncros 
+    # type attached to the interface.  If the interface does not
+    # have a reset create a static "no reset).  Reset syncros
     # are handled external to this module
     reseti = Reset(0, active=1, async=True)
     reset = Reset(0, active=1, async=True)
     stuck_reset = False
-    if pll_intf.reset is None:
+    if clkmgmt.reset is None:
         stuck_reset = True
     else:
-        reset = pll_intf.reset
-    pll_intf.reset = reseti
+        reset = clkmgmt.reset
+    clkmgmt.reset = reseti
     active = reseti.active
 
     @always_comb
     def beh_assign():
         for ii in range(number_of_outputs):
-            pll_intf.clocks[ii].next = pll_intf.clocksout[ii]
+            clkmgmt.clocks[ii].next = clkmgmt.clocksout[ii]
 
         if stuck_reset:
             reseti.next = False
@@ -40,14 +40,14 @@ def device_pll(pll_intf):
             reseti.next = reset
 
     # get the Verilog primitive instance
-    prim_inst = device_pll_prim(pll_intf)
-    device_pll_prim.verilog_code = pll_verilog_code(pll_intf)
-    # device_pll_prin.vhdl_code = pll_vhdl_code(pll_intf)
+    prim_inst = device_clock_mgmt_prim(clkmgmt)
+    device_clock_mgmt_prim.verilog_code = clock_mgmt_verilog_code(clkmgmt)
+    # device_clock_mgmt_prim.vhdl_code = clock_mgmt_vhdl_code(clkmgmt)
 
     return prim_inst, beh_assign
 
 
-def pll_verilog_code(pll_intf):
+def clock_mgmt_verilog_code(clkmgmt):
     """
     This uses a mix of string replacement, as documented in the myhdl
     manual the "%" is used by the converted to insert signal/variable
@@ -58,13 +58,13 @@ def pll_verilog_code(pll_intf):
     # Parameters
     # @todo: determine if the output frequencies are reasonable ...
     tstr = '\n  '.join([".CLK{ii}_OUTPUT_FREQUNECY( {of} ),".format(ii=ii, of=of)
-                        for ii, of in enumerate(pll_intf.output_frequencies)])
-    pll_intf.PARAM_output_frequencies = tstr
+                        for ii, of in enumerate(clkmgmt.output_frequencies)])
+    clkmgmt.PARAM_output_frequencies = tstr
 
     # Ports
     tstr = '\n  '.join([".c{ii}( $clocksout [{ii}] ),".format(ii=ii)
-                        for ii in range(len(pll_intf.clocks))])
-    pll_intf.PORT_clocksout = tstr
+                        for ii in range(len(clkmgmt.clocks))])
+    clkmgmt.PORT_clocksout = tstr
 
 
     # custom clocks out ports and parameters, the string template
@@ -77,12 +77,12 @@ def pll_verilog_code(pll_intf):
          .INCLK0_INPUT_FREQUENCY( {input_frequency}  ),
          {PARAM_output_frequencies}
          .PORT_LOCKED( "PORT_USED") )
-    U_ATLPLL_{pll_num}
+    U_ATLPLL_{clkmgmt_num}
       (.inclk      (  $clockin    ),
        .areset     (  $reset      ),
        .pllena     (  $enable     ),
        .clk        (  $clocksout  ),
        .locked     (  $locked     ) );
-    """.format(**vars(pll_intf))
+    """.format(**vars(clkmgmt))
 
     return template
