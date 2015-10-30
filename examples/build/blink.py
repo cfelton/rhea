@@ -6,7 +6,8 @@ from myhdl import (Signal, ResetSignal, intbv, always_seq, always,
 def blinky(led, clock, reset=None):
 
     assert len(led) >= 2
-    
+
+    nled = len(led)
     maxcnt = int(clock.frequency)
     cnt = Signal(intbv(0,min=0,max=maxcnt))
     toggle = Signal(bool(0))
@@ -23,6 +24,8 @@ def blinky(led, clock, reset=None):
     def rtl_assign():
         led.next[0] = toggle
         led.next[1] = not toggle
+        for ii in range(2, nled):
+            led.next[ii] = 0
         
     if reset is None:
         reset = ResetSignal(0, active=0, async=False)

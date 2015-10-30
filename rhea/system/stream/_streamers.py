@@ -1,6 +1,6 @@
 
 
-class Streamers:
+class Streamers(object):
     def __init__(self, glbl, data_width=32):
         self.clock = glbl.clock
         self.reset = glbl.reset
