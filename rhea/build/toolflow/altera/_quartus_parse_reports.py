@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 from myhdl import enum
+import codecs
 
 #from .._report_parser import ReportParser
 
@@ -18,7 +19,7 @@ def get_fmax(fn, info):
 
     for ln in log:
         if state == States.search:
-            if glncnt > 100 and 'Fmax Summary' in ln:
+            if glncnt > 100 and ln.find('Fmax Summary') != -1:
                 lncnt = 1
                 state = States.fmax
 
@@ -57,7 +58,7 @@ def get_utilization(fn=None):
        of the log.    
     """
 
-    log = open(fn, 'r')
+    log = codecs.open(fn, 'r','iso-8859-1')
     info = {}
     info['syn'] = {}
     fmax = []
@@ -80,10 +81,10 @@ def get_utilization(fn=None):
                 splitlist = version.split(' ')
                 version = splitlist[0]
 
-            if glncnt > 60 and glncnt < 80 and 'Family' in ln:
-                if 'Cyclone V' in ln:
+            if glncnt > 60 and glncnt < 80 and ln.find('Family') != -1:
+                if ln.find('Cyclone V') != -1:
                     usage_lines = [5, 34, 79]
-            if glncnt > 64 and 'Fitter Resource Usage Summary' in ln:
+            if glncnt > 64 and ln.find('Fitter Resource Usage Summary') != -1:
                 state = States.le_util
                 lncnt = 1
 
