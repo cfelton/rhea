@@ -16,6 +16,7 @@ from .xilinx._xupv2p import XUPV2P
 
 from .altera._de0nano import DE0Nano
 from .altera._de0nano_soc import DE0NanoSOC
+from .altera._de0cv import DE0CV
 
 from .lattice._icestick import Icestick
 from .lattice._catboard import CATBoard
@@ -37,6 +38,7 @@ xbrd = {
 abrd = {
     'de0nano': DE0Nano,
     'de0nano_soc': DE0NanoSOC,
+    'de0cv': DE0CV,
 }
 
 lbrd = {
