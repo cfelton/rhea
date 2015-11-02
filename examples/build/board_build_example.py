@@ -19,6 +19,9 @@ led_port_pin_map = {
     'xula':  dict(name='led', pins=(36, 37, 50, 52)),
     'xula2': dict(name='led', pins=('R7', 'R15', 'R16', 'M15',)),
     'pone': dict(name='led', pins=(18, 23, 26, 33)),
+    # the de0-cv led port is named "ledr", for the generic testing
+    # add the led port
+    'de0cv': dict(name='led', pins=('AA2', 'AA1', 'W2', 'Y3',))
 }
 
 
