@@ -3,13 +3,13 @@ from pprint import pprint
 
 import rhea.build as build
 from rhea.build.boards import get_board
+from rhea.build.boards import led_port_pin_map
 from blink import blinky
-from board_build_example import led_port_pin_map
 
 
 def run_xula():
     brd = get_board('xula')
-    brd.add_port(**led_port_pin_map['xula'])
+    brd.add_port_name(**led_port_pin_map['xula'])
     flow = build.flow.ISE(brd=brd, top=blinky)
     flow.run()
     info = flow.get_utilization()
@@ -17,7 +17,7 @@ def run_xula():
 
     # get a board to implement the design on
     brd = get_board('xula2')
-    brd.add_port(**led_port_pin_map['xula2'])
+    brd.add_port_name(**led_port_pin_map['xula2'])
     flow = build.flow.ISE(brd=brd, top=blinky)
     flow.run()
     info = flow.get_utilization()

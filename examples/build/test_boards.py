@@ -10,8 +10,16 @@ import os
 import rhea.build as build
 from rhea.build.boards import get_board
 from rhea.build.boards import get_all_board_names
-from board_build_example import led_port_pin_map
 from blink import blinky
+
+# The following maps pins to use for test output for boards without an led port.
+led_port_pin_map = {
+    'xula': dict(name='led', port='chan', slc=[slice(0,2),slice(3,2)]),
+    'xula2': dict(name='led', port='chan', slc=slice(0,4)),
+    'pone': dict(name='led', port='wingA', slc=slice(0,4)),
+    'de0cv': dict(name='led', port='ledr', slc=slice(0,4))
+}
+
 
 
 def test_boards():
@@ -20,7 +28,7 @@ def test_boards():
         
         # map led port for boards without explicit led pins 
         if bn in led_port_pin_map:
-            brd.add_port(**led_port_pin_map[bn])
+            brd.add_port_name(**led_port_pin_map[bn])
 
         flow = build.flow.Yosys(brd=brd, top=blinky)
         flow.path = os.path.join('output', flow.path)
