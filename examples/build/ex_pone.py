@@ -3,7 +3,7 @@ from pprint import pprint
 
 import rhea.build as build
 from rhea.build.boards import get_board
-from rhea.build.boards import led_port_pin_map
+from test_boards import led_port_pin_map
 from blink import blinky
 
 
