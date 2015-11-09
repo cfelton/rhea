@@ -9,7 +9,7 @@ from myhdl import Signal, intbv, always_seq, bin, now
 from ._prbs_table import prbs_feedback_taps
 
 
-def prbs_generate(glbl, prbs, order=4, feedback_taps=(0, 1), initval=None):
+def prbs_generate(glbl, prbs, order=4, feedback_taps=None, initval=None):
     """ Galois (one-to-many) LFSR PRBS generater
 
 
@@ -22,7 +22,7 @@ def prbs_generate(glbl, prbs, order=4, feedback_taps=(0, 1), initval=None):
       initval: LFSR initial value
     """
 
-    nbits = order+1
+    nbits, z = order, order-1
     wlen = len(prbs)
 
     # if the feedback taps were not supplied, grab the first
@@ -36,22 +36,23 @@ def prbs_generate(glbl, prbs, order=4, feedback_taps=(0, 1), initval=None):
     lfsr = Signal(intbv(initval)[nbits:])
     d, f = intbv(0)[nbits:], intbv(0)[nbits:]
     p = intbv(0)[wlen:]
-    print("TAPS {}".format(taps))
+    print("taps {}".format([(ii, tt) for ii, tt in enumerate(taps)]))
 
     @always_seq(clock.posedge, reset=reset)
     def hdl_lfsr():
         f[:] = lfsr
-        for w in range(wlen):
-            p[w] = f[nbits-1]
-            d[0] = f[nbits-1]
-            for ii in range(1, nbits):
-                # print("    [{:5d},{:5d}]: {}".format(w, ii, bin(d, nbits)))
-                if taps[ii-1] == 1:
-                    d[ii] = f[ii-1] ^ f[nbits-1]
+        for w in range(0, wlen):
+            p[w] = f[0]
+            d[z] = f[0]
+            for ii in range(nbits-2, -1, -1):
+                print("    [{:5d},{:5d}]: {}  {}".format(
+                    w, ii, bin(d, nbits), bin(f, nbits), ))
+                if taps[ii+1] == 1:
+                    d[ii] = f[ii+1] ^ f[0]
                 else:
-                    d[ii] = f[ii-1]
+                    d[ii] = f[ii+1]
             f[:] = d
-        # print("{:12d}:   lfsr -> {}".format(now(), bin(d, nbits)))
+        print("{:12d}:   lfsr -> {}".format(now(), bin(d, nbits)))
         lfsr.next = d
         prbs.next = p
 
