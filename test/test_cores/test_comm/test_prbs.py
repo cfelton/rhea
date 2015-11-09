@@ -2,12 +2,49 @@
 from __future__ import print_function
 from __future__ import division
 
+import myhdl
 from myhdl import Signal, intbv, instance, delay, StopSimulation, now
+
 from rhea.system import Global, Clock, Reset
 from rhea.cores.comm import prbs_generate
+from rhea.cores.comm import prbs_check
 from rhea.utils.test import run_testbench, tb_args, tb_default_args
 
 
+def test_known_prbs5(args=None):
+    args = tb_default_args(args)
+    clock = Clock(0, frequency=125e6)
+    reset = Reset(0, active=1, async=False)
+    glbl = Global(clock, reset)
+    prbs = Signal(intbv(0)[8:])
+
+    expected_pattern = (0xC7, 0xAE, 0x90, 0xE6,)
+
+    def _bench_prbs5():
+        tbdut = prbs_generate(glbl, prbs, order=5, initval=0x1F)
+        tbclk = clock.gen(hticks=8000)
+        
+        @instance 
+        def tbstim():
+            yield reset.pulse(32)
+            yield clock.posedge
+            # for debugging, test prints occur after the module prints
+            yield delay(1)  
+            
+            for ii, ep in enumerate(expected_pattern):
+                assert prbs == ep
+                yield clock.posedge
+                # for debugging, test prints occur after the module prints                
+                yield delay(1)
+                
+            yield delay(100)
+            raise StopSimulation
+                
+        return tbdut, tbclk, tbstim
+        
+    run_testbench(_bench_prbs5, timescale='1ps', args=args)
+    
+        
 def test_known_prbs7(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=125e6)
@@ -15,38 +52,32 @@ def test_known_prbs7(args=None):
     glbl = Global(clock, reset)
     prbs = Signal(intbv(0)[8:])
 
-    expected_pattern = (0x7F, 0x20, 0x18, 0x8A, 0x27, 0x9A, 0x2B, 0x5F,
-                        0x38, 0x92, 0xAd, 0xBD, 0xB1, 0x74, 0x67, 0xAA)
+    # computed by hand
+    expected_pattern = (0x3F, 0x10, 0x0C, 0xC5, 0x13, 0xCD, 0x95, 0x2F)
 
-    def _bench_prbs():
+    def _bench_prbs7():
         tbdut = prbs_generate(glbl, prbs, order=7, initval=0x7F)
         tbclk = clock.gen(hticks=8000)
 
         @instance
         def tbstim():
             yield reset.pulse(32)
-            # there is one zero at the beginning
-            #yield clock.posedge
+            # there is one zero at the beginning                        
             yield clock.posedge
-            yield delay(1)
 
             for ii, ep in enumerate(expected_pattern):
-                print("{:12d}: {:02X} {:02X}".format(now(), int(prbs), ep))
-                # assert prbs == ep
                 yield clock.posedge
-                yield delay(1)
-                if ii == 2:
-                    break
+                assert prbs == ep                
 
             yield delay(100)
             raise StopSimulation
 
         return tbdut, tbclk, tbstim
 
-    run_testbench(_bench_prbs, timescale='1ps', args=args)
+    run_testbench(_bench_prbs7, timescale='1ps', args=args)
 
 
-def test_prbs(args=None):
+def test_prbs_word_lengths(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=125e6)
     reset = Reset(0, active=1, async=False)
@@ -63,23 +94,83 @@ def test_prbs(args=None):
         def tbstim():
             yield reset.pulse(32)
 
+            # this test doesn't check the output (bad) simply checks that
+            # the module doesn't choke on the varisous word-lengths
             for ii in range(27):
-                print("{:12d}: {:02X}".format(now(), int(prbs)))
                 yield clock.posedge
-                yield delay(1)
 
             yield delay(100)
             raise StopSimulation
 
         return tbdut, tbclk, tbstim
+        
+    for wl in [2**ii for ii in range(11)]:
+        prbs = Signal(intbv(0)[wl:])
+        run_testbench(_bench_prbs, timescale='1ps', args=args)        
 
 
+def test_prbs_check(args=None):
+    args = tb_default_args(args)
+    clock = Clock(0, frequency=125e6)
+    reset = Reset(0, active=1, async=False)
+    glbl = Global(clock, reset)
+    prbs = Signal(intbv(0)[8:])
+    locked = Signal(bool(0))
+    word_count = Signal(intbv(0)[64:])
+    error_count = Signal(intbv(0)[64:])
+    
+    def _bench_prbs_checker():
+        tbgen = prbs_generate(glbl, prbs, order=23)
+        tbdut = prbs_check(glbl, prbs, locked, word_count,
+                           error_count, order=23)
+        tbclk = clock.gen()
+        
+        @instance 
+        def tbstim():
+            yield reset.pulse(32)
+            yield clock.posedge
+            
+            for ii in range(1024):
+                yield clock.posedge 
+                
+            yield delay(100)
+            raise StopSimulation 
+                
+        return tbgen, tbdut, tbclk, tbstim 
+        
+    run_testbench(_bench_prbs_checker, timescale='1ps', args=args)
+    
+    
+def test_conversion(args=None):
+    args = tb_default_args(args)
+    clock = Clock(0, frequency=125e6)
+    reset = Reset(0, active=1, async=False)
+    glbl = Global(clock, reset)
+    prbs = Signal(intbv(0)[8:])
+
+    myhdl.toVerilog.directory = 'output'
+    myhdl.toVHDL.directory = 'output' 
+    
+    # convert the generator
+    myhdl.toVerilog(prbs_generate, glbl, prbs, order=23)
+    myhdl.toVHDL(prbs_generate, glbl, prbs, order=23)    
+    
+    # convert the checker
+    locked = Signal(bool(0))
+    word_count = Signal(intbv(0)[64:])
+    error_count = Signal(intbv(0)[64:])
+
+    myhdl.toVerilog(prbs_check, glbl, prbs, locked, 
+                    word_count, error_count, order=23)
+    myhdl.toVHDL(prbs_check, glbl, prbs, locked, 
+                 word_count, error_count, order=23)
+                 
+                 
 def tb_parser():
     pass
 
 
 if __name__ == '__main__':
-    args = tb_args()  # tb_args(parser=tb_parser())
-    test_prbs(args)
-    test_known_prbs7(args)
+    args = tb_args()   # tb_args(parser=tb_parser())
+    test_prbs_check(args)
 
