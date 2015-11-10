@@ -33,18 +33,12 @@ def lfsr_feedback(lfsr, lfsrfb, prbscm, taps_const):
     assert len(lfsr) == len(lfsrfb)
     wbits = len(prbscm)
     
-    #f = intbv(0)[nbits:]
-    #d = intbv(0)[nbits:]
-    #p = intbv(0)[wbits:] 
-    #taps = intbv(taps_const)[nbits:]
-    
     @always_comb
     def beh():
         f = intbv(0)[nbits:]
         d = intbv(0)[nbits:]
         p = intbv(0)[wbits:] 
         taps = intbv(taps_const)[nbits:]
-        #taps[:] = taps_const 
         f[:] = lfsr
         for w in range(0, wbits):
             p[w] = f[0]
@@ -62,7 +56,8 @@ def lfsr_feedback(lfsr, lfsrfb, prbscm, taps_const):
     return beh
     
 
-def prbs_generate(glbl, prbs, order=4, feedback_taps=None, initval=None):
+def prbs_generate(glbl, prbs, inject_error=None,
+                  order=4, feedback_taps=None, initval=None):
     """ Galois (one-to-many) LFSR PRBS generater
 
 
@@ -87,6 +82,9 @@ def prbs_generate(glbl, prbs, order=4, feedback_taps=None, initval=None):
     d, f = intbv(0)[nbits:], intbv(0)[nbits:]
     p = intbv(0)[wlen:]
 
+    if inject_error is None:
+        inject_error = Signal(bool(0))
+
     @always_seq(clock.posedge, reset=reset)
     def beh_lfsr():
         f[:] = lfsr
@@ -100,7 +98,8 @@ def prbs_generate(glbl, prbs, order=4, feedback_taps=None, initval=None):
                     d[ii] = f[ii+1]
             f[:] = d
         lfsr.next = d
-        prbs.next = p
+        prbs.next = p ^ 1 if inject_error else p
+
         # constant bit-vector, set during reset also force here 
         # in case the system doesn't have a reset 
         taps.next = taps_const
@@ -127,8 +126,8 @@ def prbs_check(glbl, prbs, locked, word_count, error_count,
     clock, reset = glbl.clock, glbl.reset
     count = Signal(intbv(0, min=0, 
                          max=max(locked_count, break_count)+1))
-    
-    lfsr = Signal(intbv(0)[nbits:])
+
+    lfsr = Signal(intbv('1'*nbits)[nbits:])
     lfsrfb = Signal(intbv(0)[nbits:])
     prbscm = Signal(prbs.val)
     
@@ -145,19 +144,18 @@ def prbs_check(glbl, prbs, locked, word_count, error_count,
             # @todo: only increment word_count and error_count if the max 
             # @todo: has not been reached
             word_count.next = word_count + 1 
-            
-            if prbs != prbscm:
+
+            if count >= break_count:
+                locked.next = False
+                count.next = 0
+                # @todo: ?? clear error count ??
+            elif prbs != prbscm:
                 # @todo: count the number of bit errors 
                 error_count.next = error_count + 1
                 count.next = count + 1 
             else:
                 count.next = 0
-                
-            if count >= break_count:
-                locked.next = False 
-                count.next = 0
-                # @todo: ?? clear error count ?? 
-                
+
         elif count > 0:        
             if prbs == prbscm:
                 count.next = count + 1 
@@ -179,6 +177,3 @@ def prbs_check(glbl, prbs, locked, word_count, error_count,
                 
     return lfsr_inst, beh 
 
-            
-                
-        

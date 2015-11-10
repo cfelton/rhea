@@ -2,6 +2,8 @@
 from __future__ import print_function
 from __future__ import division
 
+from random import randint
+
 import myhdl
 from myhdl import Signal, intbv, instance, delay, StopSimulation, now
 
@@ -95,7 +97,7 @@ def test_prbs_word_lengths(args=None):
             yield reset.pulse(32)
 
             # this test doesn't check the output (bad) simply checks that
-            # the module doesn't choke on the varisous word-lengths
+            # the module doesn't choke on the various word-lengths
             for ii in range(27):
                 yield clock.posedge
 
@@ -110,29 +112,81 @@ def test_prbs_word_lengths(args=None):
 
 
 def test_prbs_check(args=None):
+    # @todo: select different parameters: order ...
     args = tb_default_args(args)
+    order = 15
+
     clock = Clock(0, frequency=125e6)
     reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
     prbs = Signal(intbv(0)[8:])
     locked = Signal(bool(0))
+    inject_error = Signal(bool(0))
     word_count = Signal(intbv(0)[64:])
     error_count = Signal(intbv(0)[64:])
     
     def _bench_prbs_checker():
-        tbgen = prbs_generate(glbl, prbs, order=23)
+        tbgen = prbs_generate(glbl, prbs, inject_error, order=order)
         tbdut = prbs_check(glbl, prbs, locked, word_count,
-                           error_count, order=23)
+                           error_count, order=order)
         tbclk = clock.gen()
+
+        maxcycles = 2 * ((2**order)-1)
         
         @instance 
         def tbstim():
             yield reset.pulse(32)
             yield clock.posedge
-            
-            for ii in range(1024):
+
+            assert not locked
+
+            for ii in range(maxcycles):
                 yield clock.posedge 
-                
+
+            assert locked
+            assert error_count == 0
+
+            for ii in range(randint(0, 1000)):
+                yield clock.posedge
+
+            assert locked
+            assert error_count == 0
+            assert word_count > 0
+            lwc = int(word_count)
+
+            inject_error.next = True
+            yield clock.posedge
+            inject_error.next = False
+            yield clock.posedge
+
+            assert locked
+
+            for ii in range(randint(0, 1000)):
+                yield clock.posedge
+
+            assert locked
+            assert error_count == 1
+            assert word_count > lwc
+            lec = int(error_count)
+
+            inject_error.next = True
+            yield clock.posedge
+            yield clock.posedge
+
+            for ii in range(2000):
+                yield clock.posedge
+                if not locked:
+                    break
+                assert error_count > lec
+                lec = int(error_count)
+
+            assert not locked
+            inject_error.next = False
+
+            for ii in range(maxcycles):
+                yield clock.posedge
+            assert locked
+
             yield delay(100)
             raise StopSimulation 
                 
