@@ -2,8 +2,7 @@
 from __future__ import division
 
 """
-This example uses the A/D converter and the accelerometer.
-The example retrieves the samples from the converters and ...
+This is an LT24 LCD driver example.
 """
 
 from myhdl import (Signal, intbv, always_comb, always_seq,

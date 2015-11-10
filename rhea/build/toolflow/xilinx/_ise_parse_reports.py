@@ -28,7 +28,7 @@ def get_utilization(fn=None):
     state = States.search
 
     for ln in log:
-        if 'Maximum Frequency:' in ln:
+        if ln.find('Maximum Frequency:') != -1:
             if len(ln.split(':')) < 3:
                    continue
             fstr = ln.split(':')[2]
@@ -46,11 +46,11 @@ def get_utilization(fn=None):
         
         #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         if state == States.search:
-            if 'Slice Logic Utilization' in ln:
+            if ln.find('Slice Logic Utilization') != -1:
                 state = States.slc_util
                 lncnt = 1  
                 #print(ln)
-            elif 'Specific Feature Utilization' in ln:
+            elif ln.find('Specific Feature Utilization') != -1:
                 state = States.ip_util
                 lncnt = 1
                 #print(ln)

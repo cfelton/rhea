@@ -174,8 +174,8 @@ class Quartus(_toolflow):
 
     def program(self):
         txt = subprocess.check_output(('quartus_pgm', '-l',),
-                                      stderr=subprocess.STDOUT)
-        if 'No JTAG hardware' in txt:
+                                      stderr=subprocess.STDOUT).decode()
+        if txt.find('No JTAG hardware') != -1:
             print("No hardware detected")
             return
 
