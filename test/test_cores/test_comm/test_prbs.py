@@ -114,7 +114,7 @@ def test_prbs_word_lengths(args=None):
 def test_prbs_check(args=None):
     # @todo: select different parameters: order ...
     args = tb_default_args(args)
-    order = 15
+    order = 9 
 
     clock = Clock(0, frequency=125e6)
     reset = Reset(0, active=1, async=False)
