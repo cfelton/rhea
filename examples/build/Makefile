@@ -42,6 +42,9 @@ altera: de0nano #de0
 de0nano: #altera/
 	time $(PYTHON) ex_de0nano.py
 
+de0cv: #altera/
+	$(PYTHON) ex_de0cv.py
+
 #de2cII: #altera/
 #	$(PYTHON) ex_de2cII.py
 

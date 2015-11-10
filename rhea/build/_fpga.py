@@ -147,9 +147,18 @@ class _fpga(object):
         if slc is None:
             pins = p.pins
         else:
-            assert isinstance(slc, (slice, int)), \
-                "slice (slc) needs to be None or int/slice"
-            pins = p.pins[slc]
+            if isinstance(slc, (slice, int)):
+                pins = p.pins[slc]
+            elif isinstance(slc, (list,tuple)):
+                pins = []
+                for i in [0,3,]:
+                    if isinstance(i,int):
+                        pins.append(p.pins[i])
+                    else:
+                        pins += list(p.pins[i])
+            else:
+                raise Exception("slc must be an int, a slice, or a list of these")
+
         kws = p.pattr.copy()
         kws.update(pattr)
         self.add_port(name, pins, **kws)

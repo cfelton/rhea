@@ -10,16 +10,7 @@ import argparse
 import rhea.build as build 
 from rhea.build.boards import get_board
 from rhea.build.boards import get_all_board_names
-#from blink import blinky
-
-# some boards don't have LEDs but they have IO that
-# can drive LEDs.  The following maps the led port 
-# to a set of pins for boards without an led port.
-led_port_pin_map = {
-    'xula':  dict(name='led', pins=(36, 37, 50, 52)),
-    'xula2': dict(name='led', pins=('R7', 'R15', 'R16', 'M15',)),
-    'pone': dict(name='led', pins=(18, 23, 26, 33)),
-}
+from test_boards import led_port_pin_map
 
 
 def print_board_info(args):
@@ -53,11 +44,9 @@ def build_board(args):
     for bn in boards:        
         brd = get_board(bn)
         if brd in led_port_pin_map:
-            brd.add_port(**led_port_pin_map[brd])
-        # check the board definition has led port, if not add it from 
-        # the board_table
+            brd.add_port_name(**led_port_pin_map[brd])
         ledport = brd.get_port('led')
-        
+
     return
 
         
