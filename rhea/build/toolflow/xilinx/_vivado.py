@@ -29,7 +29,7 @@ class Vivado(_toolflow):
         :param path: path for all the intermediate files
         :return:
         """
-        _toolflow.__init__(self, brd, top=top, path=path)
+        super(Vivado, self).__init__(brd, top=top, path=path)
         self.xcf_file = ''
         self._default_project_file = None
 
@@ -78,3 +78,55 @@ class Vivado(_toolflow):
         fid = open(self.xcd_file, 'w')
         fid.write(ustr)
         fid.close()
+
+
+    def create_flow_script(self):
+        fn = os.path.join(self.path, self.name+'.tcl')
+
+        # start with the text string for the TCL script
+        tcl = []
+        tcl += ["#\n#\n# Vivado implementation script"]
+        date_time = strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
+        tcl += ["# create: {}".format(date_time)]
+        tcl += ["# by: {}".format(os.path.basename(sys.argv[0]))]
+        tcl += ["#\n#\n"]
+        
+            
+        tcl += ["# set compile directory:"]
+        tcl += ["set origin_dir {}".format('.')]
+
+        tcl += ["create_project {} ./{}".format(self.name, self.name)]
+        tcl += ["set proj_dir [get_property direcotry [current_project]]"]
+        tcl += ["set obj [get_projects {}]".format(self.name)]
+        brd = self.brd
+        part = "{}{}{}".format(brd.device, brd.package, brd.speed)
+        part = part.lower()
+        tcl += ["set property \"part\" {} $obj".format(part)]
+        
+        # add HDL files
+        tcl += ["# create sources"]
+        for hdl_file in self._hdl_file_list:
+            tcl += ["add_files {}".format(hdl_file)]
+
+        with open(fn, 'w') as fp:
+            for line in tcl:
+                fp.write(line + "\n")
+        
+        return fn
+
+    def run(self, use='verilog', name=None):
+        """ Execute the toolflow """
+        self.pathexist(self.path)
+        cfiles = convert(self.brd, name=self.name,
+                         use=use, path=self.path)
+        self.add_files(cfiles)
+        self.create_constraints()
+        tcl_name = self.create_flow_script()
+        cmd = ['vivado', '-mode', 'batch', '-source', tcl_name]
+        self.logfn = self._execute_flow(cmd, "build_vivado.log")
+
+        return self.logfn
+
+    def get_utilization(self):
+        info = "NotImplemented"
+        return info

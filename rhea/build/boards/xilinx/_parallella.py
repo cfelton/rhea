@@ -27,18 +27,27 @@ class Parallella(_fpga):
     }
     
     default_ports = {
-        # the parallella doesn't have leds, for the tests
-        # need an led port.  These will be ignored in actual
-        # parallella designs
-        'led': dict(pins=('M14', 'M15', 'G14', 'D18',)),
-        
+        # this is an 8 LED PMOD on the porcupine board
+        'led': dict(pins=('U18', 'P15', 'U19', 'P16',
+                          'V16', 'T16', 'W16', 'U17',)),
+
+        # GPIO available on the porcupine board, 24 diff pair
+        # first 12 on the 70x0 second 12 only on 7020
         'gpio_p': dict(pins=('T16', 'V16', 'P15', 'U18', 
                              'P14', 'T14', 'U14', 'W14',
-                             'U13', 'V12', 'T12', 'T11')),
+                             'U13', 'V12', 'T12', 'T11', 
+                             'Y12', 'W11', 'V11', 'T9',
+                             'W10', 'U9',  'V8',  'Y9',
+                             'Y7',  'U7',  'V6',  'T5',),
+                   iostandard='LVDS_25'),
 
         'gpio_n': dict(pins=('U17', 'W16', 'P16', 'U19', 
                              'R14', 'T15', 'U15', 'Y14',
-                             'V13', 'W13', 'U12', 'T10')),
+                             'V13', 'W13', 'U12', 'T10',
+                             'Y13', 'Y11', 'V10', 'U10',
+                             'W9',  'U8',  'W8',  'Y8',
+                             'Y6',  'V7',  'W6',  'U5',),
+                   iostandard='LVDS_25'),
 
         # elink
         'elink_rxi_data_p': dict(pins=('',)),
@@ -60,6 +69,9 @@ class Parallella(_fpga):
         'elink_txi_wr_wait_n': dict(pins=('',)),
         
         # hdmi
+
+        # USB-UART
+        
     }
 
     def get_flow(self, top=None):
