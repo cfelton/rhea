@@ -5,7 +5,6 @@ from pprint import pprint
 from myhdl import (Signal, ResetSignal, intbv, always_seq, always,
                    always_comb)
 
-import rhea.build as build
 from rhea.build.boards import get_board
 
                    
@@ -34,8 +33,7 @@ def de0nano_blink(led, clock, reset=None):
         
     return rtl, rtl_assign
     
-    
-    
+
 def build(args):
     brd = get_board('de0nano')
     flow = brd.get_flow(de0nano_blink)
@@ -57,5 +55,3 @@ def main():
         
 if __name__ == '__main__':
     main()
-    
-            

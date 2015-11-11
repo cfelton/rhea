@@ -53,7 +53,6 @@ def io_stub(clock, reset, sdi, sdo, pin, pout):
     scnt = Signal(intbv(0, min=0, max=Nbits+1))
     imax = scnt.max-1
 
-
     @always_seq(clock.posedge, reset=reset)
     def rtl_shifts():
         irei.next = sdi
