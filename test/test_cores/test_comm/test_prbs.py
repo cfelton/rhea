@@ -114,7 +114,7 @@ def test_prbs_word_lengths(args=None):
 def test_prbs_check(args=None):
     # @todo: select different parameters: order ...
     args = tb_default_args(args)
-    order = 23  # @todo: back to 9
+    order = 9
 
     clock = Clock(0, frequency=125e6)
     reset = Reset(0, active=1, async=False)
@@ -126,7 +126,8 @@ def test_prbs_check(args=None):
     error_count = Signal(intbv(0)[64:])
     
     def _bench_prbs_checker():
-        tbgen = prbs_generate(glbl, prbs, inject_error, order=order)
+        tbgen = prbs_generate(glbl, prbs, inject_error=inject_error,
+                              order=order)
         tbdut = prbs_check(glbl, prbs, locked, word_count,
                            error_count, order=order)
         tbclk = clock.gen()

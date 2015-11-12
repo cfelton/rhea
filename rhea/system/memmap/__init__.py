@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from ._memspace import MemorySpace
 
 # register file objects
+from ._csr import ControlStatus
 from ._regfile import RegisterBits
 from ._regfile import Register
 from ._regfile import RegisterFile

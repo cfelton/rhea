@@ -149,10 +149,10 @@ class _fpga(object):
         else:
             if isinstance(slc, (slice, int)):
                 pins = p.pins[slc]
-            elif isinstance(slc, (list,tuple)):
+            elif isinstance(slc, (list, tuple)):
                 pins = []
-                for i in [0,3,]:
-                    if isinstance(i,int):
+                for i in [0, 3,]:
+                    if isinstance(i, int):
                         pins.append(p.pins[i])
                     else:
                         pins += list(p.pins[i])

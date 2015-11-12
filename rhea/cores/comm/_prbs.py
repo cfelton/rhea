@@ -56,7 +56,7 @@ def lfsr_feedback(lfsr, lfsrfb, prbscm, taps_const):
     return beh
     
 
-def prbs_generate(glbl, prbs, inject_error=None,
+def prbs_generate(glbl, prbs, enable=None, inject_error=None,
                   order=4, feedback_taps=None, initval=None):
     """ Galois (one-to-many) LFSR PRBS generater
 
@@ -79,32 +79,33 @@ def prbs_generate(glbl, prbs, inject_error=None,
     clock, reset = glbl.clock, glbl.reset
     initval = randint(1, 2**nbits-1) if initval is None else initval
     lfsr = Signal(intbv(initval)[nbits:])
-    d, f = intbv(0)[nbits:], intbv(0)[nbits:]
-    p = intbv(0)[wlen:]
+
+    if enable is None:
+        enable = True
 
     if inject_error is None:
-        inject_error = Signal(bool(0))
+        inject_error = False
+
+    lfsrfb = Signal(intbv(0)[nbits:])
+    prbscm = Signal(prbs.val)
+
+    # the LFSR feedback logic
+    lfsr_inst = lfsr_feedback(lfsr, lfsrfb, prbscm, taps_const)
 
     @always_seq(clock.posedge, reset=reset)
     def beh_lfsr():
-        f[:] = lfsr
-        for w in range(0, wlen):
-            p[w] = f[0]  # put the output (lsb) into the wide word
-            d[z] = f[0]  # feedback tap[0] to the highest tap 
-            for ii in range(nbits-1):
-                if taps[ii+1] == 1:
-                    d[ii] = f[ii+1] ^ f[0]
-                else:
-                    d[ii] = f[ii+1]
-            f[:] = d
-        lfsr.next = d
-        prbs.next = p ^ 1 if inject_error else p
+        if enable:
+            lfsr.next = lfsrfb
+            prbs.next = prbscm ^ 1 if inject_error else prbscm
+        else:
+            lfsr.next = initval
+            prbs.next = 0
 
         # constant bit-vector, set during reset also force here 
         # in case the system doesn't have a reset 
         taps.next = taps_const
 
-    return beh_lfsr
+    return lfsr_inst, beh_lfsr
 
 
 def prbs_check(glbl, prbs, locked, word_count, error_count,
@@ -117,7 +118,7 @@ def prbs_check(glbl, prbs, locked, word_count, error_count,
     # get the taps bitmap, which taps are used for feedback 
     taps_const, taps = get_feedback_taps(order, feedback_taps)
     
-    # number arbitrary choosen, the break lock count should be 
+    # number arbitrary chosen, the break lock count should be
     # much greater than the lock, the break lock should account
     # for the maximum burst errors ... 
     locked_count = 17
