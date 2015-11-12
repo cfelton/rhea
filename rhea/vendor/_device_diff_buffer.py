@@ -2,45 +2,51 @@
 from myhdl import always_comb
 
 
-def input_diff_buffer(in_p, in_n, sig):
+def input_diff_buffer(inp, inn, sig):
 
     num_channels = len(sig)
 
-    @always_comb
-    def rtl_buffer_list():
-        for ii in range(num_channels):
-            sig[ii].next = in_p[ii] and not in_n[ii]
-
-    @always_comb
-    def rtl_buffer():
-        sig.next = in_p and not in_n
-
     if isinstance(sig, list):
+
+        @always_comb
+        def rtl_buffer_list():
+            for ii in range(num_channels):
+                sig[ii].next = inp[ii] and not inn[ii]
+
         gens = (rtl_buffer_list,)
+
     else:
+
+        @always_comb
+        def rtl_buffer():
+            sig.next = inp and not inn
+
         gens = (rtl_buffer,)
 
     return gens
 
 
-def output_diff_buffer(sig, out_p, out_n):
+def output_diff_buffer(sig, outp, outn):
 
     num_channels = len(sig)
 
-    @always_comb
-    def rtl_buffer_list():
-        for ii in range(num_channels):
-            out_p.next[ii] = sig[ii]
-            out_n.next[ii] = not sig[ii]
-
-    @always_comb
-    def rtl_buffer():
-        out_p.next = sig
-        out_n.next = not sig
-
     if isinstance(sig, list):
+
+        @always_comb
+        def rtl_buffer_list():
+            for ii in range(num_channels):
+                outp.next[ii] = sig[ii]
+                outn.next[ii] = not sig[ii]
+
         gens = (rtl_buffer_list,)
+
     else:
+        
+        @always_comb
+        def rtl_buffer():
+            outp.next = sig
+            outn.next = not sig
+
         gens = (rtl_buffer,)
 
     return gens
