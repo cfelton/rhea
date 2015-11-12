@@ -39,15 +39,13 @@ def parallella_serdes(clock, reset,
     error_count = [Signal(intbv(0)[64:]) for _ in range(nbanks)]
     prbsi = [Signal(intbv(0)[1:]) for _ in range(nbanks)]
     prbso = [Signal(intbv(0)[1:]) for _ in range(nbanks)]
+
+    # diff buffers for the diff signals
+    ibuf = input_diff_buffer(serial_rx_p, serial_rx_n, prbsi)
+    obuf = output_diff_buffer(prbso, serial_tx_p, serial_tx_n)
     
     insts = []
     for bank in range(nbanks):
-        gi = input_diff_buffer(serial_rx_p[bank],
-                               serial_rx_n[bank],
-                               prbsi[bank])
-        go = input_diff_buffer(prbso,
-                               serial_tx_p[bank],
-                               serial_tx_n[bank])
         
         gg = prbs_generate(glbl, prbso[bank], inject_error[bank],
                            order=23)
@@ -55,10 +53,10 @@ def parallella_serdes(clock, reset,
                         word_count[bank], error_count[bank],
                         order=23)
 
-        for gg in (gi, go, gg, gc):
+        for gg in (gg, gc,):
             insts.append(gg)
 
-    return insts
+    return ibuf, obuf, insts
 
 
 def build(args):

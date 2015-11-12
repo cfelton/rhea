@@ -5,7 +5,6 @@ from pprint import pprint
 from myhdl import (Signal, ResetSignal, intbv, always_seq, always,
                    always_comb)
 
-import rhea.build as build
 from rhea.build.boards import get_board
                    
 
@@ -41,8 +40,7 @@ def xula_blink(led, button, clock, reset=None):
         
     return rtl, rtl_assign
     
-    
-    
+        
 def build(args):
     brd = get_board(args.brd)
     # the design port names don't match the board pin names,

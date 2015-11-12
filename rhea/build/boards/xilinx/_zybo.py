@@ -11,18 +11,22 @@ class Zybo(_fpga):
     _name = 'zybo'
     
     default_clocks = {
-        'clock': dict(frequency=50e6, pins=('E17',)),
+        'clock': dict(frequency=125e6, pins=('L16',),
+                  iostandard='LVCMOS33'),
     }
 
-    default_resets = {
-        'reset': dict(active=0, async=True, pins=('G14',),
-                      iostandard='LVCMOS25', drive=4),
-    }
+    # default_resets = {
+    #     'reset': dict(active=0, async=True, pins=('G14',),
+    #                   iostandard='LVCMOS25'),  #  drive=4
+    # }
     
     default_ports = {
-        'led': dict(pins=('M14', 'M15', 'G14', 'D18',)),
-        'btn': dict(pins=('R18', 'P16', 'V16', 'Y16')),
-        'sw': dict(pins=('G15', 'P15', 'W13', 'T16',)),
+        'led': dict(pins=('M14', 'M15', 'G14', 'D18',),
+                iostandard='LVCMOS33'),
+        'btn': dict(pins=('R18', 'P16', 'V16', 'Y16'),
+                iostandard='LVCMOS33'),
+        'sw': dict(pins=('G15', 'P15', 'W13', 'T16',),
+               iostandard='LVCMOS33'),
 
         # audio
         'aubclk': dict(pins=('K18',)),
