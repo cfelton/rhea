@@ -23,7 +23,7 @@ def test_parallella_serdes(args=None):
 
     def _bench_serdes():
         tbdut = parallella_serdes(clock, reset, txp, txn, rxp, rxn)
-        tbclk = clock.gen()
+        tbclk = clock.gen(hticks=10000)
 
         @always_comb
         def tblpk():
@@ -35,8 +35,9 @@ def test_parallella_serdes(args=None):
             yield reset.pulse(32)
             yield clock.posedge
 
-            for ii in range(1000):
-                yield clock.posedge
+            for ii in range(100):
+                for jj in range(1000):
+                    yield clock.posedge
 
             yield delay(1000)
             raise StopSimulation
@@ -46,9 +47,11 @@ def test_parallella_serdes(args=None):
     run_testbench(_bench_serdes, timescale='1ps', args=args)
 
     myhdl.toVerilog.directory = "output"
+    myhdl.toVerilog.no_testbench = True
     myhdl.toVerilog(parallella_serdes, 
                     clock, reset, txp, txn, rxp, rxn)
 
 
 if __name__ == '__main__':
-    test_parallella_serdes()
+    args = tb_args()
+    test_parallella_serdes(args=args)

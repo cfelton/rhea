@@ -5,7 +5,7 @@ from __future__ import division
 import argparse
 from pprint import pprint
 
-from myhdl import Signal, intbv
+from myhdl import Signal, intbv, ConcatSignal, always_comb, concat
 
 from rhea.system import Global, Clock, Reset
 from rhea.cores.misc import io_stub
@@ -21,10 +21,13 @@ from rhea.vendor import device_serdes_output
 from rhea.build import get_board
 
 
-def parallella_serdes(clock, reset,
+def parallella_serdes(clock, 
                       # porcupine board breakout
                       serial_tx_p, serial_tx_n,
-                      serial_rx_p, serial_rx_n,):
+                      serial_rx_p, serial_rx_n,
+                      led,
+                      reset=None
+):
     
     nbanks = len(serial_tx_p)
     assert (len(serial_tx_p) == len(serial_tx_n) ==
@@ -41,8 +44,8 @@ def parallella_serdes(clock, reset,
     prbso = [Signal(intbv(0)[1:]) for _ in range(nbanks)]
 
     # diff buffers for the diff signals
+    obuf = output_diff_buffer(prbso, serial_tx_p, serial_tx_n)    
     ibuf = input_diff_buffer(serial_rx_p, serial_rx_n, prbsi)
-    obuf = output_diff_buffer(prbso, serial_tx_p, serial_tx_n)
     
     insts = []
     for bank in range(nbanks):
@@ -56,18 +59,24 @@ def parallella_serdes(clock, reset,
         for gg in (gg, gc,):
             insts.append(gg)
 
-    return ibuf, obuf, insts
+    locks = ConcatSignal(*reversed(locked))
+    @always_comb
+    def led_assign():
+        led.next = concat("1010", locks)
+            
+
+    return ibuf, obuf, insts, led_assign
 
 
 def build(args):
     # @todo: use parallella board, use an ISE support board for now ...
     brd = get_board('parallella')
     # @todo: temporary for existing board
-    brd.add_reset('reset', active=1, async=True, pins=('T15',))
-    brd.add_port_name('serial_tx_p', 'gpio_p', slice(0, 6))
-    brd.add_port_name('serial_tx_n', 'gpio_p', slice(0, 6))
-    brd.add_port_name('serial_rx_p', 'gpio_p', slice(6, 12))
-    brd.add_port_name('serial_rx_n', 'gpio_p', slice(6, 12))
+    # brd.add_reset('reset', active=1, async=True, pins=('N20',))
+    brd.add_port_name('serial_tx_p', 'gpio_p', slice(4, 8))
+    brd.add_port_name('serial_tx_n', 'gpio_n', slice(4, 8))
+    brd.add_port_name('serial_rx_p', 'gpio_p', slice(8, 12))
+    brd.add_port_name('serial_rx_n', 'gpio_n', slice(8, 12))
 
     flow = brd.get_flow(parallella_serdes)
     flow.run()

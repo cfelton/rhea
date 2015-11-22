@@ -12,7 +12,8 @@ class Parallella(_fpga):
     
     default_clocks = {
         # @todo: fix clock ...
-        'clock': dict(frequency=50e6, pins=('E17',)),
+        'clock': dict(frequency=50e6, pins=('R16',),
+                  iostandard='LVCMOS25', ),
         'elink_rxi_cclk_p': dict(pins=('',)),
         'elink_rxi_cclk_n': dict(pins=('',)),
         'elink_rxi_lclk_p': dict(pins=('',)),
@@ -21,15 +22,13 @@ class Parallella(_fpga):
         'elink_txo_lclk_n': dict(pins=('',)),
     }
 
-    default_resets = {
-        'dsp_reset_n': dict(active=0, async=True, pins=('G14',),
-                            iostandard='LVCMOS25', drive=4),
-    }
+    default_resets = {}
     
     default_ports = {
         # this is an 8 LED PMOD on the porcupine board
         'led': dict(pins=('U18', 'P15', 'U19', 'P16',
-                          'V16', 'T16', 'W16', 'U17',)),
+                          'V16', 'T16', 'W16', 'U17',),
+                iostandard='LVCMOS25'),
 
         # GPIO available on the porcupine board, 24 diff pair
         # first 12 on the 70x0 second 12 only on 7020
@@ -67,6 +66,10 @@ class Parallella(_fpga):
         'elink_txi_rd_wait_n': dict(pins=('',)),
         'elink_txi_wr_wait_p': dict(pins=('',)),
         'elink_txi_wr_wait_n': dict(pins=('',)),
+
+        'dsp_reset_n': dict(pins=('G14',), 
+                            iostandard='LVCMOS25', drive=4),
+
         
         # hdmi
 

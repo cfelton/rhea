@@ -114,7 +114,7 @@ def test_prbs_word_lengths(args=None):
 def test_prbs_check(args=None):
     # @todo: select different parameters: order ...
     args = tb_default_args(args)
-    order = 23  # @todo: back to 9
+    order = 9
 
     clock = Clock(0, frequency=125e6)
     reset = Reset(0, active=1, async=False)
@@ -203,7 +203,8 @@ def test_conversion(args=None):
     prbs = Signal(intbv(0)[8:])
 
     myhdl.toVerilog.directory = 'output'
-    myhdl.toVHDL.directory = 'output' 
+    myhdl.toVerilog.no_testbench = True
+    myhdl.toVHDL.directory = 'output'
     
     # convert the generator
     myhdl.toVerilog(prbs_generate, glbl, prbs, order=23)
@@ -226,5 +227,9 @@ def tb_parser():
 
 if __name__ == '__main__':
     args = tb_args()   # tb_args(parser=tb_parser())
+    test_known_prbs5(args)
+    test_known_prbs7(args)
+    test_prbs_word_lengths(args)
     test_prbs_check(args)
+    test_conversion(args)
 
