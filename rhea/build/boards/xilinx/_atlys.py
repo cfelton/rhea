@@ -26,6 +26,7 @@ class Atlys(_fpga):
         'pmod': dict(pins=('T3', 'R3', 'P6', 'N5', 
                            'V9', 'T9', 'V4', 'T4',)),
 
+        # VHDCI expansion connector (diff pairs)
         'iop': dict(pins=('U16', 'U15', 'U13', 'M11',)),
         'ion': dict(pins=('V16', 'V15', 'V13', 'N11',))
     }

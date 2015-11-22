@@ -126,7 +126,8 @@ def test_prbs_check(args=None):
     error_count = Signal(intbv(0)[64:])
     
     def _bench_prbs_checker():
-        tbgen = prbs_generate(glbl, prbs, inject_error, order=order)
+        tbgen = prbs_generate(glbl, prbs, inject_error=inject_error,
+                              order=order)
         tbdut = prbs_check(glbl, prbs, locked, word_count,
                            error_count, order=order)
         tbclk = clock.gen()
