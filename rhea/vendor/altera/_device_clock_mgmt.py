@@ -10,12 +10,12 @@ from .._device_clock_mgmt_prim import device_clock_mgmt_prim
 def device_clock_mgmt(clkmgmt):
 
     # assign the individual clocks in the pll_intf to the
-    # to clock bit-vector (interface mappings)
+    # clock bit-vector (interface mappings)
     number_of_outputs = len(clkmgmt.output_frequencies)
 
     # generate the correct polarity reset regardless of the reset
     # type attached to the interface.  If the interface does not
-    # have a reset create a static "no reset).  Reset syncros
+    # have a reset create a static "no reset".  Reset syncros
     # are handled external to this module
     reseti = Reset(0, active=1, async=True)
     reset = Reset(0, active=1, async=True)
