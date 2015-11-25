@@ -44,10 +44,12 @@ class CommandPacket(object):
             fifobus.wr.next = True
             fifobus.wdata.next = byte
             yield fifobus.clock.posedge
+        fifobus.wr.next = False
 
     def get(self, fifobus, rvals=None, evals=None, timeout=1000):
-        response_packet = rpkt = bytearray([0 for _ in range(256)])
-        bytestoget, ii = 16, 0
+        response_packet = rpkt = bytearray([0 for _ in range(20
+                                                             )])
+        bytestoget, ii = 20, 0
 
         while fifobus.empty and timeout > 0:
             timeout -= 1
@@ -57,7 +59,7 @@ class CommandPacket(object):
             raise TimeoutError
 
         while bytestoget > 0:
-            if not fifobus.empty:
+            if not fifobus.empty and bytestoget > 1:
                 fifobus.rd.next = True
             else:
                 fifobus.rd.next = False
@@ -65,11 +67,10 @@ class CommandPacket(object):
             if fifobus.rvld:
                 bb = int(fifobus.rdata)
                 rpkt[ii] = bb
-                if ii == 8:
-                    bytestoget += bb
                 bytestoget -= 1
                 ii += 1
             yield fifobus.clock.posedge
-
+        fifobus.rd.next = False
         self.check_response(response_packet, evals)
+        print(len(response_packet), response_packet)
 

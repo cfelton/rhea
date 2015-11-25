@@ -48,8 +48,16 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
     bb = Barebone(glbl, data_width=mmbus.data_width,
                   address_width=mmbus.address_width)
     
-    states = enum('idle', 'wait_for_packet', 'set', 'write', 'response',
-                  'read', 'error', 'end')
+    states = enum(
+        'idle',
+        'wait_for_packet',   # receive a command packet
+        'check_packet',      # basic command check
+        'write',             # bus write
+        'response',          # send response packet
+        'read',              # read bus cycles for response
+        'error',             # error occurred
+        'end'                # end state
+    )
 
     state = Signal(states.idle)
     ready = Signal(bool(0))
@@ -62,11 +70,6 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
     assert len(pidx) == len(pval)
     nknown = len(pidx)
 
-    #command = Signal(intbv(0)[8:])
-    #address = Signal(intbv(0)[32:])
-    #data = Signal(intbv(0)[32:])
-    #pktlen = Signal(intbv(0)[8:])
-    #fourbytes = [Signal(intbv(0)[8::]) for _ in range(4)]
     bytemon = Signal(intbv(0)[8:])
 
     # only supporting 20byte packets (single read/write) for now
@@ -74,8 +77,8 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
     command = packet[2]
     address = ConcatSignal(*packet[4:8])
     data = ConcatSignal(*packet[16:20])
-    datalen = packet[[8]
-    ]
+    datalen = packet[8]
+
     # convert generic memory-mapped bus to the memory-mapped interface
     # passed to the controller
     mmc_inst = memmap_controller_basic(bb, mmbus)
@@ -106,48 +109,19 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
                             error.next = True
                             state.next = states.error
 
-                if bytecnt == 2:
-                    command.next = fbrx.rdata
-                elif bytecnt == 4:
-                    fourbytes[0].next = fbrx.rdata
-                elif bytecnt == 5:
-                    fourbytes[1].next = fbrx.rdata
-                elif bytecnt == 6:
-                    fourbytes[2].next = fbrx.rdata
-                elif bytecnt == 7:
-                    fourbytes[3].next = fbrx.rdata
-                elif bytecnt == 8:
-                    # @todo: packet definition supports variable length
-                    # @todo: (block read/write) currently only implemented
-                    # @todo: a single read/write
-                    assert fbrx.rdata == 4
-                    pktlen.next = fbrx.rdata
-                    address.next = concat(fourbytes[0], fourbytes[1],
-                                          fourbytes[2], fourbytes[3])
-                    if fbrx.rdata != 4:
-                        error.next = True
-                        state.next = states.error
-                elif bytecnt == 16:
-                    fourbytes[0].next = fbrx.rdata
-                elif bytecnt == 17:
-                    fourbytes[1].next = fbrx.rdata
-                elif bytecnt == 18:
-                    fourbytes[2].next = fbrx.rdata
-                elif bytecnt == 19:
-                    fourbytes[3].next = fbrx.rdata
-                    data.next = concat(fourbytes[0], fourbytes[1],
-                                       fourbytes[2], fbrx.rdata)
-                # keep track of the number of bytes consumed
+                packet[bytecnt].next = fbrx.rdata
                 bytecnt[:] = bytecnt + 1
 
             # @todo: replace 20 with len(CommandPacket().header)
             if bytecnt == 20:
                 ready.next = False
-                state.next = states.set
+                state.next = states.check_packet
 
-        elif state == states.set:
+        elif state == states.check_packet:
+            # @todo: some packet checking
             bb.per_addr = address[32:28]
             bb.mem_addr = address[28:0]
+
             if command == 1:
                 bytecnt[:] = 0
                 state.next = states.response
@@ -158,18 +132,16 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
                 error.next = True
                 state.next = states.error
 
-        elif state == state.response:
-            fbtx.next = False
-            # start sending the response and doing reads along the way
-            if bytecnt == 0:
+        elif state == states.response:
+            fbtx.wr.next = False
+
+            if bytecnt < 20:
                 fbtx.wr.next = True
-                fbtx.wdata.next = 0xDE
-            elif bytecnt == 1:
-                fbtx.wr.next = True
-                fbtx.wdata.next = 0xCA
-            elif bytecnt == 2:
-                fbtx.wr.next = True
-                fbtx.wdata.next = command
+                fbtx.wdata.next = packet[bytecnt]
+            else:
+                state.next = states.end
+
+            bytecnt[:] = bytecnt + 1
 
         elif state == states.error:
             if not fbrx.rvld:
