@@ -3,6 +3,7 @@
 #
 
 from myhdl import *
+from myhdl import now
 
 from ._fifo_intf import check_fifo_intf
 from ._fifo_intf import _fifobus

@@ -26,7 +26,7 @@ def memmap_controller_basic(generic, memmap):
 
     states = enum('idle', 'wait', 'write', 'writeack', 'read',
                   'readdone', 'end')
-    state = Signal(states.Idle)
+    state = Signal(states.idle)
 
     timeout_max = 33
     tocnt = Signal(intbv(0, min=0, max=timeout_max))
