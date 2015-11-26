@@ -2,6 +2,7 @@
 from ..._fpga import _fpga
 from ...toolflow import Vivado
 
+
 class Zybo(_fpga):
     vendor = 'xilinx'
     family = 'zynq'

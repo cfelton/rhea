@@ -60,6 +60,7 @@ def parallella_serdes(clock,
             insts.append(gg)
 
     locks = ConcatSignal(*reversed(locked))
+
     @always_comb
     def led_assign():
         led.next = concat("1010", locks)

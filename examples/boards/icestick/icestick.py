@@ -32,6 +32,7 @@ def icestick(clock, led, pmod, uart_tx, uart_rx):
         fbustx.wdata.next = fbusrx.rdata
 
     lcnt = Signal(modbv(0, min=0, max=4))
+
     @always(clock.posedge)
     def beh_led_count():
         if glbl.tick_sec:
