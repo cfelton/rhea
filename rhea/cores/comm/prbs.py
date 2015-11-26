@@ -2,11 +2,12 @@
 from __future__ import absolute_import
 
 """
-Psuedo random bit sequency (PRBS)
+Psuedo random bit sequence (PRBS)
 """
+
 from random import randint
 from myhdl import Signal, intbv, always_seq, always_comb, bin, now
-from ._prbs_table import prbs_feedback_taps
+from .prbs_table import prbs_feedback_taps
 
 
 def get_feedback_taps(order, feedback_taps):
