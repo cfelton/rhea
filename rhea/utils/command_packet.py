@@ -27,16 +27,17 @@ class CommandPacket(object):
     def dump(self):
         pass
 
-    def check_response(self, pkt, evals=None):
+    def check_response(self, pkt, rvals=None, evals=None):
         assert pkt[0] == 0xDE
         assert pkt[1] == 0xCA
         assert pkt[2] == self.packet[2]
         assert pkt[3] == 0xFB
         assert pkt[4:8] == self.packet[4:8]
-        if evals is not None:
+        if rvals is not None and evals is not None:
             for ii, ev in enumerate(evals):
-                rval = struct.unpack(">L", pkt[16+(ii*4):20+(ii*4)])
-                assert rval == ev
+                rval, = struct.unpack(">L", pkt[16+(ii*4):20+(ii*4)])
+                assert rval == ev, "{:08X} != {:08X}".format(rval, ev)
+                rvals.append(rval)
 
     def put(self, fifobus):
         yield fifobus.clock.posedge
@@ -71,6 +72,5 @@ class CommandPacket(object):
                 ii += 1
             yield fifobus.clock.posedge
         fifobus.rd.next = False
-        self.check_response(response_packet, evals)
-        print(len(response_packet), response_packet)
+        self.check_response(response_packet, rvals, evals)
 

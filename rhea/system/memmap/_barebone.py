@@ -78,6 +78,7 @@ class Barebone(MemoryMapped):
         pwidth = int(ceil(log(float(num_peripherals), 2)))
         self.per_addr = Signal(intbv(0)[pwidth:])
         self.mem_addr = Signal(intbv(0)[address_width-pwidth:])
+        self.address = self.mem_addr
 
         self.max_burst = 16
 

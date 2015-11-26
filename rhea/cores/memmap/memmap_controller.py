@@ -25,7 +25,7 @@ def memmap_controller_basic(generic, memmap):
     assert isinstance(memmap, MemoryMapped)
 
     states = enum('idle', 'wait', 'write', 'writeack', 'read',
-                  'readdone', 'end')
+                  'readdone', 'done', 'end')
     state = Signal(states.idle)
 
     timeout_max = 33

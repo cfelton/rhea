@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-from myhdl import (Signal, intbv, enum, always_seq, always_comb, concat,
+from myhdl import (Signal, intbv, enum, always_seq, always_comb,
                    ConcatSignal)
 
 from rhea.system import MemoryMapped, Barebone, FIFOBus
@@ -27,8 +27,11 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
         07: address low byte 
         08: length of data (max length 256 bytes)
         09: 
-        10 - 13:  
-        14 - 15: 
+        10 - 13:  ?? error code(s) ??
+        14 - 15:
+        Only fixed 20 byte packet currently supported, future
+        to support block write/reads upto 256-16
+        16 - 19: first write / read (expects dummy bytes in read pkt)
         16 - 271 (organized big-endian)
     The total packet length is 16 + data_length
 
@@ -53,8 +56,10 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
         'wait_for_packet',   # receive a command packet
         'check_packet',      # basic command check
         'write',             # bus write
-        'response',          # send response packet
+        'write_end',         # end of the write cycle
         'read',              # read bus cycles for response
+        'read_end',          # end of the read cycle
+        'response',          # send response packet
         'error',             # error occurred
         'end'                # end state
     )
@@ -96,6 +101,7 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
         if state == states.idle:
             state.next = states.wait_for_packet
             ready.next = True
+            bytecnt[:] = 0
 
         elif state == states.wait_for_packet:
             if fbrx.rvld:
@@ -121,10 +127,11 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
             # @todo: some packet checking
             bb.per_addr = address[32:28]
             bb.mem_addr = address[28:0]
+            assert bb.done
+            bytecnt[:] = 0
 
             if command == 1:
-                bytecnt[:] = 0
-                state.next = states.response
+                state.next = states.read
             elif command == 2:
                 bb.write_data.next = data
                 state.next = states.write
@@ -132,9 +139,35 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
                 error.next = True
                 state.next = states.error
 
+        elif state == states.write:
+            # @todo: add timeout
+            if bb.done:
+                bb.write.next = True
+                state.next = states.write_end
+
+        elif state == states.write_end:
+            bb.write.next = False
+            if bb.done:
+                state.next = states.read
+
+        elif state == states.read:
+            # @todo: add timeout
+            if bb.done:
+                bb.read.next = True
+                state.next = states.read_end
+
+        elif state == states.read_end:
+            bb.read.next = False
+            if bb.done:
+                # @todo: support different data_width bus
+                packet[16].next = bb.read_data[32:24]
+                packet[17].next = bb.read_data[24:16]
+                packet[18].next = bb.read_data[16:8]
+                packet[19].next = bb.read_data[8:0]
+                state.next = states.response
+
         elif state == states.response:
             fbtx.wr.next = False
-
             if bytecnt < 20:
                 fbtx.wr.next = True
                 fbtx.wdata.next = packet[bytecnt]
