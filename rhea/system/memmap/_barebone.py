@@ -52,7 +52,7 @@ class Barebone(MemoryMapped):
         read_data   -----------------------------|read data |-------
         write_data  ------------|write data |-----------------------
         per_addr
-        reg_addr    ------------\write addr |----|read addr |-------
+        mem_addr    ------------\write addr |----|read addr |-------
 
         * currently not implemented but envisioned it will be added
 
@@ -77,9 +77,13 @@ class Barebone(MemoryMapped):
         # the max address (all 1s) is reserved to indicate "done" (idle)
         pwidth = int(ceil(log(float(num_peripherals), 2)))
         self.per_addr = Signal(intbv(0)[pwidth:])
-        self.mem_addr = Signal(intbv(0)[address_width:])
+        self.mem_addr = Signal(intbv(0)[address_width-pwidth:])
+        self.address = self.mem_addr
 
         self.max_burst = 16
+
+    def add_output_bus(self, read_data, done):
+        pass
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Transactors
@@ -166,9 +170,6 @@ class Barebone(MemoryMapped):
         :return:
         """
         return []
-
-    def add_output_bus(self, read_data, done):
-        pass
 
     def interconnect(self):
         """

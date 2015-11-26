@@ -106,6 +106,10 @@ def streamer_top(clock, reset, upstreamport, downstreamport,
 def testbench_streamer(args=None):
 
     args = tb_default_args(args)
+    if not hasattr(args, 'keep'):
+        args.keep = False
+    if not hasattr(args, 'bustype'):
+        args.bustype = 'barebone'
 
     clock = Clock(0, frequency=100e6)
     reset = Reset(0, active=1, async=False)
