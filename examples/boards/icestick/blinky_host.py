@@ -2,9 +2,7 @@
 import argparse 
 import subprocess
 
-import serial
-from myhdl import (Signal, intbv, modbv, always_seq, always_comb, 
-                   concat, instances)
+from myhdl import (Signal, intbv, always_seq, always_comb, concat,)
 
 from rhea.cores.uart import uartlite
 from rhea.cores.memmap import memmap_command_bridge
@@ -12,7 +10,6 @@ from rhea.cores.misc import glbl_timer_ticks
 from rhea.system import Global, Clock, Reset
 from rhea.system import Barebone
 from rhea.system import FIFOBus
-from rhea.utils import CommandPacket
 from rhea.build.boards import get_board
 
 
@@ -38,8 +35,8 @@ def icestick_blinky_host(clock, led, pmod, uart_tx, uart_rx,
     tick_inst = glbl_timer_ticks(glbl, include_seconds=True)
 
     # create the interfaces to the UART
-    fbustx = FIFOBus(width=8, size=16)
-    fbusrx = FIFOBus(width=8, size=16)
+    fbustx = FIFOBus(width=8, size=32)
+    fbusrx = FIFOBus(width=8, size=32)
 
     # create the memmap (CSR) interface
     memmap = Barebone(glbl, data_width=32, address_width=32)
@@ -91,9 +88,6 @@ def program(args):
     subprocess.check_call(["iceprog", "iceriver/icestick.bin"])
 
 
-def walkleds(args):
-    pass
-    
 def cliparse():
     parser = argparse.ArgumentParser()
     parser.add_argument("--build", default=False, action='store_true')

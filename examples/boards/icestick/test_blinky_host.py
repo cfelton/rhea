@@ -1,5 +1,5 @@
 
-from random import randint
+from __future__ import print_function, division
 
 import myhdl
 from myhdl import (Signal, intbv, instance, delay, StopSimulation)
@@ -61,7 +61,6 @@ def test_ibh(args=None):
             yield delay(1000)
             raise StopSimulation
 
-            
         return tbclk, tbmdl, tbdut, tbstim
 
     run_testbench(_bench_ibh, args=args)

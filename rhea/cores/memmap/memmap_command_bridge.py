@@ -170,13 +170,12 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
 
         elif state == states.response:
             fbtx.wr.next = False
-            if bytecnt < 20:
+            if bytecnt < 20 and not fbtx.full:
                 fbtx.wr.next = True
                 fbtx.wdata.next = packet[bytecnt]
+                bytecnt[:] = bytecnt + 1
             else:
                 state.next = states.end
-
-            bytecnt[:] = bytecnt + 1
 
         elif state == states.error:
             if not fbrx.rvld:
