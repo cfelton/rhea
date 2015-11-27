@@ -2,7 +2,7 @@
 from myhdl import Signal, instances
 
 from ..misc import syncro
-from ._uart import uartbaud, uarttx, uartrx
+from .uart import uartbaud, uarttx, uartrx
 from ..fifo import fifo_fast
 
 

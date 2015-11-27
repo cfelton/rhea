@@ -125,8 +125,10 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
 
         elif state == states.check_packet:
             # @todo: some packet checking
-            bb.per_addr = address[32:28]
-            bb.mem_addr = address[28:0]
+            # @todo: need to support different address widths, use
+            # @todo: `bb` attributes to determine which bits to assign
+            bb.per_addr.next = address[32:28]
+            bb.mem_addr.next = address[28:0]
             assert bb.done
             bytecnt[:] = 0
 

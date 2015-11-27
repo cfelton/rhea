@@ -4,7 +4,8 @@ from __future__ import division
 
 from fractions import gcd
 
-from myhdl import (Signal, intbv, modbv, enum, always_seq, always)
+from myhdl import (Signal, intbv, modbv, enum, always_seq, 
+                   always, now)
 
 
 def uartbaud(glbl, baudce, baudce16, baudrate=115200):
@@ -17,20 +18,28 @@ def uartbaud(glbl, baudce, baudce16, baudrate=115200):
     # calculate the limit.  The following creates a counter that counts
     # in increments of baudfreq, this creates a strobe on average equal
     # to the desired frequency.
-    baudfreq = int((16*baudrate) / (gcd(clock.frequency, 16*baudrate)))
-    baudlimit = int((clock.frequency / gcd(clock.frequency, 16*baudrate))
-                    - baudfreq)
-
-    print("uartlite: baud frequency {:f} baud limit {:d}".format(
+    # @todo: this didn't work as well as I thought it would ???
+    div = gcd(clock.frequency, 16*baudrate)
+    baudfreq = int((16*baudrate) / div)
+    baudlimit = int((clock.frequency / div)) 
+    
+    cbaud = clock.frequency / (16*(baudlimit / baudfreq))
+    print("")
+    print("uartlite ")
+    print("  baudrate: {:f} actual {:f} ".format(baudrate, cbaud))
+    print("  baud frequency: {:.3f}, baud limit: {:.3f}".format(
           baudfreq, baudlimit))
+    print("  remainder {:f}".format(baudlimit / baudfreq))
+    print("")
 
-    cnt = Signal(intbv(0, min=0, max=2*baudlimit))
+    cntmax = baudlimit - baudfreq
+    cnt = Signal(intbv(0, min=0, max=2*cntmax))
     cnt16 = Signal(modbv(0, min=0, max=16))
 
     @always_seq(clock.posedge, reset=reset)
     def rtlbaud16():
-        if cnt >= baudlimit:
-            cnt.next = cnt - baudlimit
+        if cnt >= cntmax:
+            cnt.next = cnt - cntmax  #baudlimit
             baudce16.next = True
         else:
             cnt.next = cnt + baudfreq

@@ -33,8 +33,8 @@ def icestick_blinky(led, clock, reset=None):
 
 
 def build(args):
-    brd = get_board('de0nano')
-    flow = brd.get_flow(icestick_blinky)
+    brd = get_board('icestick')
+    flow = brd.get_flow(top=icestick_blinky)
     flow.run()
 
 
