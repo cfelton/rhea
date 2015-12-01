@@ -28,6 +28,8 @@ class Icestick(_fpga):
         'spi_ss': dict(pins=(71,)),
         'uart_tx': dict(pins=(8,)),
         'uart_rx': dict(pins=(9,)),
+        'uart_dtr': dict(pins=(3,)),
+        'uart_rts': dict(pins=(7,)),
         'pmod': dict(pins=(78, 79, 80, 81, 87, 88, 90, 91,)),
     }
 

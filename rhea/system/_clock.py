@@ -50,9 +50,12 @@ class Clock(myhdl.SignalType):
         return self._period
 
     def _set_hticks(self):
+        # @todo: current limitation, the clock sim ticks are only
+        # @todo: valid for 1ns sim period.  
         # self._nts = self._convert_timescale(self._timescale)
-        # self._hticks = int(round(self._period/self._nts))
-        self._hticks = 3
+        self._nts = 1e-9
+        self._hticks = int(round((self._period/self._nts)/2))
+        #self._hticks = 3
 
     def _convert_timescale(self, ts):
         # @todo: need to complete this, ts is in the form

@@ -1,15 +1,21 @@
 
-from myhdl import (Signal, modbv, always, always_comb, instances)
+import argparse
+import subprocess
+
+from myhdl import (Signal, intbv, always_seq, always_comb, concat,)
+
 
 from rhea.cores.uart import uartlite
 from rhea.cores.memmap import memmap_command_bridge
 from rhea.cores.misc import glbl_timer_ticks
-from rhea.system import Global
+from rhea.system import Global, Clock, Reset
 from rhea.system import Barebone
 from rhea.system import FIFOBus
+from rhea.build.boards import get_board
 
 
-def icestick_blinky_host(clock, led, pmod, uart_tx, uart_rx):
+def icestick_blinky_host(clock, led, pmod, uart_tx, uart_rx,
+                         uart_dtr, uart_rts):
     """
     This example is similar to the other examples in this directory but
     the LEDs are controlled externally via command packets sent from a
@@ -24,51 +30,84 @@ def icestick_blinky_host(clock, led, pmod, uart_tx, uart_rx):
     """
 
     glbl = Global(clock, None)
+    ledreg = Signal(intbv(0)[8:])
+
     # create the timer tick instance
     tick_inst = glbl_timer_ticks(glbl, include_seconds=True)
 
     # create the interfaces to the UART
-    fbustx = FIFOBus(width=8, size=20)
-    fbusrx = FIFOBus(width=8, size=20)
+    fbustx = FIFOBus(width=8, size=32)
+    fbusrx = FIFOBus(width=8, size=32)
 
     # create the memmap (CSR) interface
-    memmap = Barebone(data_width=32, address_width=28)
+    memmap = Barebone(glbl, data_width=32, address_width=32)
 
-    # create the UART instance
-    uart_inst = uartlite(glbl, fbustx, fbusrx, uart_tx, uart_rx)
+    # create the UART instance.
+    uart_inst = uartlite(glbl, fbustx, fbusrx, uart_rx, uart_tx)
 
     # create the packet command instance
     cmd_inst = memmap_command_bridge(glbl, fbusrx, fbustx, memmap)
 
-    # @todo: LED memmap control
+    @always_seq(clock.posedge, reset=None)
+    def beh_led_control():
+        memmap.done.next = not (memmap.write or memmap.read)
+        if memmap.write and memmap.mem_addr == 0x20:
+            ledreg.next = memmap.write_data
+
+    @always_comb
+    def beh_led_read():
+        if memmap.read and memmap.mem_addr == 0x20:
+            memmap.read_data.next = ledreg
+        else:
+            memmap.read_data.next = 0
+
+    # blink one of the LEDs
+    tone = Signal(intbv(0)[8:])
+
+    @always_seq(clock.posedge, reset=None)
+    def beh_assign():
+        if glbl.tick_sec:
+            tone.next = (~tone) & 0x1
+        led.next = (ledreg | tone[5:] | 
+                    concat("00", uart_dtr, uart_rts, "0") )
+            
+        pmod.next = 0
 
     # @todo: PMOD OLED memmap control
 
-    return tick_inst, uart_inst, cmd_inst
+    return (tick_inst, uart_inst, cmd_inst, 
+            beh_led_control, beh_led_read, beh_assign)
 
 
 def build(args):
-    pass
+    brd = get_board('icestick')
+    flow = brd.get_flow(top=icestick_blinky_host)
+    flow.run()
 
 
 def program(args):
-    pass
-
-
-def write_address(address, value):
-    pass
-
-
-def read_address(address):
-    pass
+    subprocess.check_call(["iceprog", "iceriver/icestick.bin"])
 
 
 def cliparse():
-    pass
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--build", default=False, action='store_true')
+    parser.add_argument("--test", default=False, action='store_true')
+    parser.add_argument("--program", default=False, action='store_true')
+    parser.add_argument("--walk", default=False, action='store_true')
+    args = parser.parse_args()
+    return args
 
 
 def main():
-    pass
+    args = cliparse()
+    if args.test:
+        icestick_blinky_host(
+            Clock(0, frequency=50e6), Signal(intbv(0)[8:]), 
+            Signal(intbv(0)[8:]),
+            Signal(bool(0)), Signal(bool(0)) )
+    if args.build:
+        build(args)
 
 
 if __name__ == '__main__':
