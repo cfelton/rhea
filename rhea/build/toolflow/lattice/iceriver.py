@@ -6,11 +6,10 @@ import os
 import subprocess
 import shlex
 
-from ._toolflow import _toolflow
-from ._convert import convert
-from ._yosys import Yosys
-from .._fpga import _fpga
-from ..extintf import Clock
+from ..toolflow import ToolFlow
+from ..convert import convert
+from ..yosys import Yosys
+from rhea.build.extintf import Clock
 
 
 class IceRiver(Yosys):

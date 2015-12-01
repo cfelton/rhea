@@ -2,11 +2,11 @@
 # Copyright (c) 2015 Christopher L. Felton
 #
 
-from ..._fpga import _fpga
-from ...toolflow import Quartus
+from rhea.build import FPGA
+from rhea.build.toolflow import Quartus
 
 
-class DE0NanoSOC(_fpga):
+class DE0NanoSOC(FPGA):
     vendor = 'altera'
     family = 'Cyclone V'
     device = '5CSEMA4U23C6'

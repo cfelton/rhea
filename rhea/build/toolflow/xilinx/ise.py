@@ -11,11 +11,11 @@ from time import gmtime, strftime
 import subprocess
 from pprint import pprint
 
-from .._toolflow import _toolflow
-from .._convert import convert
-from ..._fpga import _fpga
-from ...extintf import Clock
-from ._ise_parse_reports import get_utilization
+from ..toolflow import ToolFlow
+from ..convert import convert
+from rhea.build import FPGA
+from rhea.build.extintf import Clock
+from .ise_parse_reports import get_utilization
 
 _default_pin_attr = {
     'NET': None,
@@ -26,7 +26,7 @@ _default_pin_attr = {
 }
 
 
-class ISE(_toolflow):
+class ISE(ToolFlow):
     _name = "Xilinx ISE"
 
     def __init__(self, brd, top=None, path='xilinx/'):

@@ -1,8 +1,9 @@
 
-from ..._fpga import _fpga
-from ...toolflow import Vivado
+from rhea.build import FPGA
+from rhea.build.toolflow import Vivado
 
-class Parallella(_fpga):
+
+class Parallella(FPGA):
     vendor = 'xilinx'
     family = 'zynq'
     device = 'XC7Z010'

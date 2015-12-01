@@ -12,12 +12,12 @@ from time import gmtime, strftime
 import subprocess
 from pprint import pprint
 
-from .._toolflow import _toolflow
-from .._convert import convert
-from ..._fpga import _fpga
+from ..toolflow import ToolFlow
+from ..convert import convert
+from rhea.build import FPGA
 
 
-class Vivado(_toolflow):
+class Vivado(ToolFlow):
     _name = "Xilinx Vivado"
     def __init__(self, brd, top=None, path='./xilinx/'):
         """

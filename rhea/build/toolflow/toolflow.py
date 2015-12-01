@@ -24,7 +24,7 @@ ERROR: The $tool flow failed!
 )
 
 
-class _toolflow(object): 
+class ToolFlow(object): 
     _name = "not specified (bug in code)"
     def __init__(self, brd, top=None, name=None, path='.'):
         """
