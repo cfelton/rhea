@@ -34,7 +34,7 @@ class ISE(ToolFlow):
         Given a top-level module (function) and a board definition
         create an instance of the ISE tool-chain.
         """
-        _toolflow.__init__(self, brd, top=top, path=path)
+        super(ISE, self).__init__(brd=brd, top=top, path=path)
         #self.reports = _ise_parse_reports(self)
         self.ucf_file = ''
 
