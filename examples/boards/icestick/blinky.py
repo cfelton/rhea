@@ -26,7 +26,7 @@ def icestick_blinky(led, clock, reset=None):
     def rtl_assign():
         led.next[0] = toggle
         led.next[1] = not toggle
-        for ii in range(3, 8):
+        for ii in range(2, 8):
             led.next[ii] = 0
 
     return rtl, rtl_assign

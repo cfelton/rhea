@@ -60,6 +60,7 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
         'read',              # read bus cycles for response
         'read_end',          # end of the read cycle
         'response',          # send response packet
+        'response_full',     # check of RX FIFO full
         'error',             # error occurred
         'end'                # end state
     )
@@ -170,12 +171,18 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
 
         elif state == states.response:
             fbtx.wr.next = False
-            if bytecnt < 20 and not fbtx.full:
-                fbtx.wr.next = True
-                fbtx.wdata.next = packet[bytecnt]
-                bytecnt[:] = bytecnt + 1
+            if bytecnt < 20:
+                if not fbtx.full:
+                    fbtx.wr.next = True
+                    fbtx.wdata.next = packet[bytecnt]
+                    bytecnt[:] = bytecnt + 1
+                state.next = states.response_full
             else:
                 state.next = states.end
+                
+        elif state == states.response_full:
+            fbtx.wr.next = False
+            state.next = states.response
 
         elif state == states.error:
             if not fbrx.rvld:

@@ -1,0 +1,40 @@
+# ##############################################################################
+
+# iCEcube PCF
+
+# Version:            2015.08.27744
+
+# File Generated:     Nov 30 2015 21:04:16
+
+# Family & Device:    iCE40HX1K
+
+# Package:            TQ144
+
+# ##############################################################################
+
+###MergeFF List 4
+set_io_ff led[3] -out ON
+set_io_ff led[4] -out ON
+set_io_ff uart_rx -in ON
+set_io_ff uart_tx -out ON
+
+###IOSet List 18
+set_io clock 21
+set_io led[0] 99
+set_io led[1] 98
+set_io led[2] 97
+set_io led[3] 96
+set_io led[4] 95
+set_io pmod[0] 78
+set_io pmod[1] 79
+set_io pmod[2] 80
+set_io pmod[3] 81
+set_io pmod[4] 87
+set_io pmod[5] 88
+set_io pmod[6] 90
+set_io pmod[7] 91
+#set_io uart_dtr 3
+#set_io uart_rts 7
+set_io uart_rx 9
+set_io uart_tx 8
+
