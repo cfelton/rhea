@@ -53,7 +53,7 @@ def memmap_controller_basic(generic, memmap):
                 if generic.write:
                     state.next = states.done
                 elif generic.read:
-                    state.next = states.readvalid
+                    state.next = states.readdone
 
         # ~~~[Write]~~~
         elif state == states.write:
