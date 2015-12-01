@@ -36,8 +36,8 @@ def icestick_blinky_host(clock, led, pmod, uart_tx, uart_rx,
     tick_inst = glbl_timer_ticks(glbl, include_seconds=True)
 
     # create the interfaces to the UART
-    fbustx = FIFOBus(width=8, size=32)
-    fbusrx = FIFOBus(width=8, size=32)
+    fbustx = FIFOBus(width=8, size=4)
+    fbusrx = FIFOBus(width=8, size=4)
 
     # create the memmap (CSR) interface
     memmap = Barebone(glbl, data_width=32, address_width=32)
@@ -68,8 +68,7 @@ def icestick_blinky_host(clock, led, pmod, uart_tx, uart_rx,
     def beh_assign():
         if glbl.tick_sec:
             tone.next = (~tone) & 0x1
-        led.next = (ledreg | tone[5:] | 
-                    concat("00", uart_dtr, uart_rts, "0") )
+        led.next = ledreg | tone[5:] 
             
         pmod.next = 0
 

@@ -7,11 +7,11 @@ from __future__ import absolute_import
 
 from string import Template
 
-from rhea.build._fpga import _fpga
+from rhea.build import FPGA
 from rhea.build.toolflow import Quartus
 
 
-class DE0CV(_fpga):
+class DE0CV(FPGA):
     vendor = 'altera'
     family = 'Cyclone V'
     device = '5CEBA4F23C7'

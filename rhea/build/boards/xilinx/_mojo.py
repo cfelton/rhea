@@ -4,11 +4,11 @@
 
 from myhdl import TristateSignal, intbv
 
-from ..._fpga import _fpga
-from ...extintf import Port
-from ...toolflow import ISE
+from rhea.build import FPGA
+from rhea.build.extintf import Port
+from rhea.build.toolflow import ISE
 
-class Mojo(_fpga):
+class Mojo(FPGA):
     vendor = 'xilinx'
     family = 'spartan6'
     device = 'XC6SLX9'

@@ -2,25 +2,32 @@
 import struct
 
 
+# @todo: use these
+PACKET_LENGTH = 12
+DATA_OFFSET = 8
+
+
 class CommandPacket(object):
     def __init__(self, rnw=True, address=0, vals=None):
         """ """
         assert isinstance(vals, (type(None), list))
-        self.rawbytes = bytearray([0 for _ in range(16)])
+        self.rawbytes = bytearray([0 for _ in range(PACKET_LENGTH)])
         self.rawbytes[0] = 0xDE
-        self.rawbytes[1] = 0xCA
-        self.rawbytes[2] = 1 if rnw else 2
-        self.rawbytes[3] = 0xFB
-        self.rawbytes[4:8] = struct.pack(">L", address)
-        self.rawbytes[8] = 4   # only support single read/write
-        self.rawbytes[9] = 0xAD
+        self.rawbytes[1] = 1 if rnw else 2
+        self.rawbytes[2:6] = struct.pack(">L", address)
+        self.rawbytes[6] = 4   # only support single read/write
+        self.rawbytes[7] = 0xCA
 
         # @todo: support variable packets, block read/writes
         if vals is not None:
-            self.rawbytes[16:20] = struct.pack(">L", vals[0])
+            self.rawbytes[8:12] = struct.pack(">L", vals[0])
         else:
+<<<<<<< HEAD
             self.rawbytes[16:20] = struct.pack(">L", 0xFEEDFACE)
 
+=======
+            self.rawbytes[8:12] = struct.pack(">L", 0xFEEDFACE)
+>>>>>>> master
         # @todo: added checksum / CRC
 
     def dump(self):
@@ -28,13 +35,12 @@ class CommandPacket(object):
 
     def check_response(self, pkt, rvals=None, evals=None):
         assert pkt[0] == 0xDE
-        assert pkt[1] == 0xCA
-        assert pkt[2] == self.rawbytes[2]
-        assert pkt[3] == 0xFB
-        assert pkt[4:8] == self.rawbytes[4:8]
+        assert pkt[1] == self.rawbytes[1]
+        assert pkt[2:6] == self.rawbytes[2:6]
+        assert pkt[7] == 0xCA
         if rvals is not None and evals is not None:
             for ii, ev in enumerate(evals):
-                rval, = struct.unpack(">L", pkt[16+(ii*4):20+(ii*4)])
+                rval, = struct.unpack(">L", pkt[8+(ii*4):12+(ii*4)])
                 assert rval == ev, "{:08X} != {:08X}".format(rval, ev)
                 rvals.append(rval)
 
@@ -46,9 +52,10 @@ class CommandPacket(object):
             yield fifobus.clock.posedge
         fifobus.wr.next = False
 
-    def get(self, fifobus, rvals=None, evals=None, timeout=1000):
-        response_bytes = rpkt = bytearray([0 for _ in range(20)])
-        bytestoget, ii = 20, 0
+    def get(self, fifobus, rvals=None, evals=None, timeout=4000):
+        response_bytes = bytearray([0 for _ in range(PACKET_LENGTH)])
+        rpkt = response_bytes
+        bytestoget, ii = PACKET_LENGTH, 0
 
         while fifobus.empty and timeout > 0:
             timeout -= 1

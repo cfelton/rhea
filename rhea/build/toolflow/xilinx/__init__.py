@@ -1,3 +1,3 @@
 
-from ._ise import ISE
-from ._vivado import Vivado
+from .ise import ISE
+from .vivado import Vivado

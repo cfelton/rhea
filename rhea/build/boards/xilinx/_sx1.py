@@ -1,7 +1,9 @@
-from ..._fpga import _fpga
-from ...toolflow import ISE 
 
-class SX1(_fpga):
+from rhea.build import FPGA
+from rhea.build.toolflow import ISE 
+
+
+class SX1(FPGA):
     vendor = 'xilinx'
     family = 'spartan3e'
     device = 'XC3S500E'

@@ -11,13 +11,19 @@ import os
 import shutil
 from time import gmtime, strftime
 
+<<<<<<< HEAD:rhea/build/toolflow/xilinx/_vivado.py
 from rhea.system import Clock
 from rhea.build.toolflow._toolflow import _toolflow
 from rhea.build.toolflow._convert import convert
 from rhea.build._fpga import _fpga
+=======
+from ..toolflow import ToolFlow
+from ..convert import convert
+from rhea.build import FPGA
+>>>>>>> master:rhea/build/toolflow/xilinx/vivado.py
 
 
-class Vivado(_toolflow):
+class Vivado(ToolFlow):
     _name = "Xilinx Vivado"
     def __init__(self, brd, top=None, path='./xilinx/'):
         """

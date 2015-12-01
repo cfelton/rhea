@@ -16,7 +16,7 @@ from .extintf import Clock
 from .extintf import Reset
 
 
-class _fpga(object):
+class FPGA(object):
     """ """
     vendor = "" # FPGA vendor, Altera, Xilinx, Lattice
     device = "" # FPGA device type

@@ -12,11 +12,11 @@ import os
 import sys
 import os
 
-from ._toolflow import _toolflow
-from ._convert import convert
+from .toolflow import ToolFlow
+from .convert import convert
 
 
-class Yosys(_toolflow):
+class Yosys(ToolFlow):
     _name = "yosys"
 
     def __init__(self, brd, top=None, path='yosys/'):

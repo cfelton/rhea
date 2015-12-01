@@ -12,13 +12,13 @@ from time import gmtime, strftime
 import subprocess
 import shlex
 
-from .._toolflow import _toolflow
-from .._convert import convert
-from ..._fpga import _fpga
-from ...extintf import Clock
+from ..toolflow import ToolFlow
+from ..convert import convert
+from rhea.build import FPGA
+from rhea.build.extintf import Clock
 
-from ._quartus_parse_reports import get_utilization
-from ._quartus_parse_reports import get_fmax
+from .quartus_parse_reports import get_utilization
+from .quartus_parse_reports import get_fmax
 
 
 _default_pin_attr = {
@@ -26,7 +26,7 @@ _default_pin_attr = {
 }
 
 
-class Quartus(_toolflow):
+class Quartus(ToolFlow):
     _name = "Altera Quartus"
 
     def __init__(self, brd, top=None, path='altera/'):

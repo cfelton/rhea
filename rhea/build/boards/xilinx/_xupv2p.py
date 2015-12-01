@@ -1,7 +1,8 @@
-from ..._fpga import _fpga
-from ...toolflow import ISE 
 
-class XUPV2P(_fpga):
+from rhea.build import FPGA
+from rhea.build.toolflow import ISE 
+
+class XUPV2P(FPGA):
     vendor = 'xilinx'
     family = 'virtex2p'
     device = 'XC2VP30'

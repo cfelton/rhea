@@ -2,13 +2,13 @@
 
 from __future__ import absolute_import
 
-from ..._fpga import _fpga
-from ...toolflow import IceRiver
-from ...extintf import ExternalInterface
-from ...extintf import Port 
+from rhea.build import FPGA
+from rhea.build.toolflow import IceRiver
+from rhea.build.extintf import ExternalInterface
+from rhea.build.extintf import Port 
 
 
-class CATBoard(_fpga):
+class CATBoard(FPGA):
     vendor = 'lattice'
     family = 'ice40'
     device = 'HX8K'

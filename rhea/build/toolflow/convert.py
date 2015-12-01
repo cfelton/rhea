@@ -10,7 +10,8 @@ import myhdl
 from myhdl import toVerilog
 from myhdl import toVHDL
 
-from .._fpga import _fpga
+from .. import FPGA
+
 
 def convert(brd, top=None, name=None, use='verilog', path='.'):
     """ Wrapper around the myhdl conversion functions
@@ -24,7 +25,7 @@ def convert(brd, top=None, name=None, use='verilog', path='.'):
       use  : User 'verilog' or 'vhdl' for conversion
       path : path of the output files
     """
-    assert isinstance(brd, _fpga)
+    assert isinstance(brd, FPGA)
 
     name = brd.top_name if name is None else name
     pp = brd.get_portmap(top=top)

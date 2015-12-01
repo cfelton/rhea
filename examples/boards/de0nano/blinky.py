@@ -28,12 +28,12 @@ def de0nano_blink(led, clock, reset=None):
     def rtl_assign():
         led.next[0] = toggle
         led.next[1] = not toggle
-        for ii in range(3, 8):
+        for ii in range(2, 8):
             led.next[ii] = 0
         
     return rtl, rtl_assign
-    
 
+    
 def build(args):
     brd = get_board('de0nano')
     flow = brd.get_flow(de0nano_blink)

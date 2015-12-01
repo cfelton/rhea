@@ -8,6 +8,7 @@ from rhea.system import Global, Clock, Reset
 from rhea.models.uart import UARTModel
 from rhea.utils.test import run_testbench, tb_args, tb_default_args
 from rhea.utils import CommandPacket
+from rhea.utils.command_packet import PACKET_LENGTH
 
 from blinky_host import icestick_blinky_host
 
@@ -46,7 +47,7 @@ def test_ibh(args=None):
             timeout = 100
             yield delay(waitticks) 
             # get the response packet
-            for ii in range(20):
+            for ii in range(PACKET_LENGTH):
                 rb = uartmdl.read()
                 while rb is None and timeout > 0:
                     yield clock.posedge

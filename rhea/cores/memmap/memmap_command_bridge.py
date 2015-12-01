@@ -17,22 +17,22 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
     the MemoryMapped interface being used. 
     
     The variable length command packet is:
-        00: 
-        01: 
-        02: command byte
-        03: 
-        04: address high byte 
-        05: address byte 
-        06: address byte 
-        07: address low byte 
-        08: length of data (max length 256 bytes)
-        09: 
-        10 - 13:  ?? error code(s) ??
-        14 - 15:
-        Only fixed 20 byte packet currently supported, future
-        to support block write/reads upto 256-16
-        16 - 19: first write / read (expects dummy bytes in read pkt)
-        16 - 271 (organized big-endian)
+        00: 0xDE
+        01: command byte (response msb indicates error)
+        02: address high byte 
+        03: address byte 
+        04: address byte 
+        05: address low byte 
+        06: length of data (max length 256 bytes)
+        07: 0xCA   # sequence number, fixed for now
+        08: data high byte 
+        09: data byte
+        10: data byte
+        11: data low byte
+        Fixed 12 byte packet currently supported, future
+        to support block write/reads upto 256-8-4
+        12 - 253: write / read (big-endian)
+        @todo: last 2 bytes crc
     The total packet length is 16 + data_length
 
     Ports:
@@ -60,6 +60,7 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
         'read',              # read bus cycles for response
         'read_end',          # end of the read cycle
         'response',          # send response packet
+        'response_full',     # check of RX FIFO full
         'error',             # error occurred
         'end'                # end state
     )
@@ -70,19 +71,21 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
     bytecnt = intbv(0, min=0, max=256)
 
     # known knows
-    pidx = (0, 1, 3, 9)
-    pval = (0xDE, 0xCA, 0xFB, 0xAD)
+    pidx = (0, 7,)
+    pval = (0xDE, 0xCA,)
     assert len(pidx) == len(pval)
     nknown = len(pidx)
 
     bytemon = Signal(intbv(0)[8:])
 
-    # only supporting 20byte packets (single read/write) for now
-    packet = [Signal(intbv(0)[8:]) for _ in range(20)]
-    command = packet[2]
-    address = ConcatSignal(*packet[4:8])
-    data = ConcatSignal(*packet[16:20])
-    datalen = packet[8]
+    # only supporting 12byte packets (single read/write) for now
+    packet_length = 12
+    data_offset = 8
+    packet = [Signal(intbv(0)[8:]) for _ in range(packet_length)]
+    command = packet[1]
+    address = ConcatSignal(*packet[2:6])
+    data = ConcatSignal(*packet[8:12])
+    datalen = packet[6]
 
     # convert generic memory-mapped bus to the memory-mapped interface
     # passed to the controller
@@ -119,7 +122,7 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
                 bytecnt[:] = bytecnt + 1
 
             # @todo: replace 20 with len(CommandPacket().header)
-            if bytecnt == 20:
+            if bytecnt == packet_length:
                 ready.next = False
                 state.next = states.check_packet
 
@@ -162,20 +165,26 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
             bb.read.next = False
             if bb.done:
                 # @todo: support different data_width bus
-                packet[16].next = bb.read_data[32:24]
-                packet[17].next = bb.read_data[24:16]
-                packet[18].next = bb.read_data[16:8]
-                packet[19].next = bb.read_data[8:0]
+                packet[data_offset+0].next = bb.read_data[32:24]
+                packet[data_offset+1].next = bb.read_data[24:16]
+                packet[data_offset+2].next = bb.read_data[16:8]
+                packet[data_offset+3].next = bb.read_data[8:0]
                 state.next = states.response
 
         elif state == states.response:
             fbtx.wr.next = False
-            if bytecnt < 20 and not fbtx.full:
-                fbtx.wr.next = True
-                fbtx.wdata.next = packet[bytecnt]
-                bytecnt[:] = bytecnt + 1
+            if bytecnt < packet_length:
+                if not fbtx.full:
+                    fbtx.wr.next = True
+                    fbtx.wdata.next = packet[bytecnt]
+                    bytecnt[:] = bytecnt + 1
+                state.next = states.response_full
             else:
                 state.next = states.end
+                
+        elif state == states.response_full:
+            fbtx.wr.next = False
+            state.next = states.response
 
         elif state == states.error:
             if not fbrx.rvld:
