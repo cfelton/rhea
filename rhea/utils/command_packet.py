@@ -22,12 +22,8 @@ class CommandPacket(object):
         if vals is not None:
             self.rawbytes[8:12] = struct.pack(">L", vals[0])
         else:
-<<<<<<< HEAD
-            self.rawbytes[16:20] = struct.pack(">L", 0xFEEDFACE)
-
-=======
             self.rawbytes[8:12] = struct.pack(">L", 0xFEEDFACE)
->>>>>>> master
+
         # @todo: added checksum / CRC
 
     def dump(self):
