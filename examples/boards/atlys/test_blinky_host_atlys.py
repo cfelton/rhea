@@ -1,6 +1,8 @@
 
 from __future__ import print_function, division
 
+from random import randint
+
 import myhdl
 from myhdl import (Signal, intbv, instance, delay, StopSimulation)
 
@@ -10,7 +12,7 @@ from rhea.utils.test import run_testbench, tb_args, tb_default_args
 from rhea.utils import CommandPacket
 from rhea.utils.command_packet import PACKET_LENGTH
 
-from icestick_blinky_host import icestick_blinky_host
+from atlys_blinky_host import atlys_blinky_host
 
 
 def test_ibh(args=None):
@@ -18,31 +20,45 @@ def test_ibh(args=None):
     numbytes = 13
 
     clock = Clock(0, frequency=50e6)
-    glbl = Global(clock, None)
+    reset = Reset(0, active=0, async=True)
+    glbl = Global(clock, reset)
     led = Signal(intbv(0)[8:])
+    sw = Signal(intbv(1)[8:])
     pmod = Signal(intbv(0)[8:])
     uart_tx = Signal(bool(0))
     uart_rx = Signal(bool(0))
-    uart_dtr = Signal(bool(0))
-    uart_rts = Signal(bool(0))
     uartmdl = UARTModel()
+
+    baudrate = uartmdl.baudrate
+    baudticks = int((1/baudrate) / 1e-9)
 
     def _bench_ibh():
         tbclk = clock.gen()
         tbmdl = uartmdl.process(glbl, uart_tx, uart_rx)
-        tbdut = icestick_blinky_host(clock, led, pmod, 
-                                     uart_tx, uart_rx,
-                                     uart_dtr, uart_rts)
+        tbdut = atlys_blinky_host(clock, reset, led, sw, pmod, 
+                                  uart_tx, uart_rx)
 
         @instance
         def tbstim():
+            yield reset.pulse(33)
             yield delay(1000)
+
+            # test loopback
+            for ii in range(5):
+                wb = randint(0, 255)
+                uartmdl.write(wb)
+                # wait for the send (return) 
+                yield delay(baudticks*(8+2) + 2*baudticks)
+                rb = uartmdl.read()
+                assert rb == wb
+            sw.next = 0
+            yield delay(100)
             
             # send a write that should enable all five LEDs
             pkt = CommandPacket(False, address=0x20, vals=[0xFF])
             for bb in pkt.rawbytes:
                 uartmdl.write(bb)
-            waitticks = int((1/115200.) / 1e-9) * 10 * 28
+            waitticks = baudticks * 10 * 28
             yield delay(waitticks) 
             timeout = 100
             yield delay(waitticks) 
@@ -66,8 +82,9 @@ def test_ibh(args=None):
 
     run_testbench(_bench_ibh, args=args)
     myhdl.toVerilog.directory = 'output'
-    myhdl.toVerilog(icestick_blinky_host, clock, led, pmod,
-                    uart_tx, uart_rx, uart_dtr, uart_rts)
+    myhdl.toVerilog(atlys_blinky_host, clock, reset,
+                    led, sw, pmod,
+                    uart_tx, uart_rx)
 
 
 if __name__ == '__main__':
