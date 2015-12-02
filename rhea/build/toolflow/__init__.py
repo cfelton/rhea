@@ -8,6 +8,5 @@ from .altera import Quartus
 from .xilinx import ISE
 from .xilinx import Vivado
 #from lattice import Diamond
-
-from .yosys import Yosys
 from .lattice import IceRiver
+from .yosys import Yosys

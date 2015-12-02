@@ -9,10 +9,10 @@ from math import log, ceil
 
 from myhdl import *
 
-from ._fifo_mem import fifo_mem_generic
-from ._fifo_syncers import *
-from ._fifo_intf import check_fifo_intf
-from ._fifo_intf import _fifobus
+from rhea.system import FIFOBus
+from .fifo_mem import fifo_mem_generic
+from .fifo_syncers import *
+from .fifo_intf import check_fifo_intf
 
 
 def fifo_async(reset, wclk, rclk, fbus):
@@ -133,4 +133,5 @@ def fifo_async(reset, wclk, rclk, fbus):
 
     return instances()
 
-fifo_async.fbus_intf = _fifobus
+
+fifo_async.fbus_intf = FIFOBus

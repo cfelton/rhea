@@ -2,11 +2,11 @@
 # Copyright (c) 2014 Christopher L. Felton
 #
 
-from myhdl import *
-from myhdl import now
+from myhdl import (Signal, intbv, always, always_comb, always_seq)
 
-from ._fifo_intf import check_fifo_intf
-from ._fifo_intf import _fifobus
+from rhea.system import FIFOBus
+from .fifo_srl import fifo_srl
+
 
 def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     """
@@ -51,10 +51,6 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
 
     # aliases to the FIFO bus interface
     srlce = fbus.wr     # single cycle write
-    write = fbus.wr
-    read = fbus.rd
-    full = fbus.full
-    empty = fbus.empty
     
     # note: use_srl_prim has not been tested!
     # note: signal slices wdata() will need to be used instead of
@@ -62,8 +58,8 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     if use_srl_prim:
         gsrl = [None for _ in range(N)]
         for ii in range(N):
-            gsrl[ii] = m_fifo_srl(clock, fbus.wdata(ii), fbus.wr,
-                                  addr, fbus.rdata(ii))
+            gsrl[ii] = fifo_srl(clock, fbus.wdata(ii), fbus.wr,
+                                addr, fbus.rdata(ii))
     else:
         # the SRL based FIFO always writes to address 0 and shifts
         # the FIFO, only a read address is accounted.
@@ -133,5 +129,6 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
             rtl_occupancy, rtl_count,)
     return gens
 
+
 # attached a generic fifo bus object to the module
-fifo_fast.fbus_intf = _fifobus
+fifo_fast.fbus_intf = FIFOBus

@@ -3,21 +3,19 @@
 #
 
 from math import ceil, log
-from myhdl import *
+from myhdl import Signal, intbv, always_comb, always
 
 
-def fifo_mem_generic(
-    wclk,
-    wr,
-    din,
-    addr_w,
+def fifo_mem_generic(wclk, wr, din, addr_w,
+                     rclk, dout, addr_r,
+                     mem_size=9):
+    """ Memory module used by FIFOs
+    Ports
+    =====
 
-    rclk,
-    dout,
-    addr_r,
-    mem_size=9,
-    ):
-    """
+    Parameters
+    ==========
+      mem_size: number of item entries in the memory
     """
 
     Asz = int(ceil(log(mem_size, 2)))

@@ -30,7 +30,7 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
         10: data byte
         11: data low byte
         Fixed 12 byte packet currently supported, future
-        to support block write/reads upto 256-8-4
+        to support block write/reads up to 256-8-4
         12 - 253: write / read (big-endian)
         @todo: last 2 bytes crc
     The total packet length is 16 + data_length

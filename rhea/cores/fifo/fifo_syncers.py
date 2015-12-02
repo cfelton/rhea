@@ -3,7 +3,8 @@
 #
 
 
-from myhdl import *
+from myhdl import Signal, intbv, always_seq
+
 
 def m_sync_rst(clock, rsti, rsto):
     """
