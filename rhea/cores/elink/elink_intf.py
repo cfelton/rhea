@@ -3,9 +3,8 @@ from __future__ import absolute_import
 
 from myhdl import Signal, intbv, delay, instance, always_comb
 
-from ._emesh_intf import EMeshPacket
+from . import EMeshPacket
 from rhea.models import FIFO
-
 
 class ELinkChannel(object):
     """ RX or TX channel in an ELink interface
