@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from myhdl import always_comb
 
 from rhea.system import Reset
-from .._device_clock_mgmt_prim import device_clock_mgmt_prim
+from ..device_clock_mgmt_prim import device_clock_mgmt_prim
 
 
 def device_clock_mgmt(clkmgmt):
