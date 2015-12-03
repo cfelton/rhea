@@ -20,9 +20,10 @@ def test_parallella_serdes(args=None):
     txn = Signal(intbv(0)[6:])
     rxp = Signal(intbv(0)[6:])
     rxn = Signal(intbv(0)[6:])
-
+    leds = Signal(intbv(0)[8:])
+    
     def _bench_serdes():
-        tbdut = parallella_serdes(clock, reset, txp, txn, rxp, rxn)
+        tbdut = parallella_serdes(clock, txp, txn, rxp, rxn, leds)
         tbclk = clock.gen(hticks=10000)
 
         @always_comb
@@ -49,7 +50,7 @@ def test_parallella_serdes(args=None):
     myhdl.toVerilog.directory = "output"
     myhdl.toVerilog.no_testbench = True
     myhdl.toVerilog(parallella_serdes, 
-                    clock, reset, txp, txn, rxp, rxn)
+                    clock, txp, txn, rxp, rxn, leds)
 
 
 if __name__ == '__main__':

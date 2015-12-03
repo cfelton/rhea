@@ -39,6 +39,11 @@ class Zybo(FPGA):
         'ausclk': dict(pins=('N18',)),
         'aumute': dict(pins=('P18',)),
         'aumclk': dict(pins=('T19',)),
+
+        # PMODs
+        'pmod_jb': dict(pins=('T20', 'U20', 'V20', 'W20',
+                              'Y18', 'Y19', 'W18', 'W19',),
+                    iostandard="LVDS_25"),
     }
 
     def get_flow(self, top=None):

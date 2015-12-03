@@ -25,9 +25,10 @@ def parallella_serdes(clock,
                       # porcupine board breakout
                       serial_tx_p, serial_tx_n,
                       serial_rx_p, serial_rx_n,
-                      led,
-                      reset=None
-):
+                      led, reset=None):
+    """ 
+    """
+    assert len(led) == 8
     
     nbanks = len(serial_tx_p)
     assert (len(serial_tx_p) == len(serial_tx_n) ==
@@ -63,7 +64,7 @@ def parallella_serdes(clock,
 
     @always_comb
     def led_assign():
-        led.next = concat("1010", locks)
+        led.next = concat("1010", locks[4:])
             
 
     return ibuf, obuf, insts, led_assign
@@ -86,6 +87,9 @@ def build(args):
 
 def cliparse():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--build", action='store_true', default=False)
+    parser.add_argument("--program", action='store_true', default=False)
+    parser.add_argument("--trace", action='store_true', default=False)    
     args = parser.parse_args()
     return args
 

@@ -5,8 +5,10 @@ from __future__ import division
 from math import fmod
 from fractions import gcd
 
+from myhdl import always_comb
+
 from rhea.system import Reset
-from .._device_clock_mgmt_prim import device_clock_mgmt_prim
+from ..device_clock_mgmt_prim import device_clock_mgmt_prim
 
 
 def device_clock_mgmt(clkmgmt):
@@ -59,6 +61,12 @@ def mmcm_parameters(cifreq=100e6, cofreqs=[100e6, 125e6, 180e6]):
     while search and M < 64:
         M = M + 1
         fb = M*cifreq
+        # @todo: need to add "D", if geater use a
+        # @todo: reasonable "D" value
+        vco_freq_mhz = fb/1e6
+        if vco_freq_mhz < 600 or vco_freq_mhz > 1250:
+            continue
+            
         d = [fb/cf for cf in cofreqs]
         if False in list(map(isint, d)):
             search = True
@@ -69,9 +77,9 @@ def mmcm_parameters(cifreq=100e6, cofreqs=[100e6, 125e6, 180e6]):
             search = False
 
     print(M)
-    D = [int(round(fb/cf)) for cf in cofreqs]
-    print(D)
-    return M, D
+    odiv = [int(round(fb/cf)) for cf in cofreqs]
+    print(odiv)
+    return M, odiv
 
 
 def clock_mgmt_verilog_code(clkmgmt):
@@ -81,22 +89,25 @@ def clock_mgmt_verilog_code(clkmgmt):
     names.  Locally the {} format is used to extract parameters from
     the PLL interface (`pll_intf`)
     """
+
+    # input clock period in ns
+    clkmgmt.input_period = 1e9/clkmgmt.clockin.frequency
     
     mult_f, divides = mmcm_parameters(clkmgmt.clockin.frequency,
                                       clkmgmt.output_frequencies)
     divide_f = divides[0]
     # Parameters
-    tstr = '\n '.join([".CLKOUT{}_DIVIDE  ( {} ), ".format(ii, div)
-                       for div in divices[1:]])
+    tstr = '\n '.join(["{}.CLKOUT{}_DIVIDE  ( {} ), ".format(' '*6, ii, div)
+                       for ii, div in enumerate(divides) if ii > 0 ])
     clkmgmt.PARAM_output_divides = tstr
     clkmgmt.mult_f = mult_f
     clkmgmt.divide_f = divide_f
-
-    tstr = '\n '.join([".CLKOUT{}_DUTY_CYCLE  ( 0.5 ), ".format(ii)
+    
+    tstr = '\n '.join(["{}.CLKOUT{}_DUTY_CYCLE  ( 0.5 ), ".format(' '*6, ii)
                        for ii in range(len(clkmgmt.clocks))])
     clkmgmt.PARAM_duty_cycle = tstr
 
-    tstr = '\n '.join([".CLKOUT{}_DUTY_PHASE  ( 0.0 ), ".format(ii)
+    tstr = '\n '.join(["{}.CLKOUT{}_PHASE  ( 0.0 ), ".format(' '*6, ii)
                        for ii in range(len(clkmgmt.clocks))])
     clkmgmt.PARAM_phase = tstr
 
@@ -109,20 +120,21 @@ def clock_mgmt_verilog_code(clkmgmt):
     wire mmcm_pwrdwn;
     wire [6:0] oclkwzy123qrs;
 
+    assign mmcm_pwrdwn = 1'b0;
     assign mmcm_reset = 1'b0;
 
     MMCME2_BASE #(
       .BANDWIDTH         ( "OPTIMIZED" ),
-      .CLKIN1_PERIOD     ( {input_frequency} ),
+      .CLKIN1_PERIOD     ( {input_period:.1f} ),
       .CLKFBOUT_MULT_F   ( {mult_f} ),
       .CLKFBOUT_PHASE    ( 0.0 ),
       .CLKOUT0_DIVIDE_F  ( {divide_f} ),
-      {PARAM_output_divides}
-      {PARAM_duty_cycle}
-      {PARAM_phase}
+{PARAM_output_divides}
+{PARAM_duty_cycle}
+{PARAM_phase}
       .CLKOUT4_CASCADE   ( "FALSE" ),
       .DIVCLK_DIVIDE     ( 1 ),
-      .REF_JITTER        ( 0.0 ),
+      .REF_JITTER1       ( 0.0 ),
       .STARTUP_WAIT      ( "FALSE" ) )
     U_MMCME2_BASE_{clkmgmt_num} (
       .CLKOUT0   ( oclkwzy123qrs[0] ),
@@ -136,7 +148,7 @@ def clock_mgmt_verilog_code(clkmgmt):
       .CLKFBOUTB ( ),
       .CLKFBIN   ( mmcm_clkfb ),
       .LOCKED    ( $locked ),
-      .CLKIN     ( $clockin ),
+      .CLKIN1    ( $clockin ),
       .PWRDWN    ( mmcm_pwrdwn ),
       .RST       ( $reset )
     );
