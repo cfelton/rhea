@@ -109,7 +109,7 @@ class FPGA(object):
         the pin / signal.
 
         Example: 
-          brd.add_port("gpio", pins=(23,24,25,26,), PULLUP='PULLUP')
+          brd.add_port("gpio", pins=(23,24,25,26,), pullup=True)
 
         It is acceptable to have ports with the same names.
         """
