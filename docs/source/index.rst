@@ -15,6 +15,7 @@ Contents:
    system
    cores
    models
+   build 
    examples
 
 
