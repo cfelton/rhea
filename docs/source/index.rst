@@ -16,7 +16,7 @@ Contents:
    cores
    models
    build/build
-   build/board_definitions
+   build/board_definition
    examples
 
 

@@ -26,8 +26,8 @@ The following is a minimal example creating a board definition for
 the XESS CAT board.  From the `CAT board schematics`_ the port
 definitions can be defined.
 
+.. code-block:: python
 
-.. code-block::python
 
     class CATBoard(FPGA):
         vendor = 'lattice'
@@ -48,7 +48,7 @@ definitions can be defined.
         }
         
         
-CAT board scematics_ : https://github.com/xesscorp/CAT-Board
+.. _CAT board schematics : https://github.com/xesscorp/CAT-Board
 
 
 Extending definitions
@@ -57,15 +57,17 @@ In many situations the top-level module ports might not match the
 default ports in the board definition or the user might want to 
 create a different board definition.  
 
-### Mapping port names
+Mapping port names
+^^^^^^^^^^^^^^^^^^
 There are two functions available in a specific board definition 
-object:  `add_port` and `add_port_name`.  When the pin is known
-use `add_port` and when the default port name is known but a 
-different name is desired use `add_port_name` to add a new port 
+object:  ``add_port`` and ``add_port_name``.  When the pin is known
+use ``add_port`` and when the default port name is known but a
+different name is desired use ``add_port_name`` to add a new port
 name that maps to the properties of an existing port.  See the 
-`pone` example for an `add_port_name` use. 
+``pone`` example for an ``add_port_name`` use.
 
-### Creating a custom board definitino
+Creating a custom board definitinon
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 For example, a board might
 have many connectors or generic IO.  The user could have a boards
 with specific hardware attached.  In these cases the user many
