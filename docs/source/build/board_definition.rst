@@ -75,6 +75,7 @@ wish to create a new custom board definition.
 
 .. code-block::python
 
+
      class MyCustomBoard(Xula2):
          # overriding the default ports, inherit the default 
          # clocks.  The default ports in this cause reprsent
@@ -83,4 +84,4 @@ wish to create a new custom board definition.
              'leds': dict(pins=('R7', 'R15', 'R16', 'M15',)),
              'btns': dict(pins=('F1', 'F2', 'E1', 'E2',))
          }
-     
+
