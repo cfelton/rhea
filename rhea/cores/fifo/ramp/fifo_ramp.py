@@ -6,7 +6,7 @@
 from __future__ import absolute_import
 
 from myhdl import *
-from ....system import Global
+from rhea.system import Global
 from ._regfile_def import regfile
 
 

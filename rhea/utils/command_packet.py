@@ -1,7 +1,6 @@
 
 import struct
 
-from myhdl import delay
 
 # @todo: use these
 PACKET_LENGTH = 12
@@ -24,6 +23,7 @@ class CommandPacket(object):
             self.rawbytes[8:12] = struct.pack(">L", vals[0])
         else:
             self.rawbytes[8:12] = struct.pack(">L", 0xFEEDFACE)
+
         # @todo: added checksum / CRC
 
     def dump(self):
@@ -74,4 +74,5 @@ class CommandPacket(object):
             yield fifobus.clock.posedge
         fifobus.rd.next = False
         self.check_response(response_bytes, rvals, evals)
+
 

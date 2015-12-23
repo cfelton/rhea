@@ -12,7 +12,6 @@ from argparse import Namespace
 import time 
 
 import pytest
-
 from myhdl import *
 
 import rhea
@@ -31,6 +30,7 @@ from mm_vgasys import mm_vgasys
 from mm_vgasys import convert
 
 
+@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
 def test_vgasys():
     args = Namespace(resolution=(80, 60), 
                      color_depth=(10, 10, 10),

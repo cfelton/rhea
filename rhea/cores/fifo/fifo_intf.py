@@ -1,9 +1,10 @@
 
-from myhdl import *
+from myhdl import Signal, intbv, SignalType
 
 # this is the fifo interfaces
 
-class _fifobus(object):
+
+class fifobus(object):
     """
     This object defines the signals needed to interface with the
     FIFO cores.  If used in the "mn" pakcage use the FIFOBus defined

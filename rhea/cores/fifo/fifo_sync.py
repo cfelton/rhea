@@ -3,11 +3,10 @@
 #
 
 from math import log, fmod, ceil
-from myhdl import *
+from myhdl import Signal, intbv, modbv, always_comb, always_seq
 
-from ._fifo_intf import check_fifo_intf
-from ._fifo_intf import _fifobus
-from ._fifo_mem import fifo_mem_generic
+from rhea.system import FIFOBus
+from .fifo_mem import fifo_mem_generic
 
 
 def fifo_sync(clock, reset, fbus):
@@ -103,4 +102,4 @@ def fifo_sync(clock, reset, fbus):
 
 
 # attached a generic fifo bus object to the module
-fifo_sync.fbus_intf = _fifobus
+fifo_sync.fbus_intf = FIFOBus

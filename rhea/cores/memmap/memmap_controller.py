@@ -48,10 +48,12 @@ def memmap_controller_basic(generic, memmap):
 
         # ~~~[Wait]~~~
         elif state == states.wait:
-            # @todo: add a timeout, only wait so long for done
             if generic.done:
                 tocnt.next = 0
-                state.next = states.done
+                if generic.write:
+                    state.next = states.done
+                elif generic.read:
+                    state.next = states.readdone
 
         # ~~~[Write]~~~
         elif state == states.write:

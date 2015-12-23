@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 from random import randint
 
+import pytest
 # @todo: fix, only import what is needed
 from myhdl import *
 
@@ -14,6 +15,7 @@ from rhea.cores.misc import glbl_timer_ticks
 from rhea.utils.test import run_testbench
 
 
+@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
 def test_lt24lcd_driver():
     tb_lt24lcd_driver()
 

@@ -1,6 +1,6 @@
 
 
-from myhdl import *
+from myhdl import (Signal, intbv, always, always_comb, concat)
 
 
 def fifo_srl(clock, D, ce, addr, Q, Qn=None):

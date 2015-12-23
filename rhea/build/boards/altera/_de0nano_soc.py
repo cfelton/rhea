@@ -2,6 +2,10 @@
 # Copyright (c) 2015 Christopher L. Felton
 #
 
+from __future__ import absolute_import
+
+from string import Template
+
 from rhea.build import FPGA
 from rhea.build.toolflow import Quartus
 
@@ -22,7 +26,7 @@ class DE0NanoSOC(FPGA):
     }
     
     default_ports = {
-        'led': dict(pins=('W15', 'AA24', 'V16', 'V15'
+        'led': dict(pins=('W15', 'AA24', 'V16', 'V15',
                           'AF26', 'AE26', 'Y16', 'AA23',)),
         'key': dict(pins=('AH17')),
         'sw': dict(pins=('L10', 'L9', 'H5', 'H6')),
@@ -34,6 +38,12 @@ class DE0NanoSOC(FPGA):
         'gpio': dict(pins=('V12', 'AF7', 'W12', 'AF8', 'Y8', 'AB4',
                            'W8', 'Y4', 'Y5', 'U11', 'T8', 'T12')),
     }
+
+    program_device_cli = (
+        Template("quartus_pgm -c \"DE-SoC [1-1]\" -m jtag -o \"p;$bitfile.sof@2\" "),
+             )
+    # example quartus_pgm -c USB-Blaster -m jtag -o bpv:design.pof
+    program_nonvolatile_cli = (Template(""),)
 
     def get_flow(self):
         return Quartus(brd=self)

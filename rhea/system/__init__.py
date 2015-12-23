@@ -10,6 +10,7 @@ from ._clock import Clock
 from ._reset import Reset
 from ._glbl import Global
 
+from .memmap import ControlStatus
 from .memmap import MemorySpace
 from .memmap import RegisterBits
 from .memmap import Register

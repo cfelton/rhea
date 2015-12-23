@@ -4,7 +4,9 @@ from __future__ import print_function
 
 from copy import deepcopy
 
-from . import MemorySpace, RegisterFile, Register
+from . import MemorySpace
+from . import ControlStatus
+from . import RegisterFile, Register
 from .._clock import Clock
 from .._reset import Reset
 
@@ -161,6 +163,29 @@ class MemoryMapped(MemorySpace):
             g = []
     
         return g
+
+    def add_csr(self, csr, name=''):
+        """
+        """
+        assert isinstance(csr, ControlStatus)
+
+        # the `csr` objects are void of any memory-map specific information
+        # the "mapping" all occurs here.
+        # @todo: refactor, shares code with above ???
+        maxaddr = 0
+        for k, v in self.regfiles.items():
+            maxaddr = max(maxaddr, v.base_address)
+        base_address = maxaddr + 0x100000
+
+        for k, v in self.regfiles.items():
+            if base_address == v.base_address:
+                print("@E: Register file address collision")
+                # @todo: raise an exception
+
+        # create a memspace / register file for this csr
+        dw = self.data_width
+        memspace = RegisterFile()
+
 
     # @todo: add `add_master` (`add_controller`), adds master/controller
     # @todo: to the bus.
