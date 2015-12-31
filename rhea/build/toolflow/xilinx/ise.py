@@ -159,9 +159,20 @@ class ISE(ToolFlow):
         #         of the time the defaults are ok, need a config file or 
         #         something to overwrite.  These should be in a dict or
         #         refactored or something
-        #self.tcl_script += "project set \"FPGA Start-Up Clock\" \"JTAG Clock\"" \
-        #                   " -process \"Generate Programming File\" \n"
-        self.tcl_script += "project set \"FPGA Start-Up Clock\" \"JTAG Clock\" -process \"Generate Programming File\" \n"
+
+        # always create the binary file as well
+        self.tcl_script += "project set \"Create Binary Configuration " \
+                           "File\" \"true\" -process \"Generate " \
+                           "Programming File\"\n "
+        
+        # see if the JTAG start-up clock should be used
+        if (hasattr(self.brd, "no_startup_jtag_clock") and
+            self.brd.no_startup_jtag_clock):
+            pass
+        else:
+            self.tcl_script += "project set \"FPGA Start-Up Clock\" " \
+                               "\"JTAG Clock\"" \
+                               " -process \"Generate Programming File\" \n"
 
         # run the implementation
         self.tcl_script += '# run the implementation:\n'

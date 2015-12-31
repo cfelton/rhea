@@ -15,7 +15,8 @@ class Mojo(FPGA):
     package = 'TQG144'
     speed = '-2'
     _name = 'mojov3'
-
+    no_startup_jtag_clock = True
+    
     default_clocks = {
         # clk in documentation (?)
         'clock': dict(frequency=50e6, pins=(56,),
