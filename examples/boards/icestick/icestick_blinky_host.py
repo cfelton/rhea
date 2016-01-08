@@ -101,12 +101,24 @@ def cliparse():
 def main():
     args = cliparse()
     if args.test:
+        # check for basic syntax errors, use test_ice* to test
+        # functionality
         icestick_blinky_host(
-            Clock(0, frequency=50e6), Signal(intbv(0)[8:]), 
-            Signal(intbv(0)[8:]),
-            Signal(bool(0)), Signal(bool(0)) )
+            clock=Clock(0, frequency=50e6),
+            led=Signal(intbv(0)[8:]), 
+            pmod=Signal(intbv(0)[8:]),
+            uart_tx=Signal(bool(0)),
+            uart_rx=Signal(bool(0)),
+            uart_dtr=Signal(bool(0)),
+            uart_rts=Signal(bool(0)) )
+        
     if args.build:
         build(args)
+
+    if args.program:
+        program(args)
+
+    # @todo: add walk function
 
 
 if __name__ == '__main__':
