@@ -2,12 +2,30 @@
 from myhdl import Signal, instances
 
 from ..misc import syncro
-from .uart import uartbaud, uarttx, uartrx
+from .uartbase import uartbaud, uarttx, uartrx
 from ..fifo import fifo_fast
 
 
 def uartlite(glbl, fbustx, fbusrx, serial_in, serial_out, baudrate=115200):
-    """
+    """ The top-level for a minimal fixed baud UART
+
+    Ports
+    -----
+    glbl: rhea.Global interface, clock and reset from glbl
+    fbustx: The transmit FIFO bus, interface to the TX FIFO
+    tbusrx: The receive FIFObus, interface to the RX FIFO
+    serial_in: The UART external serial line in
+    serial_out: The UART external serial line out
+
+    Parameters
+    ----------
+    baudrate: the desired baudrate for the UART
+
+    Returns
+    -------
+    myhdl generators
+
+    This module is myhdl convertible
     """
     clock, reset = glbl.clock, glbl.reset
     baudce, baudce16 = [Signal(bool(0)) for _ in range(2)]

@@ -1,11 +1,11 @@
 
 from __future__ import absolute_import
 
-from ._glbl_timer_ticks import glbl_timer_ticks
+from .glbl_timer_ticks import glbl_timer_ticks
 from ._assign import assign
 from ._syncro import syncro
 
-from ._serio import io_stub
+from .serio import io_stub
 from ._led_count import led_count
 from ._led_stroby import led_stroby
 from ._led_dance import led_dance

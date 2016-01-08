@@ -12,10 +12,11 @@ def test():
     sdi, sdo = [Signal(bool(0)) for _ in range(2)]
     pin = [Signal(intbv(0)[16:]) for _ in range(7)]
     pout = [Signal(intbv(0)[16:]) for _ in range(3)]
+    valid = Signal(bool(0))
 
     def _bench_serio():
         tbclk = clock.gen()
-        tbdut = io_stub(clock, reset, sdi, sdo, pin, pout)
+        tbdut = io_stub(clock, reset, sdi, sdo, pin, pout, valid)
 
         @instance
         def tbstim():
