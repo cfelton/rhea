@@ -61,27 +61,50 @@ def io_stub(clock, reset, sdi, sdo, port_inputs, port_outputs, valid):
     # make the input and output registers same length
     xl, yl = nin*nbx, nout*nby
     nbits = max(xl, yl)
-    irei = Signal(bool(0))
-    oreo = Signal(bool(0))
-    ireg = [Signal(intbv(0)[nbx:]) for _ in range(nin)]
-    oreg = [Signal(intbv(0)[nby:]) for _ in range(nin)]
+    irei = Signal(bool(0))   # serial input registered
+    oreo = Signal(bool(0))   # serial output registered
 
+    # the large shift registers
+    ireg = [Signal(intbv(0)[nbx:]) for _ in range(nin)]
+    oreg = [Signal(intbv(0)[nby:]) for _ in range(nout)]
+    # ireg = Signal(intbv(0)[nbits:])
+    # oreg = Signal(intbv(0)[nbits:])
+
+    # the number of shifts ...
     scnt = Signal(intbv(0, min=0, max=nbits+1))
     imax = scnt.max-1
 
+    # @always_seq(clock.posedge, reset=reset)
+    # def beh_shift_regs():
+    #
+    #     # extra register on the inputs and outputs
+    #     irei.next = sdi
+    #     oreo.next = oreg[nbits-1]
+    #     sdo.next = oreo
+    #
+    #     ireg.next = concat(ireg[nbits-2:0], irei)
+    #
+    #     if scnt >= imax:
+    #         valid.next = True
+
+    lastoreg = oreg[nout-1]
+
     @always_seq(clock.posedge, reset=reset)
     def beh_shifts():
+        # extra registers on the serial inputs and outputs
         irei.next = sdi
-        oreo.next = oreg[nout-1][nby-1]
+        oreo.next = lastoreg[nby-1]
         sdo.next = oreo
 
         # build the large shift register out of the logical
         # list of signals (array)
         for ii in range(nin):
+            tmp1 = ireg[ii]
             if ii == 0:
-                ireg[ii].next = concat(ireg[ii][nbx-1:0], irei)
+                ireg[ii].next = concat(tmp1[nbx-1:0], irei)
             else:
-                ireg[ii].next = concat(ireg[ii][nbx-1:0], ireg[ii-1][nbx-1])
+                tmp0 = ireg[ii-1]
+                ireg[ii].next = concat(tmp1[nbx-1:0], tmp0[nbx-1])
 
         if scnt == imax:
             valid.next = True
@@ -92,10 +115,12 @@ def io_stub(clock, reset, sdi, sdo, port_inputs, port_outputs, valid):
             valid.next = False
             scnt.next = scnt + 1
             for oo in range(nout):
+                tmp1 = oreg[oo]
                 if oo == 0:
-                    oreg[oo].next = oreg[oo] << 1
+                    oreg[oo].next = concat(tmp1[nby-1:0],  tmp1[nby-1])
                 else:
-                    oreg[oo].next = concat(oreg[oo][nby-1:0], oreg[oo-1][nby-1])
+                    tmp0 = oreg[oo-1]
+                    oreg[oo].next = concat(tmp1[nby-1:0], tmp0[nby-1])
 
     @always_comb
     def beh_assign():
