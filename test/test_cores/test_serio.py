@@ -7,7 +7,7 @@ from myhdl import *
 
 from rhea.system import Clock, Reset
 from rhea.cores.misc import io_stub
-from rhea.utils.test import run_testbench
+from rhea.utils.test import run_testbench, tb_convert
 
 
 def test(args=None):
@@ -69,12 +69,8 @@ def test(args=None):
         stub_inst = io_stub(clock, reset, sdi, sdo, pin, pout, valid)
         return stub_inst
 
-    # convert the design
-    ddir = 'output/ver'
-    if not os.path.isdir(ddir):
-        os.makedirs(ddir)
-    myhdl.toVerilog.directory = ddir
-    myhdl.toVerilog(top_stub, clock, reset, sdi, sdo)
+    # convert the design stub 
+    tb_convert(top_stub, clock, reset, sdi, sdo)
 
 
 if __name__ == '__main__':
