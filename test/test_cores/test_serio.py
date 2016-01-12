@@ -1,4 +1,5 @@
 
+import os 
 from argparse import Namespace
 
 import myhdl
@@ -69,7 +70,10 @@ def test(args=None):
         return stub_inst
 
     # convert the design
-    myhdl.toVerilog.directory = 'output/ver'
+    ddir = 'output/ver'
+    if not os.path.isdir(ddir):
+        os.makedirs(ddir)
+    myhdl.toVerilog.directory = ddir
     myhdl.toVerilog(top_stub, clock, reset, sdi, sdo)
 
 
