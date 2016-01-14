@@ -15,6 +15,8 @@ Contents:
    system
    cores
    models
+   build/build
+   build/board_definition
    examples
 
 

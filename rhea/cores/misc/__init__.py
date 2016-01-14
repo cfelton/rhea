@@ -1,18 +1,18 @@
 
 from __future__ import absolute_import
 
-from ._glbl_timer_ticks import glbl_timer_ticks
-from ._assign import assign
-from ._syncro import syncro
+from .glbl_timer_ticks import glbl_timer_ticks
+from .assign import assign
+from .syncro import syncro
 
-from ._serio import io_stub
-from ._led_count import led_count
-from ._led_stroby import led_stroby
-from ._led_dance import led_dance
-from ._btn_debounce import button_debounce
-from ._led_mm_per import led_peripheral
-from ._btn_mm_ctl import button_controller
-from ._led_blinker import led_blinker 
+from .serio import io_stub
+from .led_count import led_count
+from .led_stroby import led_stroby
+from .led_dance import led_dance
+from .btn_debounce import button_debounce
+from .led_mm_per import led_peripheral
+from .btn_mm_ctl import button_controller
+from .led_blinker import led_blinker
 
 
 

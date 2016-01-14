@@ -1,8 +1,9 @@
 
-from ..._fpga import _fpga
-from ...toolflow import ISE 
+from rhea.build import FPGA
+from rhea.build.toolflow import ISE 
 
-class Nexys(_fpga):
+
+class Nexys(FPGA):
     vendor = 'xilinx'
     family = 'spartan3'
     device = 'XC3S400'

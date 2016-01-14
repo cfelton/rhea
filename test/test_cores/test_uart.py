@@ -63,10 +63,11 @@ def testbench_uart_model(args=None):
     run_testbench(_bench_uart_model, args=args)
 
 
+@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
 def testbench_uart(args=None):
     # @todo: get numbytes from args
-    numbytes = 7
-    clock = Clock(0, frequency=50e6)
+    numbytes = 13
+    clock = Clock(0, frequency=12e6)
     reset = Reset(0, active=0, async=True)
     glbl = Global(clock, reset)
     mdlsi, mdlso = Signal(bool(1)), Signal(bool(1))
@@ -119,5 +120,5 @@ if __name__ == '__main__':
     args = tb_args(tests=['model', 'uart'])
     if args.test == 'model' or args.test == 'all':
         testbench_uart_model(args)
-    elif args.test == 'uart' or args.test == 'all':
+    if args.test == 'uart' or args.test == 'all':
         testbench_uart(args)

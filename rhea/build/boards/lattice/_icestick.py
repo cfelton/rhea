@@ -4,12 +4,12 @@
 
 from __future__ import absolute_import
 
-from ..._fpga import _fpga
-from ...extintf import Port
-from ...toolflow import IceRiver
+from rhea.build import FPGA
+from rhea.build.extintf import Port
+from rhea.build.toolflow import IceRiver
 
 
-class Icestick(_fpga):
+class Icestick(FPGA):
     vendor = 'lattice'
     family = 'ice40'
     device = 'HX1K'
@@ -28,6 +28,8 @@ class Icestick(_fpga):
         'spi_ss': dict(pins=(71,)),
         'uart_tx': dict(pins=(8,)),
         'uart_rx': dict(pins=(9,)),
+        'uart_dtr': dict(pins=(3,)),
+        'uart_rts': dict(pins=(7,)),
         'pmod': dict(pins=(78, 79, 80, 81, 87, 88, 90, 91,)),
     }
 

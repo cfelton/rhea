@@ -53,16 +53,15 @@ class FIFOBus(object):
             int(self.empty), int(self.full))
         return s
 
-    # @todo: waffling if this should be included or not???
-    #def m_fifo(self, reset, wclk, rclk):
-    #    #self.wclk = wclk
-    #    #self.rclk = rclk
-    #    # map the FIFO interface to the actual fifo
-    #    gfifo = fifo_async(reset, wclk, rclk, self)
-    #    return gfifo
+    def writetrans(self, data):
+        pass
+
+    def readtrans(self):
+        pass
 
     # @todo: get the separate buses
     # def get_upstream()    
     #     """ write bus, into the FIFO """
+    #
     # def get_downstream()
     #     """ 

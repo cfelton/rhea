@@ -22,7 +22,8 @@ class RegisterBits(object):
 
 
 class Register(_Signal):
-    def __init__(self, name, width, access='rw', default=0, addr=None, comment=""):
+    def __init__(self, name, width, access='rw', default=0,
+                 addr=None, comment=""):
         """
         This class contains all the information about a register in a 
         register file.  There are two types are registers: read-write

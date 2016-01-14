@@ -2,14 +2,14 @@
 # Copyright (c) 2014-2015 Christopher Felton
 #
 
-from ..._fpga import _fpga
-from ...extintf import Port
+from rhea.build import FPGA
+from rhea.build.extintf import Port
 # @todo: get SDRAM interface from rhea.cores.sdram
 # from ...extintf._sdram import SDRAM
-from ...toolflow import ISE
+from rhea.build.toolflow import ISE
 
 
-class Xula(_fpga):
+class Xula(FPGA):
     vendor = 'xilinx'
     family = 'spartan3A'
     device = 'XC3S200A'
@@ -33,7 +33,7 @@ class Xula(_fpga):
         return ISE(brd=self, top=top)
 
 
-class Xula2(_fpga):
+class Xula2(FPGA):
     vendor = 'xilinx'
     family = 'spartan6'
     device = 'XC6SLX25'

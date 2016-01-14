@@ -3,14 +3,14 @@
 # Copyright (c) 2013 Alexander Hungenberg
 #
 
-from ..._fpga import _fpga
-from ...extintf._extintf import _extintf
-from ...extintf._port import Port
-from ...toolflow import ISE
+from rhea.build import FPGA
+from rhea.build.extintf._extintf import _extintf
+from rhea.build.extintf._port import Port
+from rhea.build.toolflow import ISE
 
 VCCO = 'LVCMOS33'
 
-class Pone(_fpga):
+class Pone(FPGA):
     vendor = 'xilinx'
     family = 'spartan3e'
     device = 'XC3S500e'

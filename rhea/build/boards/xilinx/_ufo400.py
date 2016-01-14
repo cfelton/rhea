@@ -1,7 +1,9 @@
-from ..._fpga import _fpga
-from ...toolflow import ISE 
 
-class UFO400(_fpga):
+from rhea.build import FPGA
+from rhea.build.toolflow import ISE 
+
+
+class UFO400(FPGA):
     vendor = 'xilinx'
     family = 'spartan3'
     device = 'XC3S400'

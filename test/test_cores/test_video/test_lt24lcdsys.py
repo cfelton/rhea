@@ -3,21 +3,13 @@ from __future__ import print_function
 
 from argparse import Namespace
 
-import pytest
 
-from myhdl import (Signal, intbv, instance, now, StopSimulation,
-                   traceSignals, Simulation)
+# a video display model to check timing
+import pytest
+from myhdl import Signal, intbv, instance, delay, StopSimulation, now
 
 from rhea.system import Clock, Reset, Global
 from rhea.cores.video.lcd import LT24Interface
-
-# a video display model to check timing
-from myhdl import (Signal, intbv, instance, delay,
-                   traceSignals, Simulation)
-
-from rhea.system import Clock, Reset, Global
-
-# @todo: add LT24 display model
 from rhea.models.video import LT24LCDDisplay
 from rhea.utils.test import run_testbench, tb_args
 
@@ -25,6 +17,7 @@ from mm_lt24lcdsys import mm_lt24lcdsys
 from mm_lt24lcdsys import convert
 
 
+@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
 def test_lt24lcd():
     args = Namespace()
     tb_lt24lcd(args=args)

@@ -42,7 +42,7 @@ def testbench_to_generic(args=None):
         membus = busmap[args.bustype](glbl, data_width=width,
                                       address_width=address_width)
     else:
-        address_width = int(ceil(log(depth, 2)))
+        address_width = int(ceil(log(depth, 2))) + 4
         membus = Barebone(glbl, data_width=width,
                           address_width=address_width)
 

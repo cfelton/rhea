@@ -5,7 +5,7 @@ from myhdl import delay
 
 class Reset(myhdl.ResetSignal):
     def __init__(self, val, active, async):
-        myhdl.ResetSignal.__init__(self, val, active, async)
+        super(Reset, self).__init__(val, active, async)
 
     def pulse(self, delays=10):
         if isinstance(delays, int):

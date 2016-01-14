@@ -30,15 +30,15 @@ pronoucned the same as the bird or moon.
  
 dependencies
 ------------
-   - [myhdl](www.myhdl.org) 1.0 or later
-   - [pytest](www.pytest.org) for the test suite
-   - [Pillow]() some video tests utilize the imaging library
+   - [myhdl](http://www.myhdl.org) 1.0 or later
+   - [pytest](http://www.pytest.org) for the test suite
+   - [Pillow](https://pillow.readthedocs.org/en/3.0.x/) some video tests utilize the imaging library
    - FPGA vendor tools, only for automated build tools.
    
    
 resources
 ---------
-If you are not familiar with [myhdl](www.myhdl.org) starting with the
+If you are not familiar with [myhdl](http://www.myhdl.org) starting with the
 [myhdl manual](http://docs.myhdl.org/en/stable/) and 
 [examples](http://www.myhdl.org/examples/) is recommended.  General myhdl 
 questions 
