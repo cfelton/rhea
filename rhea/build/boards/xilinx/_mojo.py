@@ -8,13 +8,15 @@ from rhea.build import FPGA
 from rhea.build.extintf import Port
 from rhea.build.toolflow import ISE
 
+
 class Mojo(FPGA):
     vendor = 'xilinx'
     family = 'spartan6'
     device = 'XC6SLX9'
     package = 'TQG144'
     speed = '-2'
-    _name = 'mojov3'
+    version = 3
+    _name = 'mojov'
     no_startup_jtag_clock = True
     
     default_clocks = {
@@ -50,4 +52,3 @@ class Mojo(FPGA):
 
     def get_flow(self, top=None):
         return ISE(brd=self, top=top)
-                    

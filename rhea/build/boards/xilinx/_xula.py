@@ -19,11 +19,11 @@ class Xula(FPGA):
 
     default_clocks = {
         'clock': dict(frequency=12e6, pins=(43,)),
-        'chan_clk' : dict(frequency=1e6, pins=(44,))
+        'chan_clk': dict(frequency=1e6, pins=(44,))
     }
 
     default_ports = {
-        'chan' : dict(pins=(36, 37, 39, 50, 52, 56, 57, 61,  # 0-7
+        'chan': dict(pins=(36, 37, 39, 50, 52, 56, 57, 61,  # 0-7
                             62, 68, 72, 73, 82, 83, 84, 35,  # 8-15
                             34, 33, 32, 21, 20, 19, 13, 12,  # 17-23
                             7, 4, 3, 97, 94, 93, 89, 88))    # 24-31
