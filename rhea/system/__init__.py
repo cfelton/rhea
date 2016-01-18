@@ -2,13 +2,13 @@
 from __future__ import absolute_import
 
 # these are mainly used by the tests and simulation
-from ._const import timespec
-from ._const import ticks_per_ns
+from .const import timespec
+from .const import ticks_per_ns
 
 # small wrappers to include specific attributes
-from ._clock import Clock
-from ._reset import Reset
-from ._glbl import Global
+from .clock import Clock
+from .reset import Reset
+from .glbl import Global
 
 from .memmap import ControlStatus
 from .memmap import MemorySpace

@@ -1,18 +1,19 @@
 
 from __future__ import absolute_import
 
-from ._memspace import MemorySpace
+# generic memory-space object
+from .memspace import MemorySpace
 
 # register file objects
-from ._csr import ControlStatus
-from ._regfile import RegisterBits
-from ._regfile import Register
-from ._regfile import RegisterFile
+from .csr import ControlStatus
+from .regfile import RegisterBits
+from .regfile import Register
+from .regfile import RegisterFile
 
 # memory-mapped (CSR) interfaces
-from ._memmap import MemoryMapped
-from ._barebone import Barebone
-from ._wishbone import Wishbone
-from ._avalonmm import AvalonMM
-from ._axi4 import AXI4Lite
+from .memmap import MemoryMapped
+from .barebone import Barebone
+from .wishbone import Wishbone
+from .avalonmm import AvalonMM
+from .axi4 import AXI4Lite
 

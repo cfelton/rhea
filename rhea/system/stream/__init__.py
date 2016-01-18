@@ -1,9 +1,9 @@
 
 from __future__ import absolute_import
 
-from ._streamers import Streamers
-from ._fifobus import FIFOBus
+from .streamers import Streamers
+from .fifobus import FIFOBus
 
-from ._axi4st import AXI4StreamLite
-from ._axi4st import AXI4StreamLitePort
-from ._avalonst import AvalonStream
+from .axi4st import AXI4StreamLite
+from .axi4st import AXI4StreamLitePort
+from .avalonst import AvalonStream
