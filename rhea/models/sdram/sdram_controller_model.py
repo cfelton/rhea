@@ -6,11 +6,11 @@ import myhdl
 from myhdl import instance
 
 # @todo: move "interfaces" to system (or interfaces)
-from ...cores.sdram import SDRAMInterface
+from rhea.cores.sdram import SDRAMInterface
 
-from ...system import MemoryMapped
+from rhea.system import MemoryMapped
 # @todo: utilize FIFOBus
-from ...system import FIFOBus
+from rhea.system import FIFOBus
 
 
 def sdram_controller_model(sdram_intf, internal_intf):
@@ -48,10 +48,10 @@ def sdram_controller_model(sdram_intf, internal_intf):
             row_addr, col_addr = translate_address(addr)
             if ix.is_write:
                 data = ix.get_write_data()
-                yield ex.write(data, row_addr, col_addr)
+                yield ex.writetrans(data, row_addr, col_addr)
                 yield ix.acktrans()
             elif ix.is_read:
-                yield ex.read(row_addr, col_addr)
+                yield ex.readtrans(row_addr, col_addr)
                 read_data = ex.get_read_data()
                 yield ix.acktrans(read_data)
 

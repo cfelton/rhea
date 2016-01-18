@@ -169,7 +169,7 @@ class SDRAMInterface(object):
         if self.dq is not None and self.dqo is None:
             self.rdq.next = self.dq
 
-    def write(self, val, row_addr, col_addr, bankid=0, burst=1):
+    def writetrans(self, val, row_addr, col_addr, bankid=0, burst=1):
         """ Controller side write
         This is a transaction generator, this generator is used to
         emulate a host write to an SDRAM device.
@@ -188,7 +188,7 @@ class SDRAMInterface(object):
         yield self._nop()
         self.cke.next = False
 
-    def read(self, row_addr, col_addr, bankid=0, burst=1):
+    def readtrans(self, row_addr, col_addr, bankid=0, burst=1):
         """ Controller side read
         This is a transaction generator, this genertor is used to
         emulate a host read to an SDRAM device.
