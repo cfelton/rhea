@@ -16,14 +16,18 @@ class CATBoard(FPGA):
     _name = 'catboard'
     
     default_clocks = {
-        'clock': dict(freqeuncy=100e6, pins=('C8',))    
+        'clock': dict(frequency=100e6, pins=('C8',))    
     }
     
     default_ports = {
+        # the default port names match thoses in the schematic
+        # but lower-case
         'led': dict(pins=('A9', 'B8', 'A7', 'B7',)),
         'sw': dict(pins=('A16', 'B9',)),
         'dipsw': dict(pins=('C6', 'C5', 'C4', 'C3',)),
         'hdr1': dict(pins=('J1', 'K1', 'H1', 'J2', )),
+        'bcm14_txd': dict(pins='T15'),
+        'bcm15_rxd': dict(pins='T14'),
         # @todo: finish default ports
 
     }
