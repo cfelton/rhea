@@ -12,7 +12,36 @@ frameworks being developed into the `rhea` package.
 .. _interfaces : http://docs.myhdl.org/en/stable/whatsnew/0.9.html#interfaces-conversion-of-attribute-accesses
 
 
-Register Files
+Control and status 
+------------------
+One of the goals of the ``rhea`` package is to simplify the assembly 
+of systems.  In a complex digital system majority of the blocks will 
+have two interfaces.  One being the streaming data in and out of the 
+module and the other a control and status interface.  The control 
+and status provides a lower-bandwith interface into the component 
+(module). 
+
+
+Defining a peripheral specific control-status object (CSO). 
+
+.. code-block::python
+
+    from rhea.system import ControlAndStatus
+    
+    # define the control and status signals for a peripheral 
+    class LEDBlinkerControlStatus(ControlStatus):
+        self.enable = Signal(bool(0))
+        self.pause = Signal(bool(0))
+        modes = enum("counting", "walking", "strobing") 
+        self.mode = Signal(modes)
+        
+        
+In a peripheral either the default (defined) control-status object 
+CSO can be used and added to the ``csintf``  
+
+
+
+Register files
 --------------
 When creating components for a design often a register file is included
 The register file is used for the control and status access (CSR) of
@@ -93,7 +122,7 @@ When instantiating the :py:func:`led_blinker` `module`_
 .. _module : http://docs.myhdl.org/en/stable/manual/structure.html#structural-modeling
 
 
-Memory Map Interfaces
+Memory map interfaces
 ---------------------
 The :Register File: section examples eluded to the memory-map (or CSR)
 interfaces and how they can be connected to register file.  The `rhea`
