@@ -7,7 +7,10 @@ from myhdl import Signal, intbv, always_seq
 
 
 def m_sync_rst(clock, rsti, rsto):
-    """
+    """ Synchronize a reset
+    Use a register chain to synchronize a reset, the registers are 
+    reset asynchronously and the output reset will be released 
+    synchronously.
     """
     rsync = [Signal(bool(rsti.active)) for _ in range(2)]
 
