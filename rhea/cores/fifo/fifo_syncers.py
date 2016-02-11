@@ -20,8 +20,8 @@ def sync_reset(clock, reset_in, reset_out, sync_length=2):
     @always_seq(clock.posedge, reset=reset_in)
     def rtl():
         reset_sync[0].next = reset_in
-    	for i in range(0,sync_length-1):        
-        	reset_sync[i+1].next = reset_sync[i]
+        for i in range(0,sync_length-1):        
+            reset_sync[i+1].next = reset_sync[i]
         reset_out.next = reset_sync[sync_length-1]
 
     return rtl

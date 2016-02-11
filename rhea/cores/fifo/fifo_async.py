@@ -55,11 +55,11 @@ def fifo_async(reset, wclk, rclk, fbus):
     # @todo: if ResetSignal use the active attribute to determine 
     #        if 'not reset' or 'reset'.  If the active==0 then 
     #        set invert=False
-    gs1 = m_sync_rst(wclk, reset, wrst)
-    gs2 = m_sync_rst(rclk, reset, rrst)
+    gs1 = sync_reset(wclk, reset, wrst)
+    gs2 = sync_reset(rclk, reset, rrst)
 
-    gs3 = m_sync_mbits(wclk, wrst, rptr, wq2_rptr)
-    gs4 = m_sync_mbits(rclk, rrst, wptr, rq2_wptr)
+    gs3 = sync_mbits(wclk, wrst, rptr, wq2_rptr)
+    gs4 = sync_mbits(rclk, rrst, wptr, rq2_wptr)
 
     @always_comb
     def rtl_assigns():
