@@ -1,21 +1,30 @@
 
+Note, the ``rhea`` package is under development, a first minor
+release (0.1) has not been made.  Significant changes and design 
+decision are occuring.  Some of the information in these documents
+is documentation on non-existing features, features that are 
+currently being implmented but not completed. 
+
+
 ##############
 Introduction
 ##############
 
 The ``rhea`` package is a collection of HDL cores written in
-`myhdl`_.  The ``rhea`` package is more than just a collection of
-cores it is also a framework for creating complex digital
+`myhdl`_.  The ``rhea`` package is more than just a collection 
+of cores it is also a framework for creating complex digital
 circuits.  The ``rhea`` package includes a complete test
 suite.
 
 .. _myhdl : http://www.myhdl.org
 
-The ``rhea`` package is divided into three main subpackages:
+The ``rhea`` package is divided into the follwoing subpackages:
 
    * system
    * models
    * cores
+   * build 
+   * vendor
 
 
 System
@@ -23,30 +32,7 @@ System
 The system subpackage contains the [interfaces]() and other
 useful tools to assist in building complex digital designs.
 
-regfile
--------
-The register file objects provide simple methods to define
-registers and collections of registers.  The registers files
-can be easily be connected to memory-mapped bus (e.g
-wishbone, avalon, etc.).
-
-Defining a Register File
-^^^^^^^^^^^^^^^^^^^^^^^^
-The following is a example defining a couple registers:
-
-.. code-block::python
-
-    regfile = RegisterFile(width=8)
-    reg0 = Register('status', width=8, access='ro', default=0)
-    regfile.add_register(reg0)
-    reg1 = Register('control', width=8, access='rw', default=0)
-    regfile.add_register(reg1)
-
-.. regfile needs to be enhanced to automatically determine
-.. the best list-of-signal organization.  The register definitions
-.. should be able to be defined logically and randomly and the
-.. RegisterFile will organize the list-of-signals as needed ...
-.. Future enhancement that can occur under the hood
+.. add link to ControlAndStatus, MemoryMapped, Streaming ... 
 
 
 Models
@@ -54,13 +40,28 @@ Models
 This subpackage contains various models used for development
 and verification.
 
-.. To facilitate development and verification models are created of external
-.. devices or "golden" models of an internal peripheral or processing block.
+.. To facilitate development and verification models are created 
+.. of external devices or "golden" models of an internal peripheral 
+.. or processing block.
 
 
 Cores
 =====
 This subpackage contains the core implementations.
+
+
+Build
+=====
+This subpackage automates various tool-flows (compilation).  
+The automation mainly supports FPGA vendor tool-flows.  The 
+``build.boards`` is a collection of board defitions.  The build 
+automations is used by selecting a board and automating the 
+build for that board.
+
+
+Vendor 
+======
+The vendor subpackage is an encapsulation of device primitives. 
 
 
 

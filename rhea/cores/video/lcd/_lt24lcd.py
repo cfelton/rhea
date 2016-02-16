@@ -12,7 +12,21 @@ from ._lt24lcd_init_sequence import init_sequence, build_init_rom
 from ._lt24lcd_driver import lt24lcd_driver
 
 def lt24lcd(glbl, vmem, lcd):
-    """
+    """ A video display driver for the terasic LT24 LCD display. 
+    
+    This driver reads pixels from the VideoMemory interface and transfers
+    them to the LT24 display.  This hardware module (component) will also
+    perform the initial display configuration.
+    
+    Ports:
+        glbl (Global): global signals, clock, reset, enable, etc. 
+        vmem (VideoMemory): video memory interface, the driver will read 
+                            pixels from this interface. 
+        lcd (LT24Interface): The external LT24 interface. 
+        
+    Parameters:
+        None 
+        
     RGB 5-6-5 (8080-system 16bit parallel bus)
     """
     assert isinstance(lcd, LT24Interface)
