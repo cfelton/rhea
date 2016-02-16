@@ -7,7 +7,7 @@ from __future__ import print_function
 
 from math import log, ceil
 from myhdl import Signal, intbv
-from ._memmap import MemoryMapped
+from .memmap import MemoryMapped
 
 
 class Barebone(MemoryMapped):

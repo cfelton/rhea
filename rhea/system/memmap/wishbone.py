@@ -7,7 +7,7 @@ from __future__ import absolute_import
 from myhdl import (Signal, intbv, always, always_seq, always_comb,
                    instance, instances, concat, enum, now)
 
-from .._glbl import Global
+from ..glbl import Global
 from . import MemoryMapped
 from . import Barebone
 
