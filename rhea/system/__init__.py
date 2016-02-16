@@ -9,6 +9,8 @@ from .const import ticks_per_ns
 from .clock import Clock
 from .reset import Reset
 from .glbl import Global
+from .hwtypes import Bit
+from .hwtypes import Byte
 
 from .memmap import ControlStatus
 from .memmap import MemorySpace

@@ -21,29 +21,82 @@ with a clock divide register.
 from myhdl import *
 
 from ..fifo import fifo_fast
-from ...system import FIFOBus
+from rhea.system import Bit, Byte
+from rhea.system import ControlStatus
+from rhea.system import FIFOBus
 
-from ._regfile_def import regfile
+
+class SPIControlStatus(ControlStatus):
+    def __init__(self):
+        """
+        Attributes:
+            enable: enable the SPI controller
+            freeze: freeze the current state
+            bypass_fifo: the write_data and read_data sink and source
+              the FIFO instead of the FIFOBus
+            clock_polarity:
+            clock_phase:
+            manual_slave_select:
+            rx_empty:
+            rx_full:
+            tx_empty:
+            tx_full:
+            slave_select_fault
+            tx_byte:
+            rx_byte:
+            slave_select:
+            tx_fifo_count:
+            rx_fifo_count:
+            clock_divisor:
+        """
+        # control / configuration signals
+        self.enable = Bit()
+        self.freeze = Bit()
+        self.bypass_fifo = Bit()
+        self.loop = Bit()
+        self.clock_polarity = Bit()
+        self.clock_phase = Bit()
+        self.manual_slave_select = Bit()
+
+        # status signals
+        self.rx_empty = Bit()
+        self.rx_full = Bit()
+        self.tx_empty = Bit()
+        self.tx_full = Bit()
+        self.slave_select_fault = Bit()
+
+        self.tx_byte = Byte()
+        self.rx_byte = Byte()
+        self.slave_select = Byte()
+        self.tx_fifo_count = Byte()
+        self.rx_fifo_count = Byte()
+        self.clock_divisor = Byte()
+
+        super(SPIControlStatus, self).__init__()
 
 
 def spi_controller(
     # ---[ Module Ports]---
     glbl,    # global interface, clock, reset, etc.
     regbus,  # memory-mapped register bus
+
     rxfb,    # streaming interface, receive fifo bus
-    txfb,    # streaming inteface, transmit fifo bus
+    txfb,    # streaming interface, transmit fifo bus
     spibus,  # external SPI bus
 
     tstpts = None,
     
     # ---[ Module Parameters ]---
     base_address=0x0400,  # base address (memmap register bus)
-    include_fifo=True     # include aan 8 byte deep FIFO
+    include_fifo=True,    # include aan 8 byte deep FIFO
+    sck_frequency=100e3   # desired frequency of SCK
     ):
     """ SPI (Serial Peripheral Interface) module
 
     This is a generic SPI implementation, the register layout
     is similar to other SPI controller.
+
+
     """
     clock, reset = glbl.clock, glbl.reset
     # -- local signals --
@@ -278,7 +331,7 @@ def spi_controller(
 
     # myhdl generators in the __debug__ conditionals is not 
     # converted.
-    if spi_controller._debug:
+    if spi_controller.debug:
         @instance
         def mon_state():
             print("  :{:8d}: initial state {}".format(
@@ -337,4 +390,6 @@ def spi_controller(
     
     return gens
 
-spi_controller._debug = False
+spi_controller.debug = False
+spi_controller.cso = SPIControlStatus
+spi_controller.portmap = dict()
