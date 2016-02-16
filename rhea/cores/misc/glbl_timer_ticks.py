@@ -49,6 +49,11 @@ def glbl_timer_ticks(glbl, include_seconds=True, user_timer=None, tick_div=1):
     if tick_div > 1:
         ticks_per_ms = int(ticks_per_ms // tick_div)
 
+    # check that the range limits are valid
+    assert ticks_per_ms > 0 and ms_per_sec > 0 and ms_per_user > 0, \
+        "counts must be greater than zero: {}, {}, {}".format(
+            ticks_per_ms, ms_per_sec, ms_per_user)
+    
     mscnt = Signal(intbv(0, min=0, max=ticks_per_ms))
     seccnt = Signal(intbv(0, min=0, max=ms_per_sec))
     usercnt = Signal(intbv(0, min=0, max=ms_per_user))

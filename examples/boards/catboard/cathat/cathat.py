@@ -25,11 +25,10 @@ def cathat(clock, reset, led):
             lcnt.next = lcnt + 1;
         led.next = (1 << lcnt)
 
-    # RPi interface
+    # @todo: RPi interface
 
-    # SDRAM controller
+    # @todo: SDRAM controller
 
-    # 
         
     return instances()
             

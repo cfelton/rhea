@@ -7,8 +7,8 @@ from copy import deepcopy
 from . import MemorySpace
 from . import ControlStatus
 from . import RegisterFile, Register
-from .._clock import Clock
-from .._reset import Reset
+from ..clock import Clock
+from ..reset import Reset
 
 
 # a count of the number of memory-map peripherals

@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from myhdl import intbv, enum, Signal, ResetSignal, always_seq
 from ...system import Clock
 
-from ._sdram_intf import SDRAMInterface
+from .sdram_intf import SDRAMInterface
 
     
 def sdram_sdr_controller(clock, reset, ibus, extram, refresh=True):
