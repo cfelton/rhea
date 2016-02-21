@@ -6,13 +6,15 @@ from __future__ import print_function
 
 
 # import all the board definitions
-from .xilinx import (Xula, Xula2, Pone, Anvyl, Mojo, Nexys, Atlys,
+from .xilinx import (Xula, Xula2, Xula2StickItMB, 
+                     Pone, Anvyl, Mojo, Nexys, Atlys,
                      Zybo, Parallella, SX1, UFO400, XUPV2P)
 from .altera import (DE0Nano, DE0NanoSOC, DE0CV)
 from .lattice import (Icestick, CATBoard)
 
 
-xbrd = {'xula': Xula, 'xula2': Xula2, 'pone': Pone, 'anvyl': Anvyl,
+xbrd = {'xula': Xula, 'xula2': Xula2, 'xula2_stickit_mb': Xula2StickItMB,
+        'pone': Pone, 'anvyl': Anvyl,
         'mojo': Mojo, 'atlys': Atlys, 'nexys': Nexys, 'zybo': Zybo,
         'parallella': Parallella, 'sx1': SX1, 'ufo400': UFO400,
         'xupv2p': XUPV2P,}
