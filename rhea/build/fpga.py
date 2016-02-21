@@ -135,12 +135,13 @@ class FPGA(object):
         A port name is linked to a default port name or a subset
         (slice) is linked to the new name.  
 
-        Example: brd.add_port_name('led', 'wingC', 7)
+        Example: 
+            brd.add_port_name('led', 'wingC', 7)
         where wingC is a 16-bit port bit-vector
 
         To extract a range from the port, the slice class has to
         be used, example:
-        brd.link_port_name('MSB', 'wingC', slice(16,8))
+            brd.link_port_name('MSB', 'wingC', slice(16,8))
         """
         
         p = self._ports[port]
@@ -151,7 +152,7 @@ class FPGA(object):
                 pins = p.pins[slc]
             elif isinstance(slc, (list, tuple)):
                 pins = []
-                for i in [0, 3,]:
+                for i in slc:
                     if isinstance(i, int):
                         pins.append(p.pins[i])
                     else:

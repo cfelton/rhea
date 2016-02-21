@@ -70,7 +70,7 @@ def test_ibh(args=None):
                     rb = uartmdl.read()
                     timeout -= 1
                 if rb is None:
-                    raise TimeoutError
+                    raise Exception("TimeoutError")
 
             # the last byte should be the byte written
             assert rb == 0xFF
