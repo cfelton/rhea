@@ -4,7 +4,7 @@ from __future__ import absolute_import
 # generic colorbar generator
 from ._color_bars import color_bars
 
-from .lcd._
+from .lcd import lt24lcd
 
 # generic VGA core
 from .vga._vga_intf import VGA
