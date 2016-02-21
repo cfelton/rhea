@@ -33,6 +33,43 @@ class Xula(FPGA):
         return ISE(brd=self, top=top)
 
 
+class XulaStickIt(Xula):
+    def __init__(self):
+        """ StickIt board port definitions
+        This class defines the port to pin mapping for the Xess StickIt
+        board.  The Xula module can be plugged into the StickIt board.
+        The StickIt board provides connections to many common physical
+        interfaces: pmod, shields, etc.  Many of the pins are redefined
+        to match the names of the connector connections
+        """
+        chan_pins = self.default_ports['chan']['pins']
+        chan_pins = chan_pins + self.default_clocks['chan_clk']['pins']
+        assert len(chan_pins) == 33
+        self.default_ports['chan']['pins'] = chan_pins
+
+        # the following are the bit-selects (chan[idx]) and not 
+        # the pins.
+        self.add_port_name('pm1', 'chan', (15, 32, 16, 0,   # pmod A
+                                           11, 28, 13, 14)) # pmod B
+
+        self.add_port_name('pm2', 'chan', (17, 1,  18, 3,   # pmod A
+                                           15, 32, 16, 0))  # pmod B
+
+        self.add_port_name('pm3', 'chan', (20, 4,  21, 5,   # pmod A
+                                           17, 1,  18, 3))  # pmod B
+
+        self.add_port_name('pm4', 'chan', (22, 6,  23, 7,   # pmod A
+                                           20, 4,  21, 5))  # pmod B
+
+        self.add_port_name('pm5', 'chan', (8,  25, 26, 10,  # pmod A
+                                           22, 6,  23, 7))  # pmod B
+
+        self.add_port_name('pm6', 'chan', (11, 28, 13, 14,  # pmod A
+                                           8,  25, 26, 10)) # pmod B
+
+        # @todo: add the wing defintions        
+
+
 class Xula2(FPGA):
     vendor = 'xilinx'
     family = 'spartan6'
@@ -43,7 +80,7 @@ class Xula2(FPGA):
 
     default_clocks = {
         'clock': dict(frequency=12e6, pins=('A9',)),
-        'chan_clk': dict(frequency=1e6, pins=('T7'))
+        'chan_clk': dict(frequency=1e6, pins=('T7',))
     }
 
     default_ports = {
@@ -118,3 +155,44 @@ class Xula2(FPGA):
 
     def get_flow(self, top=None):
         return ISE(brd=self, top=top)
+
+
+class Xula2StickItMB(Xula2):
+    def __init__(self):
+        """ """
+        # to simplify the connector mapping append chan_clk to the
+        # end of the channel pins.  Note overlapping ports cannot
+        # be simultaneously used.
+        chan_pins = self.default_ports['chan']['pins']
+        chan_pins = chan_pins + self.default_clocks['chan_clk']['pins']
+        assert len(chan_pins) == 33, "len == {}".format(len(chan_pins))
+        self.default_ports['chan']['pins'] = chan_pins
+
+        super(Xula2StickItMB, self).__init__()
+
+        self.add_port_name('pm1', 'chan', (0,  2,  4,  5,
+                                           32, 1,  3,  5))
+
+        self.add_port_name('pm2', 'chan', (15, 17, 19, 21,
+                                           16, 18, 20, 22))
+
+        self.add_port_name('pm3', 'chan', (23, 25, 27, 29,
+                                           24, 26, 28, 30))
+                   
+        # @todo: add grove board connectors
+        
+        # RPi GPIO connector, each port defined as the 
+        self.add_port_name('bcm2_sda', 'chan', 31)
+        self.add_port_name('bcm3_scl', 'chan', 30)
+        self.add_port_name('bcm4_gpclk0', 'chan', 29)
+        self.add_port_name('bcm17', 'chan', 28)
+        self.add_port_name('bcm27_pcm_d', 'chan', 27)
+        self.add_port_name('bcm22', 'chan', 26)
+        # ...
+        self.add_port_name('bcm14_txd', 'chan', 14)
+        self.add_port_name('bcm15_rxd', 'chan', 13)
+        # @todo: finish ...
+                    
+
+
+                           

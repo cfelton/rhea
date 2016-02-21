@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-from ._xula import Xula, Xula2
+from ._xula import Xula, Xula2, Xula2StickItMB
 from ._papilio import Pone
 from ._anvyl import Anvyl
 from ._mojo import Mojo
