@@ -19,7 +19,7 @@ from myhdl import (always_seq, always_comb, instance, delay,
 
 from rhea.system import Global, Clock, Reset
 from rhea.system import Barebone, FIFOBus
-from rhea.cores.memmap import memmap_command_bridge
+from rhea.cores.memmap import command_bridge
 from rhea.cores.fifo import fifo_fast
 from rhea.utils import CommandPacket
 from rhea.utils.test import run_testbench, tb_args, tb_default_args
@@ -64,7 +64,7 @@ def test_memmap_command_bridge(args=None):
 
     def _bench_command_bridge():
         tbclk = clock.gen()
-        tbdut = memmap_command_bridge(glbl, fbtx, fbrx, memmap)
+        tbdut = command_bridge(glbl, fbtx, fbrx, memmap)
         tbfii = fifo_fast(clock, reset, fbtx)
         tbfio = fifo_fast(clock, reset, fbrx)
         # @todo: add other bus types

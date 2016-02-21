@@ -67,7 +67,7 @@ def testbench_nameofwhatsbeingtested(args=None):
             
             raise StopSimulation
         
-        # retrun the generators (instnaces() could be used)
+        # return the generators (instances() could be used)
         return tbdut, tbclk, tbstim
         
     run_testbench(_bench_nameofwhatsbeingtested, args=args)

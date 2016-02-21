@@ -1,5 +1,7 @@
 
-from .memmap_controller import memmap_controller_basic
-from .memmap_peripheral import memmap_peripheral_memory
-from .memmap_peripheral import memmap_peripheral_regfile
-from .memmap_command_bridge import memmap_command_bridge
+from __future__ import absolute_import
+
+from .controller import controller_basic
+from .peripheral import peripheral_memory
+from .peripheral import peripheral
+from .command_bridge import command_bridge

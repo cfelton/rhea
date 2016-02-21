@@ -6,9 +6,9 @@ from myhdl import (Signal, intbv, always_seq, always_comb, concat,)
 
 
 from rhea.cores.uart import uartlite
-from rhea.cores.memmap import memmap_command_bridge
+from rhea.cores.memmap import command_bridge
 from rhea.cores.misc import glbl_timer_ticks
-from rhea.system import Global, Clock, Reset
+from rhea.system import Global, Clock
 from rhea.system import Barebone
 from rhea.system import FIFOBus
 from rhea.build.boards import get_board
@@ -46,7 +46,7 @@ def icestick_blinky_host(clock, led, pmod, uart_tx, uart_rx,
     uart_inst = uartlite(glbl, fbustx, fbusrx, uart_rx, uart_tx)
 
     # create the packet command instance
-    cmd_inst = memmap_command_bridge(glbl, fbusrx, fbustx, memmap)
+    cmd_inst = command_bridge(glbl, fbusrx, fbustx, memmap)
 
     @always_seq(clock.posedge, reset=None)
     def beh_led_control():
