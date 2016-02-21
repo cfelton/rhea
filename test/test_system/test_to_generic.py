@@ -7,7 +7,7 @@ from myhdl import (instance, delay, StopSimulation)
 
 from rhea.system import Clock, Reset, Global
 from rhea.system import Barebone, Wishbone, AvalonMM, AXI4Lite
-from rhea.cores.memmap import memmap_peripheral_memory
+from rhea.cores.memmap import peripheral_memory
 
 from rhea.utils.test import run_testbench, tb_args, tb_default_args
 
@@ -46,8 +46,8 @@ def testbench_to_generic(args=None):
         membus = Barebone(glbl, data_width=width,
                           address_width=address_width)
 
-    def _bench_to_generic():
-        tbdut = memmap_peripheral_memory(membus, depth=depth)
+    def bench_to_generic():
+        tbdut = peripheral_memory(membus, depth=depth)
         tbitx = membus.interconnect()
         tbclk = clock.gen()
         testvals = {}
@@ -87,7 +87,7 @@ def testbench_to_generic(args=None):
         return tbdut, tbitx, tbclk, tbstim
 
     if run:
-        run_testbench(_bench_to_generic, args=args)
+        run_testbench(bench_to_generic, args=args)
 
 
 def test_barebone():

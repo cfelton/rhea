@@ -3,11 +3,11 @@ from __future__ import absolute_import
 
 from myhdl import enum, Signal, intbv, always_seq
 
-from ...system.memmap import MemoryMapped
-from ...system.memmap import Barebone
+from rhea.system.memmap import MemoryMapped
+from rhea.system.memmap import Barebone
 
 
-def memmap_controller_basic(generic, memmap):
+def controller_basic(generic, memmap):
     """
 
     Ports:

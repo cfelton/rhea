@@ -5,10 +5,10 @@ from myhdl import (Signal, intbv, enum, always_seq, always_comb,
                    ConcatSignal)
 
 from rhea.system import MemoryMapped, Barebone, FIFOBus
-from . import memmap_controller_basic
+from . import controller_basic
 
 
-def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
+def command_bridge(glbl, fifobusi, fifobuso, mmbus):
     """ Convert a command packet to a memory-mapped bus transaction
     
     This module will decode the incomming packet and start a bus 
@@ -89,7 +89,7 @@ def memmap_command_bridge(glbl, fifobusi, fifobuso, mmbus):
 
     # convert generic memory-mapped bus to the memory-mapped interface
     # passed to the controller
-    mmc_inst = memmap_controller_basic(bb, mmbus)
+    mmc_inst = controller_basic(bb, mmbus)
 
     @always_comb
     def beh_fifo_read():

@@ -2,7 +2,7 @@
 from myhdl import Signal, intbv, always_seq
 
 from . import button_debounce
-from ..memmap import memmap_controller_basic
+from ..memmap import controller_basic
 
 
 def button_controller(glbl, regbus, btns, led_addr=0x240):
@@ -25,7 +25,7 @@ def button_controller(glbl, regbus, btns, led_addr=0x240):
     # use the basic controller defined in the memmap modules
     # this basic controller is very simple, a write strobe 
     # will start a write cycle and a read strobe a read cycle.
-    gctl = memmap_controller_basic(ctl, regbus)
+    gctl = controller_basic(ctl, regbus)
 
 
     # @todo: finish, can't use the write's like they are
