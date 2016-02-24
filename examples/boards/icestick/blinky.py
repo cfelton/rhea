@@ -7,8 +7,8 @@ from rhea.build.boards import get_board
 
 
 def icestick_blinky(led, clock, reset=None):
-    """ simple de0nano LED blink """
-    assert len(led) == 8
+    """ simple icestick LED blink """
+    assert len(led) == 5
 
     maxcnt = int(clock.frequency)
     cnt = Signal(intbv(0, min=0, max=maxcnt))
@@ -26,7 +26,7 @@ def icestick_blinky(led, clock, reset=None):
     def rtl_assign():
         led.next[0] = toggle
         led.next[1] = not toggle
-        for ii in range(2, 8):
+        for ii in range(2, 5):
             led.next[ii] = 0
 
     return rtl, rtl_assign
