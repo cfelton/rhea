@@ -14,7 +14,6 @@ from . import Barebone
 
 class Wishbone(MemoryMapped):
     name = 'wishbone'
-
     def __init__(self, glbl=None, data_width=8, address_width=16, name=None):
         """ Wishbose bus object
         Parameters (kwargs):
@@ -280,7 +279,7 @@ class Wishbone(MemoryMapped):
                 wb.cyc_i.next = False
                 wb.we_i.next = False
 
-            wb.adr_i.next = concat(bb.per_addr, bb.reg_addr)
+            wb.adr_i.next = concat(bb.per_addr, bb.mem_addr)
             wb.dat_i.next = bb.write_data
             bb.read_data.next = wb.dat_o
 

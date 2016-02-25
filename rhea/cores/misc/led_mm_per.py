@@ -25,7 +25,8 @@ def led_peripheral(glbl, regbus, leds, base_address=0x8240):
     """
 
     ndrv = 3  # the number of different drivers
-
+    regfile.base_address = base_address 
+    
     clock, reset = glbl.clock, glbl.reset
     rleds = Signal(intbv(0)[len(leds):])
 
@@ -33,7 +34,7 @@ def led_peripheral(glbl, regbus, leds, base_address=0x8240):
     gas = assign(leds, rleds)
 
     # memory-mapped registers
-    greg = regbus.add(glbl, regfile, 'led', base_address)
+    greg = regbus.add(regfile, 'led')
 
     # led bus from each driver
     dled = [Signal(intbv(0)[len(leds):]) 
