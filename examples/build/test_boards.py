@@ -16,6 +16,7 @@ from blink import blinky
 led_port_pin_map = {
     'xula': dict(name='led', port='chan', slc=[slice(0,2),slice(3,2)]),
     'xula2': dict(name='led', port='chan', slc=slice(0,4)),
+    'xula2_stickit_mb': dict(name='led', port='chan', slc=slice(0,4)),
     'pone': dict(name='led', port='wingA', slc=slice(0,4)),
     'de0cv': dict(name='led', port='ledr', slc=slice(0,4))
 }

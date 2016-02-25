@@ -2,11 +2,10 @@
 from __future__ import absolute_import
 
 from myhdl import Signal, intbv, always, always_comb
+from rhea.system.memmap import MemoryMapped, MemorySpace
 
-from ...system.memmap import MemoryMapped, MemorySpace
 
-
-def memmap_peripheral_memory(memmap, depth=128):
+def peripheral_memory(memmap, depth=128):
     """
     Example mapping a memory-mapped (csr) bus to an internal memory
     buffer.
@@ -67,7 +66,7 @@ def memmap_peripheral_memory(memmap, depth=128):
     return conv_inst, beh_write, beh_read, beh_newtrans, beh_done
 
 
-def memmap_peripheral_regfile(memmap):
+def peripheral(memmap):
     # @todo: move regfilesys to here!
     memspace = MemorySpace()
     memmap.add(memspace)

@@ -7,11 +7,10 @@ import argparse
 from myhdl import instance, StopSimulation
 
 from rhea.system import Global, Clock, Reset
-from rhea.system import RegisterFile, Register
 from rhea.system import Barebone, Wishbone, AvalonMM, AXI4Lite
 from rhea.utils.test import run_testbench, tb_args, tb_default_args
 
-from rhea.cores.memmap import memmap_peripheral_regfile
+from rhea.cores.memmap import peripheral
 
     
 def testbench_memmap(args=None):
@@ -21,13 +20,13 @@ def testbench_memmap(args=None):
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
-    csrbus = Barebone(glbl, data_width=8, address_width=16)
+    csbus = Barebone(glbl, data_width=8, address_width=16)
     
-    def _bench_memmap():
-        tbdut = memmap_peripheral_regfile(csrbus)
+    def bench_memmap():
+        tbdut = peripheral(csbus)
         tbclk = clock.gen()
 
-        print(csrbus.regfiles)
+        print(csbus.regfiles)
 
         @instance
         def tbstim():
@@ -37,7 +36,7 @@ def testbench_memmap(args=None):
             
         return tbdut, tbclk, tbstim
 
-    run_testbench(_bench_memmap)
+    run_testbench(bench_memmap)
 
     
 if __name__ == '__main__':

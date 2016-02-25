@@ -1,6 +1,7 @@
 
 import argparse
 import subprocess
+from pprint import pprint
 
 from myhdl import (Signal, intbv, always_seq, always_comb, concat,)
 
@@ -13,13 +14,13 @@ from rhea.system import FIFOBus
 from rhea.build.boards import get_board
 
 
-def catboard_blinky_host(clock, led, uart_tx, uart_rx):
+def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
     """
     The LEDs are controlled from the RPi over the UART
     to the FPGA.
     """
 
-    glbl = Global(clock, None)
+    glbl = Global(clock, reset)
     ledreg = Signal(intbv(0)[8:])
 
     # create the timer tick instance
@@ -34,13 +35,13 @@ def catboard_blinky_host(clock, led, uart_tx, uart_rx):
 
     # create the UART instance.
     uart_inst = uartlite(glbl, fbustx, fbusrx,
-                         serial_in=uart_rx,
-                         serial_out=uart_tx)
+                         serial_in=bcm14_txd,
+                         serial_out=bcm15_rxd)
 
     # create the packet command instance
     cmd_inst = command_bridge(glbl, fbusrx, fbustx, memmap)
 
-    @always_seq(clock.posedge, reset=None)
+    @always_seq(clock.posedge, reset=reset)
     def beh_led_control():
         memmap.done.next = not (memmap.write or memmap.read)
         if memmap.write and memmap.mem_addr == 0x20:
@@ -67,15 +68,19 @@ def catboard_blinky_host(clock, led, uart_tx, uart_rx):
 
 
 def build(args):
-    brd = get_board('catboard')
-    brd.add_port_name('uart_rx', 'bcm14_txd')                           
-    brd.add_port_name('uart_tx', 'bcm15_rxd')
-    flow = brd.get_flow(top=catboard_blinky_host)
+    brd = get_board('xula2_stickit_mb')
+    brd.add_port_name('led', 'pm2', slice(0, 8))
+    brd.add_reset('reset', active=0, async=True, pins=('H2',))
+    flow = brd.get_flow(top=xula2_blinky_host)
     flow.run()
+    info = flow.get_utilization()
+    pprint(info)
 
 
 def program(args):
-    subprocess.check_call(["iceprog", "iceriver/icestick.bin"])
+    subprocess.check_call(["xsload", 
+                           "--fpga", "xilinx/xula2_stickit_mb.bit",
+                           "-b", "xula2-lx25"])
 
 
 def cliparse():
@@ -91,7 +96,7 @@ def cliparse():
 def test_instance():    
     # check for basic syntax errors, use test_ice* to test
     # functionality
-    catboard_blinky_host(
+    xula2_blinky_host(
         clock=Clock(0, frequency=50e6),
         led=Signal(intbv(0)[8:]), 
         uart_tx=Signal(bool(0)),

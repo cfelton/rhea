@@ -2,7 +2,7 @@
 Board definitions 
 =================
 
-The `rhea.build` constains a large list of board definitions.  The
+The `rhea.build` contains a large list of board definitions.  The
 board definitions define an FPGA and its configuration for a particular
 board.  The board definitions define the default port list for the 
 FPGA on a particular board.  The following is a guideline on how to 
@@ -66,8 +66,10 @@ different name is desired use ``add_port_name`` to add a new port
 name that maps to the properties of an existing port.  See the 
 ``pone`` example for an ``add_port_name`` use.
 
-Creating a custom board definitinon
+Creating a custom board definition
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Custom board defintions can be created from the standard board
+definitions contained in the `rhea.build.boards` collection.
 For example, a board might
 have many connectors or generic IO.  The user could have a boards
 with specific hardware attached.  In these cases the user many
