@@ -1,5 +1,6 @@
 
-from myhdl import Signal,intbv
+from myhdl import Signal, intbv
+
 
 class SPIBus(object):
     def __init__(self):

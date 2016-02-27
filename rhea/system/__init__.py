@@ -19,6 +19,7 @@ from .memmap import Register
 from .memmap import RegisterFile
 
 # different buses supported by the register file interface
+from .memmap import MemoryMap
 from .memmap import MemoryMapped
 from .memmap import Barebone
 from .memmap import Wishbone

@@ -11,8 +11,4 @@ various cores available in the `rhea` package.
 
    fifo
    spi
-   usb
-   LT24 LCD driver
-   sdram  (TBC)
-   gemac  (TBC)
-   hdmi   (TBC)
+   usbext

@@ -1,10 +1,6 @@
 #
 # Copyright (c) 2006-2015 Christopher L. Felton
 #
-
-from __future__ import absolute_import
-from __future__ import division
-
 """
 SPI interface
 -------------
@@ -17,6 +13,7 @@ This module is register compatible with the Xilinx OPB SPI
 controller.  The interrupt register has been removed and replaced
 with a clock divide register.
 """
+from __future__ import absolute_import, division
 
 from myhdl import *
 
