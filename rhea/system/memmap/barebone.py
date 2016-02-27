@@ -11,6 +11,7 @@ from .memmap import MemoryMapped
 
 
 class Barebone(MemoryMapped):
+    name = 'barebone'
     def __init__(self, glbl, data_width=8, address_width=8,
                  name=None, num_peripherals=16):
         """ Generic memory-mapped interface.

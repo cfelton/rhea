@@ -37,7 +37,7 @@ def button_controller(glbl, regbus, btns, led_addr=0x240):
         ctl.write.next = False
         ctl.read.next = False
         ctl.per_addr.next = led_addr[16:8]
-        ctl.reg_addr.next = led_addr[8:0]
+        ctl.mem_addr.next = led_addr[8:0]
 
         if ctl.done:
             if btns != 0:

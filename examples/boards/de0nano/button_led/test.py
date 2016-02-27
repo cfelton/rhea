@@ -5,14 +5,13 @@ import pytest
 
 from myhdl import *
 
-from btn_led_mm import m_btn_led_mm
+from button_led_mm import button_led_mm
 
 from rhea.system import Clock
 from rhea.system import Reset
 from rhea.utils.test import run_testbench
 
 
-@pytest.mark.xfail()
 def test_btn_led():
 
     clock = Clock(0, frequency=500e3)
@@ -22,8 +21,8 @@ def test_btn_led():
 
     def _bench_btn_led():
 
-        # bus_type = ('A', 'B', 'W', 'X') # avalon, barebone, wishbon, AXI
-        tbdut = m_btn_led_mm(clock, reset, leds, btns, bus_type='A')
+        # bus_type = ('A', 'B', 'W', 'X') # avalon, barebone, wishbone, AXI
+        tbdut = button_led_mm(clock, reset, leds, btns, bus_type='wishbone')
 
         def dumpg(glist):
             for gg in glist:
@@ -66,8 +65,8 @@ def test_btn_led():
     # currently an error when converting to both at once,
     # only convert to one at a time.
     toVerilog.directory = 'output'
-    toVerilog(m_btn_led_mm, clock, reset, leds, btns)
-    #toVHDL(m_btn_led_mm, clock, reset, leds, btns)
+    toVerilog(button_led_mm, clock, reset, leds, btns)
+    #toVHDL(button_led_mm, clock, reset, leds, btns)
 
 
 if __name__ == '__main__':

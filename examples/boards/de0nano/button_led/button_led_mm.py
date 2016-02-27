@@ -17,7 +17,7 @@ from rhea.system import AvalonMM
 from rhea.system import AXI4Lite
 
 
-def m_btn_led_mm(clock, reset, leds, btns, bus_type='W'):
+def button_led_mm(clock, reset, leds, btns, bus_type='wishbone'):
     """ A toy example to demostrate bus agnosticism
     This example instantiates a memory-map controller and a
     memory-map peripheral.  This example shows how the 
@@ -35,11 +35,11 @@ def m_btn_led_mm(clock, reset, leds, btns, bus_type='W'):
     """
     glbl = Global(clock=clock, reset=reset)
 
-    if bus_type == 'B':
+    if bus_type == 'barebone':
         regbus = Barebone(glbl, data_width=8, address_width=16)
-    elif bus_type == 'W':
+    elif bus_type == 'wishbone':
         regbus = Wishbone(glbl, data_width=8, address_width=16)
-    elif bus_type == 'A':
+    elif bus_type == 'avalon':
         regbus = AvalonMM(glbl, data_width=8, address_width=16)
     #elif bus_type == 'X':
     #    regbus = AXI4Lite(glbl, data_wdith=8, address_width=16)
@@ -64,8 +64,13 @@ def build(args):
 def getargs():
     """ get CLI arguments
     """
-    pass
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--bus_type', 
+                        choice=('barebone', 'wishbone', 'avalon'),
+                        help="define the memory-mapped bus type to use")
+    args = parser.parse_args()
+    return args 
+    
 
 if __name__ == '__main__':
     args = getargs()
