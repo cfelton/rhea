@@ -77,6 +77,19 @@ control-status is accessed via the ``cso``.  This provides
 a clean encapsulation to the module.  The ``cso`` can also
 include transactors to assist testing and verification.
 
+Creating control status objects
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The above example shows how a collections of control and status signals
+are defined in a class.  To help guide the the tools, some additional
+information can be defined:
+
+   * ``driven``: set the signal driven attribute to true to indicate a
+     read-only (status) attribute.
+   * Use the hardware-types :py:class:`Bit` and :py:class:`Byte` to
+     help drive the how the attributes are organized in a register-file.
+   * Use ``initial_value`` property to overwrite the signals initial
+     value, this is useful is static configurations.
+
 
 Register files
 --------------
@@ -222,8 +235,11 @@ memory-mapped this
            cso = led_blinker.cso()
 
        if membus is not None:
-           rf = cso.build_register_file()
+           rf = cso.get_register_file()
            membus.add(rf)
+
+       # get any cso specific logic (if any)
+       cso_inst = cso.get_generators()
 
        # ...
 
@@ -235,3 +251,9 @@ In the previous example all the explict addresses are hidden.  The
 control-status attributes are accessed via the attributes (in simulation
 and host software) and all the memory-mapped bus accesses are hidden.
 The :py:class:`MemoryMap` has utilities to export the memory-map.
+
+
+Static configuration
+^^^^^^^^^^^^^^^^^^^^
+The previous example demonstrated how the module can select to use the
+external ``cso`` object, default ``cso``

@@ -18,84 +18,48 @@ from __future__ import absolute_import, division
 from myhdl import *
 
 from ..fifo import fifo_fast
-from rhea.system import Bit, Byte
-from rhea.system import ControlStatus
 from rhea.system import FIFOBus
 
-
-class SPIControlStatus(ControlStatus):
-    def __init__(self):
-        """
-        Attributes:
-            enable: enable the SPI controller
-            freeze: freeze the current state
-            bypass_fifo: the write_data and read_data sink and source
-              the FIFO instead of the FIFOBus
-            clock_polarity:
-            clock_phase:
-            manual_slave_select:
-            rx_empty:
-            rx_full:
-            tx_empty:
-            tx_full:
-            slave_select_fault
-            tx_byte:
-            rx_byte:
-            slave_select:
-            tx_fifo_count:
-            rx_fifo_count:
-            clock_divisor:
-        """
-        # control / configuration signals
-        self.enable = Bit()
-        self.freeze = Bit()
-        self.bypass_fifo = Bit()
-        self.loop = Bit()
-        self.clock_polarity = Bit()
-        self.clock_phase = Bit()
-        self.manual_slave_select = Bit()
-
-        # status signals
-        self.rx_empty = Bit()
-        self.rx_full = Bit()
-        self.tx_empty = Bit()
-        self.tx_full = Bit()
-        self.slave_select_fault = Bit()
-
-        self.tx_byte = Byte()
-        self.rx_byte = Byte()
-        self.slave_select = Byte()
-        self.tx_fifo_count = Byte()
-        self.rx_fifo_count = Byte()
-        self.clock_divisor = Byte()
-
-        super(SPIControlStatus, self).__init__()
+from .cso import SPIControlStatus
 
 
 def spi_controller(
     # ---[ Module Ports]---
-    glbl,    # global interface, clock, reset, etc.
-    regbus,  # memory-mapped register bus
-
-    rxfb,    # streaming interface, receive fifo bus
-    txfb,    # streaming interface, transmit fifo bus
-    spibus,  # external SPI bus
-
-    tstpts = None,
+    glbl,          # global interface, clock, reset, etc.
+    spibus,        # external SPI bus
+    # optional ports
+    fifobus=None,  # streaming interface, FIFO bus
+    mmbus=None,    # memory-mapped bus, contro status access
+    cso=None,      # control-status object
     
     # ---[ Module Parameters ]---
-    base_address=0x0400,  # base address (memmap register bus)
     include_fifo=True,    # include aan 8 byte deep FIFO
-    sck_frequency=100e3   # desired frequency of SCK
-    ):
+):
     """ SPI (Serial Peripheral Interface) module
+    This module is an SPI controller (master) and can be used to interface
+    with various external SPI devices.
 
-    This is a generic SPI implementation, the register layout
-    is similar to other SPI controller.
+    Arguments:
+        glbl (Global): clock and reset interface
+        spibus (SPIBus): external (off-chip) SPI bus
+        fifobus (FIFOBus): interface to the FIFOs, write side is to
+          the TX the read side from the RX.
+        mmbus (MemoryMapped): a memory-mapped bus used to access
+          the control-status signals.
+        cso (ControlStatus): the control-status object used to control
+          this peripheral
 
+        include_fifo (bool): include the FIFO ... this is not fully
+          implemented
 
+    Note:
+        At last check the register-file automation was not complete, only
+        the `cso` external control or `cso` configuration can be utilized.
     """
     clock, reset = glbl.clock, glbl.reset
+    if cso is None:
+        cso = spi_controller.cso()
+
     # -- local signals --
     ena = Signal(False)
     clkcnt = Signal(modbv(0, min=0, max=2**12))
@@ -112,55 +76,48 @@ def spi_controller(
 
     # internal FIFO bus interfaces
     #   external FIFO side (FIFO to external SPI bus)
-    xfb = FIFOBus(size=txfb.size, width=txfb.width)  
+    itx = FIFOBus(size=fifobus.size, width=fifobus.width)
     #   internal FIFO side (FIFO to internal bus)
-    ifb = FIFOBus(size=rxfb.size, width=rxfb.width)  
+    irx = FIFOBus(size=fifobus.size, width=fifobus.width)
     
-    States = enum('IDLE', 'WAIT_HCLK', 'DATA_IN', 'DATA_CHANGE',
-                  'WRITE_FIFO', 'END')
-    state = Signal(States.IDLE)
+    states = enum('idle', 'wait_hclk', 'data_in', 'data_change',
+                  'write_fifo', 'end')
+    state = Signal(states.idle)
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # memory- mapped registers
     # add the peripheral's regfile to the bus (informational only)
-    regfile.base_address = base_address
-    g_regbus = regbus.add(regfile, 'spi')
+    # @todo: the automatic building of the register files is incomplete
+    if mmbus is not None:
+        # the register-file (rf) will drive all the cso signals
+        rf = cso.get_register_file()
+        mmbus.add(rf, 'spi')
 
     # FIFO for the wishbone data transfer
     if include_fifo:
-        g_tx_fifo = fifo_fast(clock, reset, txfb)
-        g_rx_fifo = fifo_fast(clock, reset, rxfb)
+        fifo_tx_inst = fifo_fast(clock, reset, itx)
+        fifo_rx_inst = fifo_fast(clock, reset, irx)
 
     @always_comb
     def rtl_assign():
-        regfile.sptc.next = txfb.count
-        regfile.sprc.next = rxfb.count
+        cso.tx_fifo_count.next = itx.count
+        cso.rx_fifo_count.next = irx.count
 
         if clkcnt > 0:
             ena.next = False
         else:
             ena.next = True
 
-    @always(regbus.clock.posedge)
+    clock_counts = tuple([(2**ii)-1 for ii in range(13)])
+
+    @always(clock.posedge)
     def rtl_clk_div():
-        if regfile.spcr.spe and clkcnt != 0 and state != States.IDLE:
+        if cso.enable and clkcnt != 0 and state != states.idle:
             clkcnt.next = (clkcnt - 1)
         else:
-            if   regfile.spxx == 0:   clkcnt.next = 0     # 2
-            elif regfile.spxx == 1:   clkcnt.next = 1     # 4
-            elif regfile.spxx == 2:   clkcnt.next = 3     # 8
-            elif regfile.spxx == 3:   clkcnt.next = 7     # 16
-            elif regfile.spxx == 4:   clkcnt.next = 15    # 32
-            elif regfile.spxx == 5:   clkcnt.next = 31    # 64
-            elif regfile.spxx == 6:   clkcnt.next = 63    # 128
-            elif regfile.spxx == 7:   clkcnt.next = 127   # 256
-            elif regfile.spxx == 8:   clkcnt.next = 255   # 512
-            elif regfile.spxx == 9:   clkcnt.next = 511   # 1024
-            elif regfile.spxx == 10:  clkcnt.next = 1023  # 2048
-            elif regfile.spxx == 11:  clkcnt.next = 2047  # 4096
-            else: clkcnt.next = 4095
+            clkcnt.next = clock_counts[cso.clock_divisor]
 
-    @always_seq(regbus.clock.posedge, reset=regbus.reset)
+    @always_seq(clock.posedge, reset=reset)
     def rtl_state_and_more():
         """
         Designed to the following timing diagram
@@ -173,158 +130,157 @@ def spi_controller(
         CPHA=1 MOSI  ...|....0.....|.1.....|.2.....|.3.....|.4.....|.5.....|.6.....|.7.....|.0...
                MISO  ......|.0.....|.1.....|.2.....|.3.....|.4.....|.5.....|.6.....|.7.....|.0...
         """
-        if not regfile.spcr.spe:
-            state.next = States.IDLE
+        if not cso.enable:
+            state.next = states.idle
             bcnt.next = 0
             treg.next = 0
             
-            xfb.rd.next = False
-            xfb.wr.next = False
+            itx.rd.next = False
+            irx.wr.next = False
 
             x_sck.next = False
             x_ss.next = False
         else:
-            if not regfile.freeze:
+            if not cso.freeze:
                 # ~~~~ Idle state ~~~~
-                if state == States.IDLE:
+                if state == states.idle:
                     bcnt.next = 7
-                    treg.next = xfb.rdata
-                    x_sck.next = regfile.spcr.cpol
-                    xfb.wr.next = False
+                    treg.next = itx.rdata
+                    x_sck.next = cso.clock_polarity
+                    irx.wr.next = False
                     
-                    if not xfb.empty and not xfb.full:
-                        xfb.rd.next = True
+                    if not itx.empty and not irx.full:
+                        itx.rd.next = True
                         x_ss.next = False
-                        if regfile.spcr.cpha: # Clock in on second phase 
-                            state.next = States.WAIT_HCLK
+                        if cso.clock_phase:  # Clock in on second phase
+                            state.next = states.wait_hclk
                         else:  # Clock in on first phase
-                            state.next = States.DATA_IN
+                            state.next = states.data_in
                     else:
-                        xfb.rd.next = False
-                        x_ss.next  = True
+                        itx.rd.next = False
+                        x_ss.next = True
 
                 # ~~~~ Wait half clock period for cpha=1 ~~~~
-                elif state == States.WAIT_HCLK:
-                    xfb.rd.next = False
-                    xfb.wr.next = False
+                elif state == states.wait_hclk:
+                    itx.rd.next = False
+                    irx.wr.next = False
                     if ena:
                         x_sck.next = not x_sck
-                        state.next = States.DATA_IN
+                        state.next = states.data_in
 
                 # ~~~~ Clock data in (and out) ~~~~
-                elif state == States.DATA_IN:
-                    xfb.rd.next = False
-                    xfb.wr.next = False
+                elif state == states.data_in:
+                    itx.rd.next = False
+                    irx.wr.next = False
                     if ena:  # clk div
                         x_sck.next = not x_sck
                         rreg.next = concat(rreg[7:0], x_miso)
                         
-                        if regfile.spcr.cpha and bcnt == 0:
-                            xfb.wr.next = True
-                            if xfb.empty or xfb.full:
-                                state.next = States.END
+                        if cso.clock_phase and bcnt == 0:
+                            irx.wr.next = True
+                            if itx.empty or irx.full:
+                                state.next = states.end
                             else:
-                                state.next = States.DATA_CHANGE
-                                #bcnt.next  = 7
-                                #x_fifo_rd.next = True
-                                #treg.next = x_fifo_do
-                        else:                            
-                            state.next = States.DATA_CHANGE
+                                state.next = states.data_change
+                        else:
+                            state.next = states.data_change
 
                 # ~~~~ Get ready for next byte out/in ~~~~
-                elif state == States.DATA_CHANGE:
-                    xfb.rd.next = False                    
-                    xfb.wr.next = False                    
+                elif state == states.data_change:
+                    itx.rd.next = False
+                    irx.wr.next = False
                     if ena:
                         x_sck.next = not x_sck
                         if bcnt == 0:  
-                            if not regfile.spcr.cpha:
-                                xfb.wr.next = True
+                            if not cso.clock_phase:
+                                irx.wr.next = True
                                 
-                            if xfb.empty or xfb.full:
-                                state.next = States.END
+                            if itx.empty or irx.full:
+                                state.next = states.end
                             else:  # more data to transfer
                                 bcnt.next = 7
-                                state.next = States.DATA_IN
-                                xfb.rd.next = True
-                                treg.next = xfb.rdata
+                                state.next = states.data_in
+                                itx.rd.next = True
+                                treg.next = itx.rdata
                         else:
                             treg.next = concat(treg[7:0], intbv(0)[1:])
                             bcnt.next = bcnt - 1                        
-                            state.next = States.DATA_IN
+                            state.next = states.data_in
 
                 # ~~~~ End state ~~~~
-                elif state == States.END:
-                    xfb.rd.next = False
-                    xfb.wr.next = False                    
+                elif state == states.end:
+                    itx.rd.next = False
+                    irx.wr.next = False
                     if ena:  # Wait half clock cycle go idle
-                        state.next = States.IDLE
+                        state.next = states.idle
 
                 # Shouldn't happen, error in logic
                 else:
-                    state.next = States.IDLE
+                    state.next = states.idle
                     assert False, "SPI Invalid State"
 
     @always_comb
     def rtl_fifo_sel():
-        if regfile.spst.rdata:
+        """
+        The `itx` and `irx` FIFO interfaces are driven by different
+        logic depending on the configuration.  This modules accesses
+        the `itx` read side and drives the `irx` write side.  The
+        `itx` write side is driven by the `cso` or the `fifobus` port.
+        The `irx` read side is accessed by the `cso` or the `fifobus`
+        port.
+        """
+        if cso.bypass_fifo:
             # data comes from the register file
-            xfb.empty.next = txfb.empty
-            xfb.full.next = rxfb.full
-            xfb.rdata.next = txfb.rdata
-            
-            txfb.rd.next = xfb.rd
-            txfb.wr.next = regfile.sptx.wr
-            txfb.wdata.next = regfile.sptx            
-            
-            rxfb.wr.next = xfb.wr            
-            rxfb.wdata.next = rreg
-            rxfb.rd.next = regfile.sprx.rd    
-            regfile.sprx.next = rxfb.rdata
-            
-            ifb.rd.next = False
-            ifb.wr.next = False
-            ifb.wdata.next = 0  # or'd bus must be 0
+            cso.tx_empty.next = itx.empty
+            cso.tx_full.next = itx.full
+            itx.wdata.next = cso.tx_byte
+
+            cso.rx_empty.next = irx.empty
+            cso.rx_full.next = irx.empty
+            cso.rx_byte.next = irx.rdata
+
+            # @todo: if cso.tx_byte write signal (written by bus) drive the
+            # @todo: FIFO write signals, same if the cso.rx_byte is accessed
+            itx.wr.next = cso.tx_write
+            irx.rd.next = cso.rx_read
 
         else:
-            # data comes from external FIFO bus interface            
-            xfb.empty.next = ifb.empty
-            xfb.full.next = ifb.full
-            xfb.rdata.next = ifb.rdata
-            
-            txfb.rd.next = False
-            rxfb.wr.next = False
-            rxfb.wdata.next = 0  # or'd bus must be 0
-            txfb.wr.next = False
-            rxfb.rd.next = False
+            # data comes from external FIFO bus interface
+            fifobus.full.next = itx.full
+            itx.wdata.next = fifobus.wdata
+            itx.wr.next = fifobus.wr
 
-            ifb.rd.next = xfb.rd
-            ifb.wr.next = xfb.wr
-            ifb.wdata.next = treg
+            fifobus.empty.next = irx.empty
+            fifobus.rdata.next = irx.rdata
+            fifobus.rvld.next = irx.rvld
+            irx.rd.next = fifobus.rd
+
+        # same for all modes
+        irx.wdata.next = rreg
 
     @always_comb
     def rtl_x_mosi():
         # @todo lsbf control signal
         x_mosi.next = treg[7]
 
-    @always(regbus.clock.posedge)
+    @always(clock.posedge)
     def rtl_spi_sigs():
         spibus.sck.next = x_sck
 
-        if regfile.spcr.loop:
+        if cso.loopback:
             spibus.mosi.next = False
             x_miso.next = x_mosi
         else:
             spibus.mosi.next = x_mosi
             x_miso.next = spibus.mosi
 
-        if regfile.spcr.msse:
-            spibus.ss.next = ~regfile.spss
+        if cso.manual_slave_select:
+            spibus.ss.next = ~cso.slave_select
         else:
             if x_ss:
                 spibus.ss.next = 0xFF
             else:
-                spibus.ss.next = ~regfile.spss
+                spibus.ss.next = ~cso.slave_select
 
     # myhdl generators in the __debug__ conditionals is not 
     # converted.
@@ -344,49 +300,34 @@ def spi_controller(
         def mon_trace():
             while True:
                 yield clock.posedge
-                ccfb = concat(txfb.wr, txfb.rd, rxfb.wr, rxfb.rd)
+                ccfb = concat(itx.wr, itx.rd, irx.wr, irx.rd)
                 if ccfb != fbidle:
-                    print("  :{:8d}: tx: w{} r{}, f{} e{}, rx: w{} r{} f{} e{}".format(
-                        now(), 
-                        int(txfb.wr), int(txfb.rd), int(txfb.full), int(txfb.empty),
-                        int(rxfb.wr), int(rxfb.rd), int(rxfb.full), int(rxfb.empty),))
+                    fstr = "  :{:8d}: tx: w{} r{}, f{} e{}, rx: w{} r{} f{} e{}"
+                    print(fstr.format(now(),
+                        int(itx.wr), int(itx.rd), int(itx.full), int(itx.empty),
+                        int(irx.wr), int(irx.rd), int(irx.full), int(irx.empty),)
+                    )
                     
         @always(clock.posedge)
         def mon_tx_fifo_write():
-            if txfb.wr:
-                print("   WRITE tx fifo {:02X}".format(int(txfb.wdata)))
-            if txfb.rd:
-                print("   READ tx fifo {:02X}".format(int(txfb.rdata)))
+            if itx.wr:
+                print("   WRITE tx fifo {:02X}".format(int(itx.wdata)))
+            if itx.rd:
+                print("   READ tx fifo {:02X}".format(int(itx.rdata)))
                 
         @always(clock.posedge)
         def mon_rx_fifo_write():
-            if rxfb.wr:
-                print("   WRITE rx fifo {:02X}".format(int(rxfb.wdata)))
+            if irx.wr:
+                print("   WRITE rx fifo {:02X}".format(int(irx.wdata)))
                 
-            if rxfb.rd:
-                print("   READ rx fifo {:02X}".format(int(rxfb.rdata)))
-
-    if tstpts is not None:
-        if isinstance(tstpts.val, intbv) and len(tstpts) == 8:
-            @always_comb    
-            def rtl_tst_pts():
-                tstpts.next[0] = spibus.ss[0]
-                tstpts.next[1] = spibus.sck
-                tstpts.next[2] = spibus.mosi
-                tstpts.next[3] = spibus.miso
-                
-                tstpts.next[4] = txfb.wr
-                tstpts.next[5] = txfb.rd
-                tstpts.next[6] = rxfb.wr
-                tstpts.next[7] = rxfb.rd
-        else:
-            print("WARNING: SPI tst_pts is not None but is not an intbv(0)[8:]")
+            if irx.rd:
+                print("   READ rx fifo {:02X}".format(int(irx.rdata)))
 
     # return the myhdl generators
     gens = instances()
-    
     return gens
 
 spi_controller.debug = False
 spi_controller.cso = SPIControlStatus
+# @todo: complete the portmap
 spi_controller.portmap = dict()
