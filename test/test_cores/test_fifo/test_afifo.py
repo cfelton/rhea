@@ -56,7 +56,7 @@ def test_afifo(args=None):
                 for _ in range(17):
                     yield wclk.posedge
             elif not fbus.full:
-                fbus.wdata.next = wrd
+                fbus.write_data.next = wrd
                 _wr.next = True
                 yield delay(1)
                 if not fbus.full:
@@ -67,7 +67,7 @@ def test_afifo(args=None):
 
     @always_comb
     def tb_always_wr_gate():
-        fbus.wr.next = _wr and not fbus.full
+        fbus.write.next = _wr and not fbus.full
 
     @instance
     def tb_always_rd():
@@ -81,12 +81,12 @@ def test_afifo(args=None):
             try:
                 yield rclk.posedge
                 if not fbus.empty:
-                    fbus.rd.next = True
+                    fbus.read.next = True
                 else:
-                    fbus.rd.next = False
+                    fbus.read.next = False
                     
-                if fbus.rvld:
-                    tmp = fbus.rdata
+                if fbus.read_valid:
+                    tmp = fbus.read_data
                     assert tmp == rdd, " %d != %d " % (tmp, rdd)
                     rdd[:] += 1
             except AssertionError as err:
@@ -102,7 +102,7 @@ def test_afifo(args=None):
         @instance
         def tbstim():
             print("start test 1")
-            fbus.wdata.next = 0xFE
+            fbus.write_data.next = 0xFE
             reset.next = reset.active
             yield delay(3*33)
             reset.next = not reset.active
@@ -117,11 +117,11 @@ def test_afifo(args=None):
                 # Write some byte
                 for ii in range(num_bytes):
                     yield wclk.posedge
-                    fbus.wdata.next = ii
-                    fbus.wr.next  = True
+                    fbus.write_data.next = ii
+                    fbus.write.next  = True
                     
                 yield wclk.posedge
-                fbus.wr.next = False
+                fbus.write.next = False
         
                 # If 16 bytes written make sure FIFO is full
                 yield wclk.posedge
@@ -131,16 +131,16 @@ def test_afifo(args=None):
                 while fbus.empty:
                     yield rclk.posedge
                     
-                fbus.rd.next = True
+                fbus.read.next = True
                 yield rclk.posedge
                 for ii in range(num_bytes):
                     yield rclk.posedge
-                    fbus.rd.next = True
-                    assert fbus.rvld
-                    assert fbus.rdata == ii, "rdata %x ii %x " % (fbus.rdata, ii)
+                    fbus.read.next = True
+                    assert fbus.read_valid
+                    assert fbus.read_data == ii, "rdata %x ii %x " % (fbus.read_data, ii)
         
                 yield rclk.posedge
-                fbus.rd.next = False
+                fbus.read.next = False
                 yield rclk.posedge
                 assert fbus.empty
                     
@@ -160,7 +160,7 @@ def test_afifo(args=None):
         @instance
         def tbstim():
             print("start test 2")
-            fbus.wdata.next = 0xFE
+            fbus.write_data.next = 0xFE
             reset.next = reset.active
             yield delay(3*33)
             reset.next = not reset.active

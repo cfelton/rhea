@@ -69,12 +69,12 @@ def fifo_async(reset, wclk, rclk, fbus):
     _we = Signal(bool(0))
     @always_comb
     def rtl_wr():
-        _we.next = fbus.wr and not fbus.full
+        _we.next = fbus.write and not fbus.full
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Memory for the FIFO
-    g_fifomem = fifo_mem_generic(wclk, _we, fbus.wdata, waddr,
-                                 rclk, fbus.rdata,  raddr,
+    g_fifomem = fifo_mem_generic(wclk, _we, fbus.write_data, waddr,
+                                 rclk, fbus.read_data,  raddr,
                                  mem_size=fbus.size)
 
 
@@ -92,7 +92,7 @@ def fifo_async(reset, wclk, rclk, fbus):
     @always_seq(rclk.posedge, reset=rrst)
     def rtl_rptrs():
         # increment when read and not empty 
-        rbn = rbin + (fbus.rd and not rempty)
+        rbn = rbin + (fbus.read and not rempty)
         rbin.next = rbn
         rpn = (rbn >> 1) ^ rbn  # gray counter
         rptr.next = rpn   
@@ -101,7 +101,7 @@ def fifo_async(reset, wclk, rclk, fbus):
         rempty.next = (rpn == rq2_wptr)
 
         # the data is register from the memory, the data is delayed
-        fbus.rvld.next = fbus.rd and not rempty
+        fbus.read_valid.next = fbus.read and not rempty
         
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # --Text from the paper--
@@ -116,7 +116,7 @@ def fifo_async(reset, wclk, rclk, fbus):
     @always_seq(wclk.posedge, reset=wrst)
     def rtl_wptrs():
         # increment when write and not full
-        wbn = wbin + (fbus.wr and not wfull)
+        wbn = wbin + (fbus.write and not wfull)
         wbin.next = wbn
         wpn = (wbn >> 1) ^ wbn
         wptr.next = wpn

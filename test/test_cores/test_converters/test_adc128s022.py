@@ -49,10 +49,10 @@ def test_adc128s022():
                 yield check_empty(clock, fifobus)
                 # should have a new sample
                 if not fifobus.empty:
-                    fifobus.rd.next = True
-                    sample[:] = fifobus.rdata
+                    fifobus.read.next = True
+                    sample[:] = fifobus.read_data
                     yield clock.posedge
-                    fifobus.rd.next = False
+                    fifobus.read.next = False
                     yield clock.posedge
                     print("sample {:1X}:{:4d}, fifobus {} \n".format(
                         int(sample[16:12]), int(sample[12:0]), str(fifobus)))

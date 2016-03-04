@@ -27,8 +27,8 @@ def adc128s022(glbl, fifobus, spibus, channel):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # get a FIFO to put the samples in, each sample is 12 bits 
     # the upper 4 bits contain the channel that was sampled
-    assert len(fifobus.wdata) == 16 
-    assert len(fifobus.rdata) == 16 
+    assert len(fifobus.write_data) == 16 
+    assert len(fifobus.read_data) == 16 
     sample = Signal(intbv(0)[12:])
     
     gfifo = fifo_fast(clock, reset, fifobus)
@@ -88,7 +88,7 @@ def adc128s022(glbl, fifobus, spibus, channel):
     # a check @todo: check ndiv > 4 ( ?)
     @always_seq(clock.posedge, reset=reset)
     def rtl_state_machine():
-        fifobus.wr.next = False
+        fifobus.write.next = False
         
         if state == states.start:
             # @todo: wait some amount of time
@@ -109,8 +109,8 @@ def adc128s022(glbl, fifobus, spibus, channel):
                 state.next = states.start
                 sample.next = sregin[12:]   # this can be removed
                 if not fifobus.full:
-                    fifobus.wdata.next = sregin
-                    fifobus.wr.next = True
+                    fifobus.write_data.next = sregin
+                    fifobus.write.next = True
                 else:
                     print("FIFO full dropping sample")
                     

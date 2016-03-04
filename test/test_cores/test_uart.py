@@ -82,9 +82,9 @@ def testbench_uart(args=None):
 
         @always_comb
         def tblpbk():
-            fifotx.wdata.next = fiforx.rdata
-            fifotx.wr.next = not fiforx.empty
-            fiforx.rd.next = not fiforx.empty
+            fifotx.write_data.next = fiforx.read_data
+            fifotx.write.next = not fiforx.empty
+            fiforx.read.next = not fiforx.empty
 
         @instance
         def tbstim():

@@ -26,14 +26,14 @@ def emesh_fifo(reset, emesh_i, emesh_o):
         """ assign the EMesh inputs to the FIFO bus """
         @always_comb
         def rtl_assign():
-            fbus.wdata.next = epkt.bits
+            fbus.write_data.next = epkt.bits
             print(epkt)
             if epkt.access:
                 #fbus.write.next = True
-                fbus.wr.next = True
+                fbus.write.next = True
             else:
                 #fbus.write.next = False
-                fbus.wr.next = False
+                fbus.write.next = False
         return rtl_assign,
 
     def fifo_to_emesh(fbus, epkt, clock):
@@ -41,7 +41,7 @@ def emesh_fifo(reset, emesh_i, emesh_o):
         fpkt = EMeshPacket()
 
         # map the bit-vector to the EMeshPacket interface
-        map_inst = epkt_from_bits(fpkt, fbus.rdata)
+        map_inst = epkt_from_bits(fpkt, fbus.read_data)
 
         # the FIFOs work with a read acknowledge vs. a read
         # request - meaning the data is available before the
@@ -56,17 +56,17 @@ def emesh_fifo(reset, emesh_i, emesh_o):
         def rtl_read():
             if not fbus.empty and not epkt.wait:
                 #fbus.read.next = True
-                fbus.rd.next = True
+                fbus.read.next = True
             else:
                 #fbus.read.next = False
-                fbus.rd.next = False
+                fbus.read.next = False
 
         @always(clock.posedge)
         def rtl_assign():
             # @todo: check and see if this will convert fine
             # @todo: epkt.assign(fpkt)
-            if fbus.rvld:
-                print("YES READ VALID {} {} {}".format(fbus.rdata, fpkt, epkt))
+            if fbus.read_valid:
+                print("YES READ VALID {} {} {}".format(fbus.read_data, fpkt, epkt))
                 epkt.access.next = fpkt.access
                 epkt.write.next = fpkt.write
                 epkt.datamode.next = fpkt.datamode

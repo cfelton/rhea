@@ -89,8 +89,8 @@ def tb_fifo_ramp(args):
 
         @always(clock.posedge)
         def tbmon():
-            if fifobus.wr:
-                assert _cval == fifobus.wdata
+            if fifobus.write:
+                assert _cval == fifobus.write_data
                 _cval.next = _cval+1
 
         return tbclk, tbdut, tbstim, tbmon, tbrbor
