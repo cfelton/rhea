@@ -43,10 +43,10 @@ class CommandPacket(object):
     def put(self, fifobus):
         yield fifobus.clock.posedge
         for byte in self.rawbytes:
-            fifobus.wr.next = True
-            fifobus.wdata.next = byte
+            fifobus.write.next = True
+            fifobus.write_data.next = byte
             yield fifobus.clock.posedge
-        fifobus.wr.next = False
+        fifobus.write.next = False
 
     def get(self, fifobus, rvals=None, evals=None, timeout=4000):
         response_bytes = bytearray([0 for _ in range(PACKET_LENGTH)])
@@ -62,17 +62,17 @@ class CommandPacket(object):
 
         while bytestoget > 0:
             if not fifobus.empty and bytestoget > 1:
-                fifobus.rd.next = True
+                fifobus.read.next = True
             else:
-                fifobus.rd.next = False
+                fifobus.read.next = False
 
-            if fifobus.rvld:
-                bb = int(fifobus.rdata)
+            if fifobus.read_valid:
+                bb = int(fifobus.read_data)
                 rpkt[ii] = bb
                 bytestoget -= 1
                 ii += 1
             yield fifobus.clock.posedge
-        fifobus.rd.next = False
+        fifobus.read.next = False
         self.check_response(response_bytes, rvals, evals)
 
 
