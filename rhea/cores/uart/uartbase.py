@@ -74,13 +74,13 @@ def uarttx(glbl, fbustx, tx, baudce):
     @always_seq(clock.posedge, reset=reset)
     def rtltx():
         # default values
-        fbustx.rd.next = False
+        fbustx.read.next = False
 
         # state handlers
         if state == states.wait:
             if not fbustx.empty and baudce:
-                txbyte.next = fbustx.rdata
-                fbustx.rd.next = True
+                txbyte.next = fbustx.read_data
+                fbustx.read.next = True
                 state.next = states.start
 
         elif state == states.start:
@@ -149,7 +149,7 @@ def uartrx(glbl, fbusrx, rx, baudce16):
     @always_seq(clock.posedge, reset=reset)
     def rtlrx():
         # defaults
-        fbusrx.wr.next = False
+        fbusrx.write.next = False
 
         # state handlers
         if state == states.wait:
@@ -168,8 +168,8 @@ def uartrx(glbl, fbusrx, rx, baudce16):
             if midbit:
                 #assert rx
                 state.next = states.end
-                fbusrx.wr.next = True
-                fbusrx.wdata.next = rxbyte
+                fbusrx.write.next = True
+                fbusrx.write_data.next = rxbyte
 
         elif state == states.end:
             state.next = states.wait
