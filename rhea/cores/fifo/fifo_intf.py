@@ -40,13 +40,13 @@ def check_fifo_intf(fbus):
     feedback what is missing / inconsistent in the interface.
     """
     try:
-        assert isinstance(fbus.wr, SignalType)
-        assert isinstance(fbus.wdata, SignalType)
+        assert isinstance(fbus.write, SignalType)
+        assert isinstance(fbus.write_data, SignalType)
 
-        assert isinstance(fbus.rd, SignalType)
-        assert isinstance(fbus.rdata, SignalType)
+        assert isinstance(fbus.read, SignalType)
+        assert isinstance(fbus.read_data, SignalType)
 
-        assert len(fbus.wdata) == len(fbus.rdata)
+        assert len(fbus.write_data) == len(fbus.read_data)
         # @todo: the above is a small start ... to be continued ...
     except AssertionError as err:
         _fifo_intf_dump()

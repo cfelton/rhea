@@ -34,13 +34,13 @@ def fifo_sync(clock, reset, fbus):
     _vld = Signal(False)
 
     # generic memory model
-    g_fifomem = fifo_mem_generic(clock, fbus.wr, fbus.wdata, wptr,
-                                 clock, fbus.rdata, rptr,
+    g_fifomem = fifo_mem_generic(clock, fbus.write, fbus.write_data, wptr,
+                                 clock, fbus.read_data, rptr,
                                  mem_size=fbus.size)
 
     # @todo: almost full and almost empty flags
-    read = fbus.rd
-    write = fbus.wr
+    read = fbus.read
+    write = fbus.write
 
     @always_seq(clock.posedge, reset=reset)
     def rtl_fifo():
@@ -72,7 +72,7 @@ def fifo_sync(clock, reset, fbus):
 
     @always_comb
     def rtl_assign():
-        fbus.rvld.next = _vld & fbus.rd
+        fbus.read_valid.next = _vld & fbus.read
                 
     nvacant = Signal(intbv(N, min=-0, max=N+1))  # # empty slots
     ntenant = Signal(intbv(0, min=-0, max=N+1))  # # filled slots
@@ -86,10 +86,10 @@ def fifo_sync(clock, reset, fbus):
             v = nvacant
             f = ntenant
             
-            if fbus.rvld:
+            if fbus.read_valid:
                 v = v + 1
                 f = f - 1
-            if fbus.wr:
+            if fbus.write:
                 v = v -1 
                 f = f + 1
 

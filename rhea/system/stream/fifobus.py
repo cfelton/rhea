@@ -31,13 +31,13 @@ class FIFOBus(object):
         # of the FIFO being interfaced to.        
         self.clear = Signal(bool(0))           # fifo clear
         #self.wclk = None                      # write side clock
-        self.wr = Signal(bool(0))              # write strobe to fifo
-        self.wdata = Signal(intbv(0)[width:])  # fifo data in
+        self.write = Signal(bool(0))              # write strobe to fifo
+        self.write_data = Signal(intbv(0)[width:])  # fifo data in
 
         #self.rclk = None                      # read side clock
-        self.rd = Signal(bool(0))              # fifo read strobe
-        self.rdata = Signal(intbv(0)[width:])  # fifo data out
-        self.rvld = Signal(bool(0))
+        self.read = Signal(bool(0))              # fifo read strobe
+        self.read_data = Signal(intbv(0)[width:])  # fifo data out
+        self.read_valid = Signal(bool(0))
         self.empty = Signal(bool(1))           # fifo empty
         self.full = Signal(bool(0))            # fifo full
         self.count = Signal(intbv(0, min=0, max=size+1))
@@ -49,7 +49,7 @@ class FIFOBus(object):
         
     def __str__(self):
         s = "wr: {} {:04X}, rd: {} {:04X}, empty {}, full {}".format(
-            int(self.wr), int(self.wdata), int(self.rd), int(self.rdata),
+            int(self.write), int(self.write_data), int(self.read), int(self.read_data),
             int(self.empty), int(self.full))
         return s
 

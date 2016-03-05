@@ -128,8 +128,8 @@ def spi_controller(
             bcnt.next = 0
             treg.next = 0
             
-            xfb.rd.next = False
-            xfb.wr.next = False
+            xfb.read.next = False
+            xfb.write.next = False
 
             x_sck.next = False
             x_ss.next = False
@@ -138,39 +138,39 @@ def spi_controller(
                 # ~~~~ Idle state ~~~~
                 if state == States.IDLE:
                     bcnt.next = 7
-                    treg.next = xfb.rdata
+                    treg.next = xfb.read_data
                     x_sck.next = regfile.spcr.cpol
-                    xfb.wr.next = False
+                    xfb.write.next = False
                     
                     if not xfb.empty and not xfb.full:
-                        xfb.rd.next = True
+                        xfb.read.next = True
                         x_ss.next = False
                         if regfile.spcr.cpha: # Clock in on second phase 
                             state.next = States.WAIT_HCLK
                         else:  # Clock in on first phase
                             state.next = States.DATA_IN
                     else:
-                        xfb.rd.next = False
+                        xfb.read.next = False
                         x_ss.next  = True
 
                 # ~~~~ Wait half clock period for cpha=1 ~~~~
                 elif state == States.WAIT_HCLK:
-                    xfb.rd.next = False
-                    xfb.wr.next = False
+                    xfb.read.next = False
+                    xfb.write.next = False
                     if ena:
                         x_sck.next = not x_sck
                         state.next = States.DATA_IN
 
                 # ~~~~ Clock data in (and out) ~~~~
                 elif state == States.DATA_IN:
-                    xfb.rd.next = False
-                    xfb.wr.next = False
+                    xfb.read.next = False
+                    xfb.write.next = False
                     if ena:  # clk div
                         x_sck.next = not x_sck
                         rreg.next = concat(rreg[7:0], x_miso)
                         
                         if regfile.spcr.cpha and bcnt == 0:
-                            xfb.wr.next = True
+                            xfb.write.next = True
                             if xfb.empty or xfb.full:
                                 state.next = States.END
                             else:
@@ -183,21 +183,21 @@ def spi_controller(
 
                 # ~~~~ Get ready for next byte out/in ~~~~
                 elif state == States.DATA_CHANGE:
-                    xfb.rd.next = False                    
-                    xfb.wr.next = False                    
+                    xfb.read.next = False                    
+                    xfb.write.next = False                    
                     if ena:
                         x_sck.next = not x_sck
                         if bcnt == 0:  
                             if not regfile.spcr.cpha:
-                                xfb.wr.next = True
+                                xfb.write.next = True
                                 
                             if xfb.empty or xfb.full:
                                 state.next = States.END
                             else:  # more data to transfer
                                 bcnt.next = 7
                                 state.next = States.DATA_IN
-                                xfb.rd.next = True
-                                treg.next = xfb.rdata
+                                xfb.read.next = True
+                                treg.next = xfb.read_data
                         else:
                             treg.next = concat(treg[7:0], intbv(0)[1:])
                             bcnt.next = bcnt - 1                        
@@ -205,8 +205,8 @@ def spi_controller(
 
                 # ~~~~ End state ~~~~
                 elif state == States.END:
-                    xfb.rd.next = False
-                    xfb.wr.next = False                    
+                    xfb.read.next = False
+                    xfb.write.next = False                    
                     if ena:  # Wait half clock cycle go idle
                         state.next = States.IDLE
 
@@ -221,36 +221,36 @@ def spi_controller(
             # data comes from the register file
             xfb.empty.next = txfb.empty
             xfb.full.next = rxfb.full
-            xfb.rdata.next = txfb.rdata
+            xfb.read_data.next = txfb.read_data
             
-            txfb.rd.next = xfb.rd
-            txfb.wr.next = regfile.sptx.wr
-            txfb.wdata.next = regfile.sptx            
+            txfb.read.next = xfb.read
+            txfb.write.next = regfile.sptx.wr
+            txfb.write_data.next = regfile.sptx            
             
-            rxfb.wr.next = xfb.wr            
-            rxfb.wdata.next = rreg
-            rxfb.rd.next = regfile.sprx.rd    
-            regfile.sprx.next = rxfb.rdata
+            rxfb.write.next = xfb.write            
+            rxfb.write_data.next = rreg
+            rxfb.read.next = regfile.sprx.rd    
+            regfile.sprx.next = rxfb.read_data
             
-            ifb.rd.next = False
-            ifb.wr.next = False
-            ifb.wdata.next = 0  # or'd bus must be 0
+            ifb.read.next = False
+            ifb.write.next = False
+            ifb.write_data.next = 0  # or'd bus must be 0
 
         else:
             # data comes from external FIFO bus interface            
             xfb.empty.next = ifb.empty
             xfb.full.next = ifb.full
-            xfb.rdata.next = ifb.rdata
+            xfb.read_data.next = ifb.read_data
             
-            txfb.rd.next = False
-            rxfb.wr.next = False
-            rxfb.wdata.next = 0  # or'd bus must be 0
-            txfb.wr.next = False
-            rxfb.rd.next = False
+            txfb.read.next = False
+            rxfb.write.next = False
+            rxfb.write_data.next = 0  # or'd bus must be 0
+            txfb.write.next = False
+            rxfb.read.next = False
 
-            ifb.rd.next = xfb.rd
-            ifb.wr.next = xfb.wr
-            ifb.wdata.next = treg
+            ifb.read.next = xfb.read
+            ifb.write.next = xfb.write
+            ifb.write_data.next = treg
 
     @always_comb
     def rtl_x_mosi():
@@ -294,27 +294,27 @@ def spi_controller(
         def mon_trace():
             while True:
                 yield clock.posedge
-                ccfb = concat(txfb.wr, txfb.rd, rxfb.wr, rxfb.rd)
+                ccfb = concat(txfb.write, txfb.read, rxfb.write, rxfb.read) 
                 if ccfb != fbidle:
                     print("  :{:8d}: tx: w{} r{}, f{} e{}, rx: w{} r{} f{} e{}".format(
                         now(), 
-                        int(txfb.wr), int(txfb.rd), int(txfb.full), int(txfb.empty),
-                        int(rxfb.wr), int(rxfb.rd), int(rxfb.full), int(rxfb.empty),))
+                        int(txfb.write), int(txfb.read), int(txfb.full), int(txfb.empty),
+                        int(rxfb.write), int(rxfb.read), int(rxfb.full), int(rxfb.empty),))
                     
         @always(clock.posedge)
         def mon_tx_fifo_write():
-            if txfb.wr:
-                print("   WRITE tx fifo {:02X}".format(int(txfb.wdata)))
-            if txfb.rd:
-                print("   READ tx fifo {:02X}".format(int(txfb.rdata)))
+            if txfb.write:
+                print("   WRITE tx fifo {:02X}".format(int(txfb.write_data)))
+            if txfb.read:
+                print("   READ tx fifo {:02X}".format(int(txfb.read_data)))
                 
         @always(clock.posedge)
         def mon_rx_fifo_write():
-            if rxfb.wr:
-                print("   WRITE rx fifo {:02X}".format(int(rxfb.wdata)))
+            if rxfb.write:
+                print("   WRITE rx fifo {:02X}".format(int(rxfb.write_data)))
                 
-            if rxfb.rd:
-                print("   READ rx fifo {:02X}".format(int(rxfb.rdata)))
+            if rxfb.read:
+                print("   READ rx fifo {:02X}".format(int(rxfb.read_data)))
 
     if tstpts is not None:
         if isinstance(tstpts.val, intbv) and len(tstpts) == 8:
@@ -325,10 +325,10 @@ def spi_controller(
                 tstpts.next[2] = spibus.mosi
                 tstpts.next[3] = spibus.miso
                 
-                tstpts.next[4] = txfb.wr
-                tstpts.next[5] = txfb.rd
-                tstpts.next[6] = rxfb.wr
-                tstpts.next[7] = rxfb.rd
+                tstpts.next[4] = txfb.write
+                tstpts.next[5] = txfb.read
+                tstpts.next[6] = rxfb.write
+                tstpts.next[7] = rxfb.read
         else:
             print("WARNING: SPI tst_pts is not None but is not an intbv(0)[8:]")
 

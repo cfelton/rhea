@@ -40,7 +40,7 @@ def test_sfifo(args=None):
         
         @instance
         def tbstim():
-            fbus.wdata.next = 0xFE
+            fbus.write_data.next = 0xFE
             reset.next = reset.active
             yield delay(33)
             reset.next = not reset.active
@@ -53,12 +53,12 @@ def test_sfifo(args=None):
                 # write some bytes
                 for ii in range(num_bytes):
                     yield clock.posedge
-                    fbus.wdata.next = ii
-                    fbus.wr.next = True
+                    fbus.write_data.next = ii
+                    fbus.write.next = True
 
                 yield clock.posedge
-                fbus.wr.next = False
-                fbus.wdata.next = 0xFE
+                fbus.write.next = False
+                fbus.write_data.next = 0xFE
 
                 # if 16 bytes written make sure FIFO is full
                 yield clock.posedge
@@ -66,15 +66,15 @@ def test_sfifo(args=None):
                     assert fbus.full, "FIFO should be full!"
                     assert not fbus.empty, "FIFO should not be empty"
                 
-                fbus.rd.next = True
+                fbus.read.next = True
                 yield clock.posedge
                 for ii in range(num_bytes):
                     yield clock.posedge
-                    fbus.rd.next = True
-                    assert fbus.rvld
-                    assert fbus.rdata == ii, "rdata %x ii %x " % (fbus.rdata, ii)
+                    fbus.read.next = True
+                    assert fbus.read_valid
+                    assert fbus.read_data == ii, "rdata %x ii %x " % (fbus.read_data, ii)
 
-                fbus.rd.next = False
+                fbus.read.next = False
                 yield clock.posedge
                 assert fbus.empty
 

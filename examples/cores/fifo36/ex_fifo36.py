@@ -37,10 +37,10 @@ def m_fifo_2clock_cascade(
     fbus = FIFOBus(args=args)
     # need to update the fbus refernces to reference the Signals in
     # the moudule port list (function arguments).
-    fbus.wr = wr
-    fbus.wdata = datain
-    fbus.rd = rd
-    fbus.rdata = dataout_d
+    fbus.write = wr
+    fbus.write_data = datain
+    fbus.read = rd
+    fbus.read_data = dataout_d
 
     @always_comb
     def rtl_assign1():
@@ -82,10 +82,10 @@ def m_fifo_short(clock, reset, clear,
     fbus = FIFOBus(args=args)
     # need to update the fbus refernces to reference the Signals in
     # the module port list (function arguments).
-    fbus.wr = wr
-    fbus.wdata = datain
-    fbus.rd = rd
-    fbus.rdata = dataout
+    fbus.write = wr
+    fbus.write_data = datain
+    fbus.read = rd
+    fbus.read_data = dataout
 
     @always_comb
     def rtl_assign1():

@@ -25,11 +25,11 @@ def fifo_cdc(glbl, emesh_i, emesh_o):
     @always(emesh_o.clock.posedge)
     def rtl_access():
         if not emesh_i.wait:
-            emesh_o.access.next = fifo_intf.rd
+            emesh_o.access.next = fifo_intf.read
 
     # assign signals ot the FIFO interface
-    fifo_intf.wdata = emesh_i.bits
-    fifo_intf.rdata = emesh_o.bits
+    fifo_intf.write_data = emesh_i.bits
+    fifo_intf.read_data = emesh_o.bits
 
     g_fifo = cores.fifo.fifo_async(glbl.reset, emesh_i.clock, 
                                    emesh_o.clock, fifo_intf)
