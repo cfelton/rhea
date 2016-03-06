@@ -4,6 +4,7 @@
 
 from myhdl import (Signal, intbv, always, always_comb, always_seq)
 
+from rhea.system import Clock, Reset
 from rhea.system import FIFOBus
 from .fifo_srl import fifo_srl
 
@@ -76,7 +77,8 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
 
     @always_comb
     def rtl_vld():
-        fbus.rvld.next = fbus.rd    # no delay on reads
+        # no delay on reads
+        fbus.rvld.next = fbus.rd and not fbus.empty
 
     # the address is the read address, the write address is always
     # zero but on a write all values are shifted up one index, only
@@ -130,5 +132,4 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     return gens
 
 
-# attached a generic fifo bus object to the module
 fifo_fast.fbus_intf = FIFOBus
