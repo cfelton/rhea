@@ -31,14 +31,30 @@ def atlys_blinky_host(clock, reset, led, sw, pmod,
     # create the interfaces to the UART
     fbustx = FIFOBus(width=8, size=32)
     fbusrx = FIFOBus(width=8, size=32)
-    fbusrtx = FIFOBus(width=8, size=32)
+    uart_fifo = FIFOBus(width=8, size=32)
 
     # create the memmap (CSR) interface
     memmap = Barebone(glbl, data_width=32, address_width=32)
 
     # create the UART instance.
     cmd_tx = Signal(bool(0))
-    uart_inst = uartlite(glbl, fbusrtx, uart_rx, cmd_tx)
+    uart_inst = uartlite(glbl, uart_fifo, uart_rx, cmd_tx)
+
+    @always_comb
+    def sync_write():
+        # sync between the UART fifo interface serial out
+        # and the command bridge out
+        uart_fifo.write_data.next = fbustx.write_data
+        uart_fifo.write.next = fbustx.write
+        fbustx.full.next = uart_fifo.full
+
+    @always_comb
+    def sync_read():
+        # sync between the UART fifo interface serial in
+        # and the command bridge fifo in
+        fbusrx.read_data.next = uart_fifo.read_data
+        fbusrx.empty.next = uart_fifo.empty
+        fbusrx.read_valid.next = uart_fifo.read_valid
 
     # create the packet command instance
     cmd_inst = command_bridge(glbl, fbusrx, fbustx, memmap)
@@ -79,8 +95,8 @@ def atlys_blinky_host(clock, reset, led, sw, pmod,
 
     # @todo: PMOD OLED memmap control
 
-    return (tick_inst, uart_inst, cmd_inst, 
-            beh_led_control, beh_led_read, beh_assign)
+    return (tick_inst, uart_inst, sync_read, sync_write,
+            cmd_inst, beh_led_control, beh_led_read, beh_assign)
 
 
 def build(args):

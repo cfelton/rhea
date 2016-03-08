@@ -11,19 +11,24 @@ def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
 
     Ports
     -----
-    glbl: rhea.Global interface, clock and reset from glbl
-    fbustx: The transmit FIFO bus, interface to the TX FIFO (see fifo_fast.py)
-    tbusrx: The receive FIFObus, interface to the RX FIFO
-    serial_in: The UART external serial line in
-    serial_out: The UART external serial line out
+        glbl: rhea.Global interface, clock and reset from glbl
+        fbustx: The transmit FIFO bus, interface to the TX FIFO (see fifo_fast.py)
+        tbusrx: The receive FIFObus, interface to the RX FIFO
+        serial_in: The UART external serial line in
+        serial_out: The UART external serial line out
 
     Parameters
     ----------
-    baudrate: the desired baudrate for the UART
+        baudrate: the desired baudrate for the UART
 
     Returns
     -------
-    myhdl generators
+        myhdl generators
+        instsyncrx, instsynctx : syncs of external r/w line to the internal r/t
+        insttxfifo, instrxfifo : The actual TX and RX fifos
+        instbaud : baud strobe instantiation
+        insttx, instrx : uart tx and rx generators
+        sync_read,sync_write : convert one ext. Fbus to dual, for r/w
 
     This module is myhdl convertible
     """
@@ -54,6 +59,9 @@ def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
 
     @always_comb
     def sync_read():
+        # fifobus.read_data is the channel that the UART 
+        # reads data on and fifobus.write_data is the one 
+        # it writes to.
         # read into the fifobus from the RX fifo queue 
         # whenever available by ckecking the queue
         fifobus.empty.next = fbusrx.empty

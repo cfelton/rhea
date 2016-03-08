@@ -29,15 +29,31 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
     # create the interfaces to the UART
     fbustx = FIFOBus(width=8, size=4)
     fbusrx = FIFOBus(width=8, size=4)
-    fbusrtx = FIFOBus(width=8, size=4)
+    uart_fifo = FIFOBus(width=8, size=4)
 
     # create the memmap (CSR) interface
     memmap = Barebone(glbl, data_width=32, address_width=32)
 
     # create the UART instance.
-    uart_inst = uartlite(glbl, fbusrtx,
+    uart_inst = uartlite(glbl, uart_fifo,
                          serial_in=bcm14_txd,
                          serial_out=bcm15_rxd)
+
+    @always_comb
+    def sync_write():
+        # sync between the UART fifo interface serial out
+        # and the command bridge out
+        uart_fifo.write_data.next = fbustx.write_data
+        uart_fifo.write.next = fbustx.write
+        fbustx.full.next = uart_fifo.full
+
+    @always_comb
+    def sync_read():
+        # sync between the UART fifo interface serial in
+        # and the command bridge fifo in
+        fbusrx.read_data.next = uart_fifo.read_data
+        fbusrx.empty.next = uart_fifo.empty
+        fbusrx.read_valid.next = uart_fifo.read_valid
 
     # create the packet command instance
     cmd_inst = command_bridge(glbl, fbusrx, fbustx, memmap)
@@ -64,7 +80,7 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
             tone.next = (~tone) & 0x1
         led.next = ledreg | tone[5:] 
             
-    return (tick_inst, uart_inst, cmd_inst, 
+    return (tick_inst, uart_inst, cmd_inst, sync_read, sync_write,
             beh_led_control, beh_led_read, beh_assign)
 
 
