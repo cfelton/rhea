@@ -28,12 +28,13 @@ def catboard_blinky_host(clock, led, uart_tx, uart_rx):
     # create the interfaces to the UART
     fbustx = FIFOBus(width=8, size=4)
     fbusrx = FIFOBus(width=8, size=4)
+    fbusrtx = FIFOBus(width=8, size=4)
 
     # create the memmap (CSR) interface
     memmap = Barebone(glbl, data_width=32, address_width=32)
 
     # create the UART instance.
-    uart_inst = uartlite(glbl, fbustx, fbusrx,
+    uart_inst = uartlite(glbl, fbusrtx,
                          serial_in=uart_rx,
                          serial_out=uart_tx)
 

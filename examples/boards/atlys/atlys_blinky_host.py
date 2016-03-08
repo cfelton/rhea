@@ -31,13 +31,14 @@ def atlys_blinky_host(clock, reset, led, sw, pmod,
     # create the interfaces to the UART
     fbustx = FIFOBus(width=8, size=32)
     fbusrx = FIFOBus(width=8, size=32)
+    fbusrtx = FIFOBus(width=8, size=32)
 
     # create the memmap (CSR) interface
     memmap = Barebone(glbl, data_width=32, address_width=32)
 
     # create the UART instance.
     cmd_tx = Signal(bool(0))
-    uart_inst = uartlite(glbl, fbustx, fbusrx, uart_rx, cmd_tx)
+    uart_inst = uartlite(glbl, fbusrtx, uart_rx, cmd_tx)
 
     # create the packet command instance
     cmd_inst = command_bridge(glbl, fbusrx, fbustx, memmap)

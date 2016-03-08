@@ -28,7 +28,8 @@ class FIFOBus(object):
         # @todo: write, write_data, etc.!
 
         # all the data signals are from the perspective
-        # of the FIFO being interfaced to.        
+        # of the FIFO being interfaced to. That is , write_data
+        # means write_to and read_data means read_from      
         self.clear = Signal(bool(0))           # fifo clear
         #self.wclk = None                      # write side clock
         self.write = Signal(bool(0))              # write strobe to fifo

@@ -29,12 +29,13 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
     # create the interfaces to the UART
     fbustx = FIFOBus(width=8, size=4)
     fbusrx = FIFOBus(width=8, size=4)
+    fbusrtx = FIFOBus(width=8, size=4)
 
     # create the memmap (CSR) interface
     memmap = Barebone(glbl, data_width=32, address_width=32)
 
     # create the UART instance.
-    uart_inst = uartlite(glbl, fbustx, fbusrx,
+    uart_inst = uartlite(glbl, fbusrtx,
                          serial_in=bcm14_txd,
                          serial_out=bcm15_rxd)
 

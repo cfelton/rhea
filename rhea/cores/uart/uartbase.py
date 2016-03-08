@@ -111,7 +111,8 @@ def uarttx(glbl, fbustx, tx, baudce):
 
     return rtltx
 
-
+# open the receiving line and read into fbusrx bytewise
+# that is, read into rx from fbusrx (receiver bus)
 def uartrx(glbl, fbusrx, rx, baudce16):
     """ """
     clock, reset = glbl.clock, glbl.reset

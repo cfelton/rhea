@@ -1,18 +1,18 @@
 
-from myhdl import Signal, instances
-
+from myhdl import Signal, instances, always_seq, always_comb
 from ..misc import syncro
 from .uartbase import uartbaud, uarttx, uartrx
 from ..fifo import fifo_fast
+from rhea.system import FIFOBus
 
 
-def uartlite(glbl, fbustx, fbusrx, serial_in, serial_out, baudrate=115200):
+def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
     """ The top-level for a minimal fixed baud UART
 
     Ports
     -----
     glbl: rhea.Global interface, clock and reset from glbl
-    fbustx: The transmit FIFO bus, interface to the TX FIFO
+    fbustx: The transmit FIFO bus, interface to the TX FIFO (see fifo_fast.py)
     tbusrx: The receive FIFObus, interface to the RX FIFO
     serial_in: The UART external serial line in
     serial_out: The UART external serial line out
@@ -30,7 +30,9 @@ def uartlite(glbl, fbustx, fbusrx, serial_in, serial_out, baudrate=115200):
     clock, reset = glbl.clock, glbl.reset
     baudce, baudce16 = [Signal(bool(0)) for _ in range(2)]
     tx, rx = Signal(bool(1)), Signal(bool(1))
-
+    fbusrx = FIFOBus(fifobus.size, fifobus.width)
+    fbustx = FIFOBus(fifobus.size, fifobus.width)
+    
     # create synchronizers for the input signals, the output
     # are not needed, guarantee IO registers
     instsyncrx = syncro(clock, serial_in, rx)
@@ -47,4 +49,26 @@ def uartlite(glbl, fbustx, fbusrx, serial_in, serial_out, baudrate=115200):
     insttx = uarttx(glbl, fbustx, tx, baudce)
     instrx = uartrx(glbl, fbusrx, rx, baudce16)
 
+    # separate the general fifobus into two
+    # for transmitting and receiving
+
+    @always_comb
+    def sync_read():
+        # read into the fifobus from the RX fifo queue 
+        # whenever available by ckecking the queue
+        fifobus.empty.next = fbusrx.empty
+        fifobus.read_data.next = fbusrx.read_data       
+        fifobus.read.next = not fbusrx.empty  
+        fbusrx.read.next = not fbusrx.empty  
+        fifobus.read_valid.next = fbusrx.read_valid
+
+    @always_comb
+    def sync_write():
+        # queue to TX fifo whenever given ext. strobe
+        # which will auto. be transferred by uarttx()
+        fifobus.full.next = fbustx.full
+        fbustx.write_data.next = fifobus.write_data
+        fbustx.write.next = fifobus.write & (not fbustx.full )
+        
+         
     return instances()
