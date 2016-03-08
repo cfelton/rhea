@@ -9,6 +9,11 @@ from rhea.system import FIFOBus
 def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
     """ The top-level for a minimal fixed baud UART
 
+    The UART has one external FIFOBus interface and two internal
+    ones to the specific RX/TX fifos. It is through the internal fbusrx,fbustx
+    FIFOBus interfaces that the UART reads into/writes from the RX/TX fifo queues
+    respectively.
+
     Ports
     -----
         glbl: rhea.Global interface, clock and reset from glbl
@@ -59,6 +64,9 @@ def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
 
     @always_comb
     def sync_read():
+    """Sync external UART FIFOBus interface attribs with internal RX FIFO interface.
+      
+    """
         # fifobus.read_data is the channel that the UART 
         # reads data on and fifobus.write_data is the one 
         # it writes to.
@@ -72,6 +80,9 @@ def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
 
     @always_comb
     def sync_write():
+    """Sync external UART FIFOBus interface attribs with internal TX FIFO interface.
+
+    """
         # queue to TX fifo whenever given ext. strobe
         # which will auto. be transferred by uarttx()
         fifobus.full.next = fbustx.full

@@ -62,7 +62,24 @@ def uartbaud(glbl, baudce, baudce16, baudrate=115200):
 
 
 def uarttx(glbl, fbustx, tx, baudce):
-    """
+    """UART transmitter  function
+       
+    Ports
+    -----
+        glbl : rhea.Global interface, clock and reset
+        fbustx : FIFOBus interface to the TX fifo
+        tx : The actual transmition line
+
+    Parameters
+    ----------
+        baudce : The transmittion baud rate
+
+    Returns
+    -------
+        myhdl generator
+        rtltx : Generator to keep open the transmittion line 
+            and write into it from the TX fifo.
+        
     """
     clock, reset = glbl.clock, glbl.reset
 
@@ -114,7 +131,26 @@ def uarttx(glbl, fbustx, tx, baudce):
 # open the receiving line and read into fbusrx bytewise
 # that is, read into rx from fbusrx (receiver bus)
 def uartrx(glbl, fbusrx, rx, baudce16):
-    """ """
+    """UART receiver function
+       
+    Ports
+    -----
+        glbl : rhea.Global interface, clock and reset
+        fbusrx : FIFOBus interface to the RX fifo
+        rx : The actual reciever line
+
+    Parameters
+    ----------
+        baudce16 : The receive baud rate
+
+    Returns
+    -------
+        myhdl generator
+        rtlmid : Get the mid bits        
+        rtlrx : Generator to keep open the receive line 
+            and read from it into RX fifo.
+        
+    """
     clock, reset = glbl.clock, glbl.reset
 
     states = enum('wait', 'byte', 'stop', 'end')
