@@ -64,9 +64,9 @@ def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
 
     @always_comb
     def sync_read():
-    """Sync external UART FIFOBus interface attribs with internal RX FIFO interface.
+        """Sync external UART FIFOBus interface attribs with internal RX FIFO interface.
       
-    """
+        """
         # fifobus.read_data is the channel that the UART 
         # reads data on and fifobus.write_data is the one 
         # it writes to.
@@ -80,9 +80,9 @@ def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
 
     @always_comb
     def sync_write():
-    """Sync external UART FIFOBus interface attribs with internal TX FIFO interface.
+        """Sync external UART FIFOBus interface attribs with internal TX FIFO interface.
 
-    """
+        """
         # queue to TX fifo whenever given ext. strobe
         # which will auto. be transferred by uarttx()
         fifobus.full.next = fbustx.full
