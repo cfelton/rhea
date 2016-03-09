@@ -19,15 +19,13 @@ def spi_controller_model(clock, reset, ibus, spibus):
     def decode_ibus():
         while True:
             yield clock.posedge
-            ibus.ack.next = False  # default value
 
             if ibus.write:
-                yield spibus.writeread(ibus.data_in)
-                ibus.ack.next = True
+                yield spibus.writeread(ibus.get_write_data())
+                yield ibus.acktrans(spibus.get_read_data())
             elif ibus.read:
-                yield spibus.writeread(0x55)
-                ibus.data_out.next = spibus.ival
-                ibus.ack.next = True
+                yield spibus.writeread(0x55)  # dummy write byte
+                yield ibus.acktrans(spibus.get_read_data())
 
     return decode_ibus
 

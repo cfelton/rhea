@@ -128,7 +128,9 @@ class Fx2Model(threading.Thread):
             raise StopSimulation
         
         gens = [tb_intf, tb_mon, self.g]
-        Simulation(gens).run()
+        sim = Simulation(gens)
+        sim.run()
+        sim.quit()
 
     # ---------------------------------------------------------------------------
     def get_bus(self):

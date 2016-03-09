@@ -12,7 +12,6 @@ other tests verify the generic ability.
 
 from random import randint
 import traceback
-from pprint import pprint
 
 from myhdl import (always_seq, always_comb, instance, delay,
                    StopSimulation,)
@@ -62,7 +61,7 @@ def test_memmap_command_bridge(args=None):
     fbtx.clock = clock
     fbrx.clock = clock
 
-    def _bench_command_bridge():
+    def bench_command_bridge():
         tbclk = clock.gen()
         tbdut = command_bridge(glbl, fbtx, fbrx, memmap)
         tbfii = fifo_fast(clock, reset, fbtx)
@@ -103,7 +102,7 @@ def test_memmap_command_bridge(args=None):
 
         return tbclk, tbdut, tbfii, tbfio, tbmem, tbstim
 
-    run_testbench(_bench_command_bridge, args=args)
+    run_testbench(bench_command_bridge, args=args)
 
 
 if __name__ == '__main__':

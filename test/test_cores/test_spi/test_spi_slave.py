@@ -1,4 +1,6 @@
 
+import pytest
+
 from myhdl import (Signal, always, instance, delay, StopSimulation)
 
 from rhea.system import Global, Clock, Reset, FIFOBus
@@ -6,6 +8,7 @@ from rhea.cores.spi import SPIBus, spi_slave_fifo
 from rhea.utils.test import run_testbench, tb_default_args, tb_args
 
 
+@pytest.mark.xfail(reason="spi_slave_fifo is incomplete")
 def test_spi_slave(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=50e6)

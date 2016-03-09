@@ -89,7 +89,7 @@ class CommandPacket(object):
 
             yield delay(1)
             if fifobus.empty:
-                fifobus.rd.next = False
+                fifobus.read.next = False
             yield fifobus.clock.posedge
 
         # end read response packet loop, no more reads
