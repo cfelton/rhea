@@ -3,6 +3,7 @@ sudo: false
 
 language: python
 python:
+  - "3.5"
   - "3.4"
   - "2.7"
   - "pypy"
@@ -78,8 +79,8 @@ script:
 # There is some issue that causes the tests executed with py.test
 # to take 10x longer, run the tests individually until resolved.
   - cd ../test
-  - make test
-#  - py.test -s  
+#  - make test
+  - py.test -s --duration=10
 
 notifications:
   email: false
