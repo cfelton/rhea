@@ -10,7 +10,23 @@ from myhdl import (Signal, intbv, modbv, enum, always_seq,
 
 def uartbaud(glbl, baudce, baudce16, baudrate=115200):
     """ Generate the UART baudrate strobe
+
     Three separate strobes are create: baudce, baudceh
+    
+    Arguments:
+        glbl: rhea.Global interface, clk from glbl
+        baudce: The baudce stobe
+        baudce16: The baudce16 strobe
+        Both of these are calculated in the function.
+
+    Parameters:
+        baudrate: The desired baudrate
+
+    Return:
+        myHDL generators
+        rtlbaud: baudce strobe generator
+        rtlbaud16: baudce16 strobe generator
+                         
     """
     clock, reset = glbl.clock, glbl.reset
 
@@ -63,20 +79,17 @@ def uartbaud(glbl, baudce, baudce16, baudrate=115200):
 
 def uarttx(glbl, fbustx, tx, baudce):
     """UART transmitter  function
-       
-    Ports
-    -----
+    
+    Arguments(Ports):
         glbl : rhea.Global interface, clock and reset
         fbustx : FIFOBus interface to the TX fifo
         tx : The actual transmition line
 
-    Parameters
-    ----------
+    Parameters:
         baudce : The transmittion baud rate
 
-    Returns
-    -------
-        myhdl generator
+    Returns:
+        myHDL generator
         rtltx : Generator to keep open the transmittion line 
             and write into it from the TX fifo.
         
@@ -133,19 +146,16 @@ def uarttx(glbl, fbustx, tx, baudce):
 def uartrx(glbl, fbusrx, rx, baudce16):
     """UART receiver function
        
-    Ports
-    -----
+    Arguments(Ports):
         glbl : rhea.Global interface, clock and reset
         fbusrx : FIFOBus interface to the RX fifo
         rx : The actual reciever line
 
-    Parameters
-    ----------
+    Parameters:
         baudce16 : The receive baud rate
 
-    Returns
-    -------
-        myhdl generator
+    Returns:
+        myHDL generators
         rtlmid : Get the mid bits        
         rtlrx : Generator to keep open the receive line 
             and read from it into RX fifo.

@@ -9,25 +9,21 @@ from rhea.system import FIFOBus
 def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
     """ The top-level for a minimal fixed baud UART
 
-    The UART has one external FIFOBus interface and two internal
-    ones to the specific RX/TX fifos. It is through the internal fbusrx,fbustx
-    FIFOBus interfaces that the UART reads into/writes from the RX/TX fifo queues
-    respectively.
+    The function instantiates the various components required for
+    the UART. Uses an external FIFOBus interface to communicate 
+    with other modules(provide the r/w stobe, data etc.).
 
-    Ports
-    -----
+    Arguments(Ports):
         glbl: rhea.Global interface, clock and reset from glbl
         fbustx: The transmit FIFO bus, interface to the TX FIFO (see fifo_fast.py)
         tbusrx: The receive FIFObus, interface to the RX FIFO
         serial_in: The UART external serial line in
         serial_out: The UART external serial line out
 
-    Parameters
-    ----------
+    Parameters:
         baudrate: the desired baudrate for the UART
 
-    Returns
-    -------
+    Returns:
         myhdl generators
         instsyncrx, instsynctx : syncs of external r/w line to the internal r/t
         insttxfifo, instrxfifo : The actual TX and RX fifos
@@ -63,8 +59,8 @@ def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
     # for transmitting and receiving
 
     @always_comb
-    def sync_read():
-        """Sync external UART FIFOBus interface attribs with internal RX FIFO interface.
+    def assign_read():
+        """Map external UART FIFOBus interface attribs with internal RX FIFO interface.
       
         """
         # fifobus.read_data is the channel that the UART 
@@ -79,8 +75,8 @@ def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
         fifobus.read_valid.next = fbusrx.read_valid
 
     @always_comb
-    def sync_write():
-        """Sync external UART FIFOBus interface attribs with internal TX FIFO interface.
+    def assign_write():
+        """Map external UART FIFOBus interface attribs with internal TX FIFO interface.
 
         """
         # queue to TX fifo whenever given ext. strobe

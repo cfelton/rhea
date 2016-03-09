@@ -11,7 +11,7 @@ reads bit-wise starting on a low signal after which a fixed length
 (baudwidth) no of bits can be read, after which the stop high 
 signal is received(transmitted).
 
-.. code-block::python
+.. code-block:: python
 
     from rhea.cores.uart import uartlite
     from rhea.system import FIFOBus

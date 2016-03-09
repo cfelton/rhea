@@ -39,21 +39,8 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
                          serial_in=bcm14_txd,
                          serial_out=bcm15_rxd)
 
-    @always_comb
-    def sync_write():
-        # sync between the UART fifo interface serial out
-        # and the command bridge out
-        uart_fifo.write_data.next = fbustx.write_data
-        uart_fifo.write.next = fbustx.write
-        fbustx.full.next = uart_fifo.full
-
-    @always_comb
-    def sync_read():
-        # sync between the UART fifo interface serial in
-        # and the command bridge fifo in
-        fbusrx.read_data.next = uart_fifo.read_data
-        fbusrx.empty.next = uart_fifo.empty
-        fbusrx.read_valid.next = uart_fifo.read_valid
+    #map uart_fifo to separate readpath and writepath
+    assign_rw = uart_fifo.assign_read_write_paths(fbusrx,fbustx)
 
     # create the packet command instance
     cmd_inst = command_bridge(glbl, fbusrx, fbustx, memmap)
@@ -80,7 +67,7 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
             tone.next = (~tone) & 0x1
         led.next = ledreg | tone[5:] 
             
-    return (tick_inst, uart_inst, cmd_inst, sync_read, sync_write,
+    return (tick_inst, uart_inst, cmd_inst, assign_rw,
             beh_led_control, beh_led_read, beh_assign)
 
 
