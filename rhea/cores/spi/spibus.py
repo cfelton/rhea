@@ -11,7 +11,6 @@ class SPIBus(object):
             self.sck = Signal(True)
             self.mosi = Signal(True)
             self.miso = Signal(True)
-            #self.ss = [Signal(True) for _ in range(8)]
             self.ss = Signal(intbv(0xFF)[8:])
         else:
             self.sck = sck
@@ -24,8 +23,8 @@ class SPIBus(object):
         self.csn = Signal(True)
 
         # for simulation and modeling only
-        self.outval = Signal(intbv(0)[8:])
-        self.inval = Signal(intbv(0)[8:])
+        self.outval = intbv(0)[8:]
+        self.inval = intbv(0)[8:]
 
     def _set_ss(self):
         pass
@@ -37,14 +36,20 @@ class SPIBus(object):
         yield delay(htck//2)
         for ii in range(7, -1, -1):
             self.sck.next = False
-            self.mosi.next = self.oval[ii]
+            self.mosi.next = self.outval[ii]
             yield delay(htck)
             self.sck.next = True
             yield delay(3)
-            self.ival[ii] = self.miso
+            self.inval[ii] = self.miso
             yield delay(htck-3)
 
         self.csn.next = True
         yield delay(htck)
+
+    def get_read_data(self):
+        return int(self.inval)
+
+    def get_write_data(self):
+        return int(self.outval)
 
 
