@@ -94,9 +94,9 @@ def command_bridge(glbl, fifobusi, fifobuso, mmbus):
     @always_comb
     def beh_fifo_read():
         if ready and not fbrx.empty:
-            fbrx.rd.next = True
+            fbrx.read.next = True
         else:
-            fbrx.rd.next = False
+            fbrx.read.next = False
 
     @always_seq(clock.posedge, reset=reset)
     def beh_state_machine():
@@ -107,18 +107,18 @@ def command_bridge(glbl, fifobusi, fifobuso, mmbus):
             bytecnt[:] = 0
 
         elif state == states.wait_for_packet:
-            if fbrx.rvld:
+            if fbrx.read_valid:
                 # check the known bytes, if the values is unexpected
                 # goto the error state and flush all received bytes.
                 for ii in range(nknown):
                     idx = pidx[ii]
                     val = pval[ii]
                     if bytecnt == idx:
-                        if fbrx.rdata != val:
+                        if fbrx.read_data != val:
                             error.next = True
                             state.next = states.error
 
-                packet[bytecnt].next = fbrx.rdata
+                packet[bytecnt].next = fbrx.read_data
                 bytecnt[:] = bytecnt + 1
 
             # @todo: replace 20 with len(CommandPacket().header)
@@ -172,22 +172,22 @@ def command_bridge(glbl, fifobusi, fifobuso, mmbus):
                 state.next = states.response
 
         elif state == states.response:
-            fbtx.wr.next = False
+            fbtx.write.next = False
             if bytecnt < packet_length:
                 if not fbtx.full:
-                    fbtx.wr.next = True
-                    fbtx.wdata.next = packet[bytecnt]
+                    fbtx.write.next = True
+                    fbtx.write_data.next = packet[bytecnt]
                     bytecnt[:] = bytecnt + 1
                 state.next = states.response_full
             else:
                 state.next = states.end
                 
         elif state == states.response_full:
-            fbtx.wr.next = False
+            fbtx.write.next = False
             state.next = states.response
 
         elif state == states.error:
-            if not fbrx.rvld:
+            if not fbrx.read_valid:
                 state.next = states.end
                 ready.next = False
 

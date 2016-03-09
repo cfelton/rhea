@@ -67,7 +67,7 @@ def de0nano_converters(clock, reset, led,
 
     @always_comb
     def rtl_read_gate():
-        fifobus.rd.next = fiford and not fifobus.empty
+        fifobus.read.next = fiford and not fifobus.empty
 
     # for now assign the samples to the  LEDs for viewing
     heartbeat = Signal(bool(0))
@@ -75,7 +75,7 @@ def de0nano_converters(clock, reset, led,
     def rtl_leds():
         if glbl.tick_sec:
             heartbeat.next = not heartbeat
-        led.next = concat(fifobus.rdata[12:5], heartbeat)
+        led.next = concat(fifobus.read_data[12:5], heartbeat)
 
 
     # ----------------------------------------------------------------

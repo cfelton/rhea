@@ -135,8 +135,8 @@ def spi_controller(
             bcnt.next = 0
             treg.next = 0
             
-            itx.rd.next = False
-            irx.wr.next = False
+            itx.read.next = False
+            irx.write.next = False
 
             x_sck.next = False
             x_ss.next = False
@@ -145,39 +145,39 @@ def spi_controller(
                 # ~~~~ Idle state ~~~~
                 if state == states.idle:
                     bcnt.next = 7
-                    treg.next = itx.rdata
+                    treg.next = itx.read_data
                     x_sck.next = cso.clock_polarity
-                    irx.wr.next = False
+                    irx.write.next = False
                     
                     if not itx.empty and not irx.full:
-                        itx.rd.next = True
+                        itx.read.next = True
                         x_ss.next = False
                         if cso.clock_phase:  # Clock in on second phase
                             state.next = states.wait_hclk
                         else:  # Clock in on first phase
                             state.next = states.data_in
                     else:
-                        itx.rd.next = False
+                        itx.read.next = False
                         x_ss.next = True
 
                 # ~~~~ Wait half clock period for cpha=1 ~~~~
                 elif state == states.wait_hclk:
-                    itx.rd.next = False
-                    irx.wr.next = False
+                    itx.read.next = False
+                    irx.write.next = False
                     if ena:
                         x_sck.next = not x_sck
                         state.next = states.data_in
 
                 # ~~~~ Clock data in (and out) ~~~~
                 elif state == states.data_in:
-                    itx.rd.next = False
-                    irx.wr.next = False
+                    itx.read.next = False
+                    irx.write.next = False
                     if ena:  # clk div
                         x_sck.next = not x_sck
                         rreg.next = concat(rreg[7:0], x_miso)
                         
                         if cso.clock_phase and bcnt == 0:
-                            irx.wr.next = True
+                            irx.write.next = True
                             if itx.empty or irx.full:
                                 state.next = states.end
                             else:
@@ -187,21 +187,21 @@ def spi_controller(
 
                 # ~~~~ Get ready for next byte out/in ~~~~
                 elif state == states.data_change:
-                    itx.rd.next = False
-                    irx.wr.next = False
+                    itx.read.next = False
+                    irx.write.next = False
                     if ena:
                         x_sck.next = not x_sck
                         if bcnt == 0:  
                             if not cso.clock_phase:
-                                irx.wr.next = True
+                                irx.write.next = True
                                 
                             if itx.empty or irx.full:
                                 state.next = states.end
                             else:  # more data to transfer
                                 bcnt.next = 7
                                 state.next = states.data_in
-                                itx.rd.next = True
-                                treg.next = itx.rdata
+                                itx.read.next = True
+                                treg.next = itx.read_data
                         else:
                             treg.next = concat(treg[7:0], intbv(0)[1:])
                             bcnt.next = bcnt - 1                        
@@ -209,8 +209,8 @@ def spi_controller(
 
                 # ~~~~ End state ~~~~
                 elif state == states.end:
-                    itx.rd.next = False
-                    irx.wr.next = False
+                    itx.read.next = False
+                    irx.write.next = False
                     if ena:  # Wait half clock cycle go idle
                         state.next = states.idle
 
@@ -233,30 +233,30 @@ def spi_controller(
             # data comes from the register file
             cso.tx_empty.next = itx.empty
             cso.tx_full.next = itx.full
-            itx.wdata.next = cso.tx_byte
+            itx.write_data.next = cso.tx_byte
 
             cso.rx_empty.next = irx.empty
             cso.rx_full.next = irx.empty
-            cso.rx_byte.next = irx.rdata
+            cso.rx_byte.next = irx.read_data
 
             # @todo: if cso.tx_byte write signal (written by bus) drive the
             # @todo: FIFO write signals, same if the cso.rx_byte is accessed
-            itx.wr.next = cso.tx_write
-            irx.rd.next = cso.rx_read
+            itx.write.next = cso.tx_write
+            irx.read_data.next = cso.rx_read
 
         else:
             # data comes from external FIFO bus interface
             fifobus.full.next = itx.full
-            itx.wdata.next = fifobus.wdata
-            itx.wr.next = fifobus.wr
+            itx.write_data.next = fifobus.write_data
+            itx.write.next = fifobus.write
 
             fifobus.empty.next = irx.empty
-            fifobus.rdata.next = irx.rdata
-            fifobus.rvld.next = irx.rvld
-            irx.rd.next = fifobus.rd
+            fifobus.read_data.next = irx.read_data
+            fifobus.read_valid.next = irx.read_valid
+            irx.read.next = fifobus.read
 
         # same for all modes
-        irx.wdata.next = rreg
+        irx.write_data.next = rreg
 
     @always_comb
     def rtl_x_mosi():
@@ -295,32 +295,33 @@ def spi_controller(
                 print("  :{:8d}: state trasition --> {}".format(
                     now(), str(state)))
                 
-        fbidle = intbv('0000')[4:]    
+        fbidle = intbv('0000')[4:]
+
         @instance
         def mon_trace():
             while True:
                 yield clock.posedge
-                ccfb = concat(itx.wr, itx.rd, irx.wr, irx.rd)
+                ccfb = concat(itx.write, itx.read, irx.write, irx.read)
                 if ccfb != fbidle:
                     fstr = "  :{:8d}: tx: w{} r{}, f{} e{}, rx: w{} r{} f{} e{}"
                     print(fstr.format(now(),
-                        int(itx.wr), int(itx.rd), int(itx.full), int(itx.empty),
-                        int(irx.wr), int(irx.rd), int(irx.full), int(irx.empty),)
+                        int(itx.write), int(itx.read), int(itx.full), int(itx.empty),
+                        int(irx.write), int(irx.read), int(irx.full), int(irx.empty),)
                     )
                     
         @always(clock.posedge)
         def mon_tx_fifo_write():
-            if itx.wr:
+            if itx.write:
                 print("   WRITE tx fifo {:02X}".format(int(itx.wdata)))
-            if itx.rd:
+            if itx.read:
                 print("   READ tx fifo {:02X}".format(int(itx.rdata)))
                 
         @always(clock.posedge)
         def mon_rx_fifo_write():
-            if irx.wr:
+            if irx.write:
                 print("   WRITE rx fifo {:02X}".format(int(irx.wdata)))
                 
-            if irx.rd:
+            if irx.read:
                 print("   READ rx fifo {:02X}".format(int(irx.rdata)))
 
     # return the myhdl generators

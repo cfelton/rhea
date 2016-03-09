@@ -1,10 +1,9 @@
-
+#
 # Copyright (c) 2014 Christopher L. Felton
 #
 
 from myhdl import (Signal, intbv, always, always_comb, always_seq)
 
-from rhea.system import Clock, Reset
 from rhea.system import FIFOBus
 from .fifo_srl import fifo_srl
 
@@ -51,7 +50,7 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     addr = Signal(intbv(0, min=0, max=N))
 
     # aliases to the FIFO bus interface
-    srlce = fbus.wr     # single cycle write
+    srlce = fbus.write     # single cycle write
     
     # note: use_srl_prim has not been tested!
     # note: signal slices wdata() will need to be used instead of
@@ -59,26 +58,26 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     if use_srl_prim:
         gsrl = [None for _ in range(N)]
         for ii in range(N):
-            gsrl[ii] = fifo_srl(clock, fbus.wdata(ii), fbus.wr,
-                                addr, fbus.rdata(ii))
+            gsrl[ii] = fifo_srl(clock, fbus.write_data(ii), fbus.write,
+                                addr, fbus.read_data(ii))
     else:
         # the SRL based FIFO always writes to address 0 and shifts
         # the FIFO, only a read address is accounted.
         @always(clock.posedge)
         def rtl_srl_in():
             if srlce:
-                mem[0].next = fbus.wdata
+                mem[0].next = fbus.write_data
                 for ii in range(1, N):
                     mem[ii].next = mem[ii-1]
 
     @always_comb
     def rtl_srl_out():
-        fbus.rdata.next = mem[addr]
+        fbus.read_data.next = mem[addr]
 
     @always_comb
     def rtl_vld():
         # no delay on reads
-        fbus.rvld.next = fbus.rd and not fbus.empty
+        fbus.rvld.next = fbus.read and not fbus.empty
 
     # the address is the read address, the write address is always
     # zero but on a write all values are shifted up one index, only
@@ -90,14 +89,14 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
             fbus.empty.next = True
             fbus.full.next = False
 
-        elif fbus.rd and not fbus.wr:
+        elif fbus.read and not fbus.write:
             fbus.full.next = False
             if addr == 0:
                 fbus.empty.next = True
             else:
                 addr.next = addr - 1
 
-        elif fbus.wr and not fbus.rd:
+        elif fbus.write and not fbus.read:
             fbus.empty.next = False
             if not fbus.empty:
                 addr.next = addr + 1
@@ -116,10 +115,10 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
         if fbus.clear:
             nvacant.next = N
             ntenant.next = 0
-        elif fbus.rd and not fbus.wr:
+        elif fbus.read and not fbus.write:
             nvacant.next = nvacant + 1
             ntenant.next = ntenant - 1
-        elif fbus.wr and not fbus.rd:
+        elif fbus.write and not fbus.read:
             nvacant.next = nvacant - 1
             ntenant.next = ntenant + 1
 

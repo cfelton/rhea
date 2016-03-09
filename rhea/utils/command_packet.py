@@ -55,10 +55,10 @@ class CommandPacket(object):
     def put(self, fifobus):
         yield fifobus.clock.posedge
         for byte in self.rawbytes:
-            fifobus.wr.next = True
-            fifobus.wdata.next = byte
+            fifobus.write.next = True
+            fifobus.write_data.next = byte
             yield fifobus.clock.posedge
-        fifobus.wr.next = False
+        fifobus.write.next = False
 
     def get(self, fifobus, rvals=None, evals=None, timeout=4000):
         timeout_value = timeout
@@ -76,12 +76,12 @@ class CommandPacket(object):
         timeout = timeout_value
         while bytestoget > 0 and timeout > 0:
             if not fifobus.empty and bytestoget > 1:
-                fifobus.rd.next = True
+                fifobus.read.next = True
             else:
-                fifobus.rd.next = False
+                fifobus.read.next = False
 
-            if fifobus.rvld and not fifobus.empty:
-                bb = int(fifobus.rdata)
+            if fifobus.read_valid:
+                bb = int(fifobus.read_data)
                 rpkt[ii] = bb
                 bytestoget -= 1
                 ii += 1
@@ -93,7 +93,7 @@ class CommandPacket(object):
             yield fifobus.clock.posedge
 
         # end read response packet loop, no more reads
-        fifobus.rd.next = False
+        fifobus.read.next = False
 
         if timeout == 0:
             raise TimeoutError

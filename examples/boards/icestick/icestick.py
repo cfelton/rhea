@@ -27,9 +27,9 @@ def icestick(clock, led, pmod, uart_tx, uart_rx):
 
     @always_comb
     def beh_loopback():
-        fbusrx.rd.next = not fbusrx.empty
-        fbustx.wr.next = not fbusrx.empty
-        fbustx.wdata.next = fbusrx.rdata
+        fbusrx.read.next = not fbusrx.empty
+        fbustx.write.next = not fbusrx.empty
+        fbustx.write_data.next = fbusrx.read_data
 
     lcnt = Signal(modbv(0, min=0, max=4))
 

@@ -59,18 +59,18 @@ def fifo_ramp(
     def rtl_ramp():
         if regfile.enable and not fifobus.full:
             if wcnt == 0:
-                fifobus.wr.next = True
-                fifobus.wdata.next = ramp
+                fifobus.write.next = True
+                fifobus.write_data.next = ramp
                 if ramp+1 == ramp_mod:
                     rcnt.next = rcnt + 1
                 ramp.next = (ramp + 1) % ramp_mod
                 wcnt.next = div
             else:
-                fifobus.wr.next = False
+                fifobus.write.next = False
                 wcnt.next = wcnt - 1
         else:
-            fifobus.wr.next = False
-            fifobus.wdata.next = 0
+            fifobus.write.next = False
+            fifobus.write_data.next = 0
             wcnt.next = div
     
     return instances()
