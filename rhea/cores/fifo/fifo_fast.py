@@ -65,7 +65,7 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
         # the FIFO, only a read address is accounted.
         @always(clock.posedge)
         def rtl_srl_in():
-            if srlce:
+            if srlce and (not fbus.full):
                 mem[0].next = fbus.write_data
                 for ii in range(1, N):
                     mem[ii].next = mem[ii-1]
@@ -97,7 +97,10 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
 
         elif fbus.write and not fbus.read:
             fbus.empty.next = False
-            if not fbus.empty:
+            # because addr starts from 0,
+            # there should not be an increment
+            # the first time 
+            if (not fbus.empty) and (not fbus.full):
                 addr.next = addr + 1
             if addr == N-2:
                 fbus.full.next = True
