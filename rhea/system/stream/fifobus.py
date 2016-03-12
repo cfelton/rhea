@@ -2,7 +2,7 @@
 # Copyright (c) 2013-2015 Christopher L. Felton
 #
 
-from myhdl import Signal, intbv
+from myhdl import Signal, intbv, always_comb
 
 
 _fb_num = 0
@@ -28,7 +28,8 @@ class FIFOBus(object):
         # @todo: write, write_data, etc.!
 
         # all the data signals are from the perspective
-        # of the FIFO being interfaced to.        
+        # of the FIFO being interfaced to. That is , write_data
+        # means write_to and read_data means read_from      
         self.clear = Signal(bool(0))           # fifo clear
         #self.wclk = None                      # write side clock
         self.write = Signal(bool(0))              # write strobe to fifo
@@ -58,6 +59,28 @@ class FIFOBus(object):
 
     def readtrans(self):
         pass
+
+    def assign_read_write_paths(self, readpath, writepath):
+        """
+        Assign the signals from the `readpath` to the read signals
+        of this interface and same for write
+        """
+        assert isinstance(readpath, FIFOBus)
+        assert isinstance(writepath, FIFOBus)
+        
+        @always_comb
+        def beh_assign():
+            # read
+            readpath.read_data.next = self.read_data
+            readpath.empty.next = self.empty
+            readpath.read_valid.next = self.read_valid
+            
+            # write           
+            self.write_data.next = writepath.write_data
+            self.write.next = writepath.write
+            writepath.full.next = self.full
+           
+        return beh_assign
 
     # @todo: get the separate buses
     # def get_upstream()    
