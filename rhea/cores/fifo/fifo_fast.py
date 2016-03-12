@@ -1,4 +1,4 @@
-
+#
 # Copyright (c) 2014 Christopher L. Felton
 #
 
@@ -23,11 +23,9 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     synchronous FIFOs.  This FIFO is implemented generically, consult the
     synthesis and map reports.
 
-    PORTS
-    =====
+    Arguments (ports):
 
-    PARAMETERS
-    ==========
+    Parameters:
     use_slr_prim: this parameter indicates to use the SRL primitive
       (inferrable primitive).  If SRL are not inferred from the generic
       description this option can be used.  Note, srl_prim will only
@@ -35,14 +33,14 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     """
 
     # @todo: this is intended to be used for small fast fifo's but it
-    #        can be used for large synchronous fifo as well
+    # @todo: can be used for large synchronous fifo as well
 
     N = 32   # default and max size    
     if use_srl_prim:
         N = 16
     elif fbus.size > N:
-        print("@W: m_fifo_fast only supports size < %d, for fast" % (N))
-        print("    forcing size (depth) to %d" % (N))    
+        print("@W: m_fifo_fast only supports size < {}, for fast".format(N))
+        print("    forcing size (depth) to {}".format(N))
     else:
         N = fbus.size
 
@@ -53,7 +51,7 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     srlce = fbus.write     # single cycle write
     
     # note: use_srl_prim has not been tested!
-    # note: signal slices wdata() will need to be used instead of
+    # note: signal slices write_data() will need to be used instead of
     #       bit slices wsdata[].  Have add 
     if use_srl_prim:
         gsrl = [None for _ in range(N)]
@@ -76,7 +74,8 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
 
     @always_comb
     def rtl_vld():
-        fbus.read_valid.next = fbus.read    # no delay on reads
+        # no delay on reads
+        fbus.read_valid.next = fbus.read and not fbus.empty
 
     # the address is the read address, the write address is always
     # zero but on a write all values are shifted up one index, only
@@ -130,5 +129,4 @@ def fifo_fast(clock, reset, fbus, use_srl_prim=False):
     return gens
 
 
-# attached a generic fifo bus object to the module
 fifo_fast.fbus_intf = FIFOBus

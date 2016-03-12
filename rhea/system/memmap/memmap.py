@@ -16,11 +16,21 @@ _mm_per = 0
 _mm_list = {}
 
 
+class MemoryMap(list):
+    def __init__(self):
+        """ Contains a collection of MemoryMapped objects
+        When a system is defined with numerous modules connect via a
+        memory-mapped bus this object is used to manage the complete
+        collection.
+        """
+        super(list, self).__init__()
+
+
 class MemoryMapped(MemorySpace):
     def __init__(self, glbl=None, data_width=8, address_width=16):
         """ Base class for the different memory-map interfaces.
         This is a base class for the various memory-mapped (control and 
-        status (CSR)) interfaces.  These interfaces all
+        status (CSR)) interfaces.
         """
         super(MemoryMapped, self).__init__()
         self.data_width = data_width
@@ -160,10 +170,14 @@ class MemoryMapped(MemorySpace):
         else:
             if base_address is None:
                 memspace.base_address = self.num_peripherals
+            # @todo: complete, add the non-regfile to the bus
             g = []
     
         return g
 
+    # @todo: remove `add_csr` and replace with
+    # @todo:     rf = cso.build_register_file()
+    # @todo:     mmbus.add(rf)
     def add_csr(self, csr, name=''):
         """
         """
@@ -211,13 +225,27 @@ class MemoryMapped(MemorySpace):
         """ Map the generic bus (Barebone) to this bus
         This is a bus adapter that will adapt the generic bus to this
         bus.  This is a module and returns myhdl generators
-        :param generic:
-        :return:
+
+        Arguments
+        ---------
+        generic: The generic memory-mapped bus, all the memory-mapped
+        supported modules use the *generic* bus internally.  This provides
+        an agnostic bus interface to all the modules.
+
+        Returns
+        -------
+        myhdl generators
         """
         raise NotImplementedError
 
     def peripheral_regfile(self, regfile, name, base_address=0):
         """ override
+
+        Arguments
+        ---------
+        glbl: global signals, clock and reset
+        regfile: register file interfacing to
+
         :param glbl: global signals, clock and reset
         :param regfile: register file interfacing to.
         :param name: name of this interface

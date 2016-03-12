@@ -9,14 +9,18 @@ from .const import ticks_per_ns
 from .clock import Clock
 from .reset import Reset
 from .glbl import Global
+from .hwtypes import Bit, Byte, Constants
 
-from .memmap import ControlStatus
+from .memmap.cso import ControlStatus
+from .memmap.cso import assign_config
+
 from .memmap import MemorySpace
 from .memmap import RegisterBits
 from .memmap import Register
 from .memmap import RegisterFile
 
 # different buses supported by the register file interface
+from .memmap import MemoryMap
 from .memmap import MemoryMapped
 from .memmap import Barebone
 from .memmap import Wishbone

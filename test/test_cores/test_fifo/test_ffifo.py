@@ -5,10 +5,10 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
 from argparse import Namespace
 
-from myhdl import *
+from myhdl import (Signal, ResetSignal, always, delay, instance,
+                   StopSimulation)
 
 from rhea.system import FIFOBus
 import rhea.cores as cores
@@ -31,7 +31,7 @@ def test_ffifo(args=None):
     clock = Signal(bool(0))
     fbus = FIFOBus(width=args.width, size=args.size)
 
-    def _bench_ffifo():
+    def bench_ffifo():
         
         # @todo: use args.fast, args.use_srl_prim
         tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
@@ -54,7 +54,6 @@ def test_ffifo(args=None):
 
                 # write some bytes
                 for ii in range(num_bytes):
-                    #print('nbyte %x wdata %x' % (num_bytes, ii))
                     yield clock.posedge
                     fbus.write_data.next = ii
                     fbus.write.next = True
@@ -72,7 +71,6 @@ def test_ffifo(args=None):
                 for ii in range(num_bytes):
                     fbus.read.next = True
                     yield clock.posedge
-                    #print("rdata %x ii %x " % (fbus.read_data, ii))
                     assert fbus.read_valid
                     assert fbus.read_data == ii, "rdata %x ii %x " % (fbus.read_data, ii)
 
@@ -80,16 +78,15 @@ def test_ffifo(args=None):
                 yield clock.posedge
                 assert fbus.empty
 
-            # Test overflows        
-            # Test underflows        
-            # Test write / read same time
+            # @todo: test overflows
+            # @todo: test underflows
+            # @todo: test write / read same time
 
             raise StopSimulation
-
         
         return tbdut, tbclk, tbstim
 
-    run_testbench(_bench_ffifo)
+    run_testbench(bench_ffifo)
 
 
 if __name__ == '__main__':

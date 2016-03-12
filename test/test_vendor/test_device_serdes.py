@@ -13,8 +13,8 @@ from rhea.vendor import ClockManagement
 from rhea.vendor import device_clock_mgmt
 
 from rhea.vendor import SERDESInterface
-from rhea.vendor import device_output_serdes
-from rhea.vendor import device_input_serdes
+from rhea.vendor import device_serdes_output
+from rhea.vendor import device_serdes_input
 
 
 def top_serdes_wrap(clockext, resetext,

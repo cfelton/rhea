@@ -9,7 +9,7 @@ def button_controller(glbl, regbus, btns, led_addr=0x240):
     """ Generate bus cycles from a button input
     This is a non-sensicle module that creates memory-mapped
     bus cycles from a button press.  It is used in simple
-    examples and demostrations.
+    examples and demonstrations.
     """
 
     clock, reset = glbl.clock, glbl.reset
@@ -26,7 +26,6 @@ def button_controller(glbl, regbus, btns, led_addr=0x240):
     # this basic controller is very simple, a write strobe 
     # will start a write cycle and a read strobe a read cycle.
     gctl = controller_basic(ctl, regbus)
-
 
     # @todo: finish, can't use the write's like they are
     #    but I need a bus agnostic method to read/write
