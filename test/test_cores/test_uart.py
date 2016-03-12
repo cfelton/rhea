@@ -15,7 +15,6 @@ from rhea.system import FIFOBus
 
 from rhea.utils.test import run_testbench, tb_args
 
-
 def testbench_uart_model(args=None):
     # @todo: get numbytes from args
     numbytes = 7
@@ -63,7 +62,7 @@ def testbench_uart_model(args=None):
     run_testbench(_bench_uart_model, args=args)
 
 
-@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
+#@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
 def testbench_uart(args=None):
     # @todo: get numbytes from args
     numbytes = 13
@@ -72,19 +71,18 @@ def testbench_uart(args=None):
     glbl = Global(clock, reset)
     mdlsi, mdlso = Signal(bool(1)), Signal(bool(1))
     uartmdl = UARTModel()
-    fifotx = FIFOBus()
-    fiforx = FIFOBus()
+    fifortx = FIFOBus()
 
     def _bench_uart():
         tbmdl = uartmdl.process(glbl, mdlsi, mdlso)
-        tbdut = uartlite(glbl, fifotx, fiforx, mdlso, mdlsi)
+        tbdut = uartlite(glbl, fifortx, mdlso, mdlsi)
         tbclk = clock.gen()
 
         @always_comb
         def tblpbk():
-            fifotx.write_data.next = fiforx.read_data
-            fifotx.write.next = not fiforx.empty
-            fiforx.read.next = not fiforx.empty
+            fifortx.write_data.next = fifortx.read_data
+            fifortx.write.next = (not fifortx.full) & fifortx.read
+           
 
         @instance
         def tbstim():
@@ -112,7 +110,7 @@ def testbench_uart(args=None):
             raise StopSimulation
 
         return tbdut, tbmdl, tbclk, tblpbk, tbstim
-
+ 
     run_testbench(_bench_uart, args=args)
 
 
