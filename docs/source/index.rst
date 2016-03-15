@@ -29,7 +29,7 @@ The ``rhea`` package is divided into the following subpackages:
    - **cores**: The *cores* subpackage contains the HDL implementation of the
      digital hardware cores.
 
-   - **build**: This subpackage automates vaious tool-flows (compilation).
+   - **build**: This subpackage automates various tool-flows (compilation).
      The automation mainly supports FPGA vendor tool-flows.  The
      ``build.boards`` is a collection of board definitions.  The build
      automation is used by selecting a board and automating the build
