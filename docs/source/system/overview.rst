@@ -42,7 +42,7 @@ CSO can be used and added to the control-status interface.
 
 .. code-block:: python
 
-    @myhdl.module
+    @myhdl.block
     def led_blinker(glbl, led, cso):
         # the cso interface provides the control and status for
         # this module
@@ -65,6 +65,7 @@ CSO can be used and added to the control-status interface.
                     # walking logic
                 elif cso.mode == modes.strobing
                     # strobing logic
+
                 led.next = nextled
 
         return beh_enable, beh_blink
@@ -141,7 +142,7 @@ used in a new component/peripheral.
 
 .. code-block:: python
 
-    @myhdl.module
+    @myhdl.block
     def led_blinker(glbl, membus, leds):
         clock = glbl.clock
         # instantiate the register interface module and add the
@@ -163,24 +164,24 @@ used in a new component/peripheral.
         return regfile_inst, mod_inst, beh_led_assign
 
 
-The :py:func`led_blinker` module demonstrates how to add the created
+The :py:func:`led_blinker` module demonstrates how to add the created
 :py:class:`RegisterFile` to
 the memory-mapped bus and get a myhdl instance that provides the logic
 to read and write the register file from the bus interface passed to the 
 module. 
 
-.. what what I going to say in this next sentance?
+.. what was I going to say in this next sentence?
 .. When instantiating the :py:func:`led_blinker` `module`_
 
 Note, in the above example a ``base_address`` was set.  If the ``base_address``
-attribute is not present the :py:func:`MemoryMapped
+attribute is not present the :py:class:`MemoryMapped
 
 .. _module : http://docs.myhdl.org/en/stable/manual/structure.html#structural-modeling
 
 
 Memory map interfaces
 ---------------------
-The :Register File: section examples eluded to the memory-map (or CSR)
+The :Register Files: section examples eluded to the memory-map (or CSR)
 interfaces and how they can be connected to register file.  The ``rhea``
 project contains the following memory-map interfaces:
 
@@ -228,7 +229,7 @@ memory-mapped this
 
 .. code-block:: python
 
-   @myhdl.module
+   @myhdl.block
    def led_blinker(glbl, leds, membus=None, cso=None):
 
        if cso is None

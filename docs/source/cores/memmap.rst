@@ -36,6 +36,7 @@ addresses are completely abstracted away when not using the
 ``cso`` the addresses need to be exported from the system and
 used explicitly.
 
+
 Example
 ^^^^^^^
 The following is an example that connects a ``command_bridge`` to a
