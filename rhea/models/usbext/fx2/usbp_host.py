@@ -7,7 +7,8 @@ from __future__ import print_function
 
 from myhdl import delay, always, instances
 
-from ._fx2_model import Fx2Model
+from .fx2_model import Fx2Model
+
 
 class UsbpHost(Fx2Model):
     """

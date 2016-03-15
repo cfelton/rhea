@@ -9,7 +9,7 @@ from myhdl import *
 
 from rhea.system import Global, Clock, Reset
 from rhea.cores.video.lcd import LT24Interface
-from rhea.cores.video.lcd._lt24lcd_driver import lt24lcd_driver
+from rhea.cores.video.lcd.lt24lcd_driver import lt24lcd_driver
 from rhea.models.video import LT24LCDDisplay
 from rhea.cores.misc import glbl_timer_ticks
 from rhea.utils.test import run_testbench
