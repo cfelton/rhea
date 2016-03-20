@@ -6,8 +6,19 @@ from abc import ABCMeta, abstractclassmethod
 from myhdl import Signal, SignalType, always_comb
 
 
-class ControlStatusBase(metaclass=ABCMeta):
+class ControlStatusBase(object):
+    __metaclass__ = ABCMeta
+
     def __init__(self):
+        """ Base class for control and status classes
+        Many complex digital block have control and status interfaces.
+        The base class is the base class for the specific control and
+        status objects (typically ``ControlStatus``) in a block, the
+        control-status-objects (CSO) can be used to dynamically
+        interact with the block from other blocks, statically configure,
+        or assign to a register-file that can be accessed from a
+        memory-mapped bus.
+        """
         self._isstatic = False
 
     @property
@@ -28,6 +39,18 @@ class ControlStatusBase(metaclass=ABCMeta):
 
     @abstractclassmethod
     def default_assign(self):
+        """ A myhdl.block that assigns the control-status defaults.
+        For certain synthesis tools the static values of the signals
+        need to be assigned.  This will return generators to keep
+        the default signals.  If the synthesis tool supports initial
+        values, initial values should be used otherwise this can be
+        used to assign a static value to a signal.  Note, the synthesis
+        tool will generate warnings that the signal is stuck at a
+        value - this is desired.
+        
+        Returns:
+            myhdl generators
+        """
         raise NotImplemented
 
     def get_register_file(self):
