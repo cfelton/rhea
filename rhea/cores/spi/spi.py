@@ -20,7 +20,7 @@ from myhdl import *
 from ..fifo import fifo_fast
 from rhea.system import FIFOBus
 
-from .cso import SPIControlStatus
+from .cso import ControlStatus
 
 
 def spi_controller(
@@ -329,6 +329,6 @@ def spi_controller(
     return gens
 
 spi_controller.debug = False
-spi_controller.cso = SPIControlStatus
+spi_controller.cso = ControlStatus
 # @todo: complete the portmap
 spi_controller.portmap = dict()

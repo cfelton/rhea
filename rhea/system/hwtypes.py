@@ -2,7 +2,7 @@
 Define common Signal types that can be used to provide additional
 information
 """
-from myhdl import SignalType, intbv
+from myhdl import Signal, SignalType, intbv
 
 
 class Constants(object):
@@ -35,6 +35,29 @@ class Constants(object):
     def __call__(self, val=0):
         cmin, cmax = min(self._constset), max(self._constset)
         return intbv(val, min=cmin, max=cmax+1)
+
+
+def Signals(sigtype, num_sigs):
+    """ Create a list of signals
+    Arguments:
+        sigtype (bool, intbv): The type to create a Signal from.
+        num_sigs (int): The number of signals to create in the list
+    Returns:
+        sigs: a list of signals all of type `sigtype`
+
+    Creating multiple signals of the same type is common, this
+    function helps facilitate the creation of multiple signals of
+    the same type.
+
+    The following example creates two signals of bool
+        >>> enable, timeout = Signals(bool(0), 2)
+
+    The following creates a list-of-signals of 8-bit types
+        >>> mem = Signals(intbv(0)[8:], 256)
+    """
+    assert isinstance(sigtype, (bool, intbv))
+    sigs = [Signal(sigtype) for _ in range(num_sigs)]
+    return sigs
 
 
 class Signal(SignalType):

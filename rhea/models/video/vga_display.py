@@ -4,9 +4,9 @@ from __future__ import absolute_import
 
 from myhdl import Signal, intbv, instance, enum, always, now 
 from PIL import Image
-from ._video_display import VideoDisplay
+from .video_display import VideoDisplay
 
-from ...cores.video.vga._timing_params import get_timing_dict
+from rhea.cores.video.vga.timing_params import get_timing_dict
 
 
 Info = {

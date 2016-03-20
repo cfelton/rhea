@@ -9,7 +9,7 @@ import time
 
 from myhdl import now
 
-from ._fx2_model import Fx2Model
+from .fx2_model import Fx2Model
 
     
 class FpgaLinkHost(Fx2Model):

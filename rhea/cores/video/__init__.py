@@ -2,15 +2,15 @@
 from __future__ import absolute_import
 
 # generic colorbar generator
-from ._color_bars import color_bars
+from .color_bars import color_bars
 
 from .lcd import lt24lcd
 
 # generic VGA core
-from .vga._vga_intf import VGA
-from .vga._vga_sync import vga_sync
+from .vga.vga_intf import VGA
+from .vga.vga_sync import vga_sync
 
-from ._vidmem import VideoMemory
+from .vidmem import VideoMemory
 
-from .hdmi._hdmi import hdmi
-from .hdmi._hdmi_intf import HDMI
+from .hdmi.hdmi import hdmi
+from .hdmi.hdmi_intf import HDMI
