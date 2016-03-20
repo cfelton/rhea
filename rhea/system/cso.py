@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-from abc import ABCMeta, abstractclassmethod
+from abc import ABCMeta, abstractmethod
 
 from myhdl import Signal, SignalType, always_comb
 
@@ -37,7 +37,7 @@ class ControlStatusBase(object):
                 cfgbits[k] = v.initial_value
         return cfgbits
 
-    @abstractclassmethod
+    @abstractmethod
     def default_assign(self):
         """ A myhdl.block that assigns the control-status defaults.
         For certain synthesis tools the static values of the signals
@@ -47,7 +47,7 @@ class ControlStatusBase(object):
         used to assign a static value to a signal.  Note, the synthesis
         tool will generate warnings that the signal is stuck at a
         value - this is desired.
-        
+
         Returns:
             myhdl generators
         """
@@ -59,7 +59,7 @@ class ControlStatusBase(object):
         # @todo: return build_register_file(self)
         return None
 
-    @abstractclassmethod
+    @abstractmethod
     def get_generators(self):
         """ get any hardware logic associated with the cso"""
         return None
