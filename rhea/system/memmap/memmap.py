@@ -4,11 +4,12 @@ from __future__ import print_function
 
 from copy import deepcopy
 
-from . import MemorySpace
-from . import ControlStatus
-from . import RegisterFile, Register
 from ..clock import Clock
 from ..reset import Reset
+from ..cso import ControlStatusBase
+
+from . import MemorySpace
+from . import RegisterFile, Register
 
 
 # a count of the number of memory-map peripherals
@@ -181,7 +182,7 @@ class MemoryMapped(MemorySpace):
     def add_csr(self, csr, name=''):
         """
         """
-        assert isinstance(csr, ControlStatus)
+        assert isinstance(csr, ControlStatusBase)
 
         # the `csr` objects are void of any memory-map specific information
         # the "mapping" all occurs here.

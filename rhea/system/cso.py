@@ -1,11 +1,12 @@
 
 from __future__ import absolute_import
 
+from abc import ABCMeta, abstractclassmethod
+
 from myhdl import Signal, SignalType, always_comb
-from .regfile import RegisterFile
 
 
-class ControlStatus(object):
+class ControlStatusBase(metaclass=ABCMeta):
     def __init__(self):
         self._isstatic = False
 
@@ -25,35 +26,28 @@ class ControlStatus(object):
                 cfgbits[k] = v.initial_value
         return cfgbits
 
+    @abstractclassmethod
     def default_assign(self):
         raise NotImplemented
 
     def get_register_file(self):
         """ get the register-file for this control-status object"""
-        return build_register_file(self)
+        # @todo: this function currently lives in memmap.regfile
+        # @todo: return build_register_file(self)
+        return None
 
+    @abstractclassmethod
     def get_generators(self):
         """ get any hardware logic associated with the cso"""
         return None
 
 
-def build_register_file(cso):
-    """ Build a register file from a control-status object.
-
-    This function will organize all the `SignalType` attributes in
-    a `ControlStatus` object into a register file.
-    """
-    assert isinstance(cso, ControlStatus)
-    rf = RegisterFile()
-
-    for k, v in vars(cso):
-        if isinstance(v, SignalType):
-            pass
-
-    return rf
-
-
 def assign_config(sig, val):
+    """
+    Arguments:
+        sig (Signal): The signals to be assigned to a constant value
+        val (int): The constant value
+    """
     keep = Signal(bool(0))
     keep.driven = 'wire'
 

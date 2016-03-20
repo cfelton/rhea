@@ -4,11 +4,11 @@ System
 
 The ``rhea`` package provides frameworks for building complex digital
 circuits.  These include modular and scalable `interfaces`_ and
-`modules`_.  The following describes the specification for the 
-frameworks being developed into the `rhea` package.
+`blocks`_.  The following describes the specification for the
+frameworks being developed in the ``rhea`` package.
 
 .. _myhdl : http://www.myhdl.org
-.. _modules : http://docs.myhdl.org/en/stable/manual/structure.html#structural-modeling
+.. _blocks : http://docs.myhdl.org/en/stable/manual/structure.html#structural-modeling
 .. _interfaces : http://docs.myhdl.org/en/stable/whatsnew/0.9.html#interfaces-conversion-of-attribute-accesses
 
 
@@ -19,16 +19,16 @@ of systems.  In a complex digital system majority of the blocks will
 have two interfaces.  One being the streaming data in and out of the 
 module and the other a control and status interface.  The control 
 and status provides a lower-bandwidth interface into the component
-(module). 
+(block).
 
 Defining a peripheral specific control-status object (CSO). 
 
 .. code-block:: python
 
-    from rhea.system import ControlAndStatus
+    import rhea.system import ControlStatusBase
     
     # define the control and status signals for a peripheral 
-    class LEDBlinkerControlStatus(ControlStatus):
+    class ControlStatus(ControlStatusBase):
         modes = enum("counting", "walking", "strobing")
         def __init__(self)
             self.enable = Signal(bool(0))
@@ -46,9 +46,9 @@ CSO can be used and added to the control-status interface.
     def led_blinker(glbl, led, cso):
         # the cso interface provides the control and status for
         # this module
-        assert isinstance(LEDBlinkerControlStatus)
+        assert isinstance(ControlStatus)
         clock, reset = glbl.clock, glbl.reset
-        modes = LEDBlinkerControlStatus.modes
+        modes = ControlStatus.modes
         enabled = Signal(bool(0))
 
         @always_comb
@@ -70,13 +70,13 @@ CSO can be used and added to the control-status interface.
 
         return beh_enable, beh_blink
 
-    led_blinker.cso = LEDBlinkerControlStatus
+    led_blinker.cso = ControlStatus
 
 
 The non-global control and status, i.e. the module specific
 control-status is accessed via the ``cso``.  This provides
-a clean encapsulation to the module.  The ``cso`` can also
-include transactors to assist testing and verification.
+a clean encapsulation to the block (module).  The ``cso`` can
+also include transactors to assist testing and verification.
 
 Creating control status objects
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -86,8 +86,11 @@ information can be defined:
 
    * ``driven``: set the signal driven attribute to true to indicate a
      read-only (status) attribute.
-   * Use the hardware-types :py:class:`Bit` and :py:class:`Byte` to
+   * Use the hardware-types :class:`Bit` and :class:`Byte` to
      help drive the how the attributes are organized in a register-file.
+     The :class:`Bit` and :class:`Byte` are only used to give
+     hints to the register-file builder, if memory-mapped access
+     is secondary use the standard :myhdl:class:`Signal`.
    * Use ``initial_value`` property to overwrite the signals initial
      value, this is useful is static configurations.
 
@@ -109,6 +112,10 @@ a mechanism for static definition (no bus present).
 .. _register : http://
 
 The following is a short example building a simple register file.
+Note the following is the manaul method to the example being used
+in this document.  Utilizing the :class:`ControlStatusBase` is an
+automated process, in majority of the cases register-files should
+not be explicitly defined but rather build from a CSO.
 
 
 .. code-block:: python
