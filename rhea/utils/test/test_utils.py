@@ -142,10 +142,6 @@ def tb_mon_():
     pass
 
 # temp, due to pytest 10x runtime error.
-skip_long_sim_video_test = pytest.mark.skipif(
-    not pytest.config.getoption("--vidtest"),
-    reason="long test, needs --vidtest option to run"
-)
 
 skip_long_sim_test = pytest.mark.skipif(
     not pytest.config.getoption("--runslow"),
