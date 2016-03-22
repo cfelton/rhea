@@ -5,7 +5,7 @@ from __future__ import print_function
 
 from myhdl import *
 
-from ._timing_params import calc_timings
+from .timing_params import calc_timings
 
 
 def vga_sync(

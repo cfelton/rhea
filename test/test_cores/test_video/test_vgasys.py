@@ -61,7 +61,7 @@ def tb_vgasys(args=None):
     # intergace to the VGA driver and emulated display 
     vga = VGA(color_depth=color_depth)
 
-    def _bench_vgasys():
+    def bench_vgasys():
         # top-level VGA system 
         tbdut = mm_vgasys(clock, reset, vselect, 
                           vga.hsync, vga.vsync, 
@@ -108,7 +108,8 @@ def tb_vgasys(args=None):
         return tbclk, tbvd, tbstim, tbdut
 
     # run the verification simulation
-    run_testbench(_bench_vgasys)
+    run_testbench(bench_vgasys)
+
 
 @skip_long_sim_video_test
 def test_vgasys_conversion():

@@ -9,7 +9,8 @@ def test_spi_cso_config(args=None):
     args = tb_default_args()
     # get an instance of the control-status object
     cso = spi_controller.cso()
-    assert isinstance(cso, spi.cso.SPIControlStatus)
+    assert isinstance(cso, spi.cso.ControlStatus)
+    
     # set a default configuration
     cso.loopback.initial_value = False
     cso.clock_polarity.initial_value = True

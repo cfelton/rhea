@@ -5,8 +5,7 @@ from copy import copy
 
 from myhdl import Signal, intbv, enum, instance, delay, now
 from PIL import Image
-
-from ._video_display import VideoDisplay
+from .video_display import VideoDisplay
 
 
 class LT24LCDDisplay(VideoDisplay):

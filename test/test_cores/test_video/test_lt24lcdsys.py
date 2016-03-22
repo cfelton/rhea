@@ -46,7 +46,7 @@ def tb_lt24lcd(args=None):
                lcd_rdn, lcd_data)
     mvd = LT24LCDDisplay()
 
-    def _bench_lt24lcdsys():
+    def bench_lt24lcdsys():
         tbdut = mm_lt24lcdsys(clock, reset, lcd_on, lcd_resetn, 
                               lcd_csn, lcd_rs, lcd_wrn, lcd_rdn, 
                               lcd_data)
@@ -68,7 +68,8 @@ def tb_lt24lcd(args=None):
 
         return tbdut, tbvd, tbclk, tbstim
 
-    run_testbench(_bench_lt24lcdsys)
+    run_testbench(bench_lt24lcdsys)
+
 
 @skip_long_sim_video_test
 def test_conversion():

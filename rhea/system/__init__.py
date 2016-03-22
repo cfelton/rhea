@@ -9,10 +9,10 @@ from .const import ticks_per_ns
 from .clock import Clock
 from .reset import Reset
 from .glbl import Global
-from .hwtypes import Bit, Byte, Constants
+from .hwtypes import Constants, Signals, Bit, Byte
 
-from .memmap.cso import ControlStatus
-from .memmap.cso import assign_config
+from .cso import ControlStatusBase
+from .cso import assign_config
 
 from .memmap import MemorySpace
 from .memmap import RegisterBits

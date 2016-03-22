@@ -2,10 +2,10 @@
 from myhdl import Signal, always_comb
 from rhea.system import Constants
 from rhea.system import Bit, Byte
-from rhea.system import ControlStatus, assign_config
+from rhea.system import ControlStatusBase, assign_config
 
 
-class SPIControlStatus(ControlStatus):
+class ControlStatus(ControlStatusBase):
     def __init__(self):
         """ The control-status object for the SPI controller
 
@@ -59,7 +59,7 @@ class SPIControlStatus(ControlStatus):
         self.rx_read = Bit()
         self.rx_fifo_count = Byte(driven=True)
 
-        super(SPIControlStatus, self).__init__()
+        super(ControlStatus, self).__init__()
 
     def default_assign(self):
         cfgbits = self.get_config_bits()
