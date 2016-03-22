@@ -75,7 +75,7 @@ have many connectors or generic IO.  The user could have a boards
 with specific hardware attached.  In these cases the user many
 wish to create a new custom board definition. 
 
-.. code-block::python
+.. code-block:: python
 
 
      class MyCustomBoard(Xula2):

@@ -4,13 +4,18 @@
 
 from __future__ import division
 from __future__ import print_function
+
 import random
 from random import randrange
 import os
 from argparse import Namespace
-
-from myhdl import *
 import pytest
+
+from argparse import Namespace
+
+from myhdl import (Signal, ResetSignal, always, delay, instance,
+                   StopSimulation)
+
 
 from rhea.system import FIFOBus, Clock, Reset
 import rhea.cores as cores
@@ -36,7 +41,7 @@ def test_ffifo(args=None):
 
     fbus = FIFOBus(width=args.width, size=args.size)
 
-    def _bench_ffifo():
+    def bench_ffifo():
         
         # @todo: use args.fast, args.use_srl_prim
         tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
@@ -57,7 +62,7 @@ def test_ffifo(args=None):
                 # write some bytes
                 for ii in range(num_bytes):
                     #print('nbyte %x wdata %x' % (num_bytes, ii))
-                   
+
                     fbus.write_data.next = ii
                     fbus.write.next = True
                     # wait for 1 clock cyle to 
@@ -159,7 +164,6 @@ def test_overflow_ffifo(args=None):
                 for ii in range(fbus.size):
                     fbus.read.next = True
                     yield clock.posedge
-                    #print("rdata %x ii %x " % (fbus.read_data, ii))
                     assert fbus.read_valid
                     assert fbus.read_data == ii, "rdata %x ii %x " % (fbus.read_data, ii)
 
@@ -266,6 +270,7 @@ def test_underflow_ffifo(args=None):
             for ii in range(5):
                 yield clock.posedge
             raise StopSimulation
+
         return tbdut, tbclk,tbstim
 
     with pytest.raises(ValueError):
@@ -287,7 +292,7 @@ def test_rw_ffifo(args=None):
     fbus = FIFOBus(width=args.width, size=args.size)
 
     def _bench_rw_ffifo():
-        
+
         # @todo: use args.fast, args.use_srl_prim
         tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
 

@@ -6,4 +6,4 @@ Contents:
    :maxdepth: 2
 
    build
-   build_definitions
+   board_definition

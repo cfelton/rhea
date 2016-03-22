@@ -1,0 +1,45 @@
+
+
+from myhdl import (Signal, ResetSignal, always, instance, delay,
+                   StopSimulation)
+
+from rhea.system import Global, Clock, Reset, Barebone
+from rhea.utils.test import run_testbench, tb_default_args
+
+from rhea.cores.spi import SPIBus
+from rhea.cores.spi import spi_controller_model
+from rhea.cores.spi import SPISlave
+
+
+def test_spi_models(args=None):
+    args = tb_default_args(args)
+    clock = Clock(0, frequency=125e6)
+    reset = Reset(0, active=1, async=False)
+    glbl = Global(clock, reset)
+    ibus = Barebone(glbl)
+    spibus = SPIBus()
+
+    def bench():
+
+        tbdut = spi_controller_model(clock, reset, ibus, spibus)
+        tbspi = SPISlave().process(spibus)
+        tbclk = clock.gen()
+
+        @instance
+        def tbstim():
+            yield reset.pulse(40)
+            yield clock.posedge
+
+            yield ibus.writetrans(0x00, 0xBE)
+            yield delay(100)
+            yield ibus.readtrans(0x00)
+
+            raise StopSimulation
+
+        return tbdut, tbspi, tbclk, tbstim
+
+    run_testbench(bench, args=args)
+
+
+if __name__ == '__main__':
+    test_spi_models()

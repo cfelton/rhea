@@ -8,6 +8,7 @@ from myhdl import *
 from myhdl._Signal import _Signal
 from myhdl import SignalType
 
+from ..cso import ControlStatusBase
 from . import MemorySpace
 
 
@@ -250,3 +251,21 @@ class RegisterFile(MemorySpace):
         for aa, rr in self._roregs:
             assign_inst += [rr.assign_namedbits()]
         return assign_inst
+
+
+def build_register_file(cso):
+    """ Build a register file from a control-status object.
+
+    This function will organize all the `SignalType` attributes in
+    a `ControlStatus` object into a register file.
+
+    This function implementation is incomplete.
+    """
+    assert isinstance(cso, ControlStatusBase)
+    rf = RegisterFile()
+
+    for k, v in vars(cso):
+        if isinstance(v, SignalType):
+            pass
+
+    return rf

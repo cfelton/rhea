@@ -20,12 +20,11 @@ def test_config1_host_write():
 
     fm = Fx2Model(config=1, verbose=True, trace=False)
     fb = fm.get_bus()
-    tbdut = slave_fifo(fm, fb)
 
-    def _write(fm, num=1):
+    def writetrans(fm, num=1):
         pass
     
-    def _read(fb, num=1):
+    def readtrans(fb, num=1):
         yield fb.IFCLK.posedge
         fb.SLRD.next = False
         fb.SLOE.next = False
@@ -37,7 +36,10 @@ def test_config1_host_write():
         fb.ADDR.next = 0
         yield delay(3*fm.IFCLK_TICK)
 
-    def _bench_host_write():
+    def bench_host_write():
+
+        tbdut = slave_fifo(fm, fb)
+
         @instance
         def tbstim():
             fb.ADDR.next = 0
@@ -54,20 +56,20 @@ def test_config1_host_write():
             # FLAGC == True.
             # Config1 onl
 
-            assert fb.FLAGB == True
-            assert fb.FLAGC == False
+            assert fb.FLAGB
+            assert not fb.FLAGC
 
             fm.write([0xCE], fm.EP2)
             yield delay(3*fm.IFCLK_TICK)
-            assert fb.FLAGB == True  # still should have room
-            assert fb.FLAGC == True  # should have data now
+            assert fb.FLAGB  # still should have room
+            assert fb.FLAGC  # should have data now
             assert fb.FDO == 0xCE
             assert not fm.isempty(fm.EP2)
 
             # read out the data written, 1 byte
-            yield _read(fb, 1)
-            assert fb.FLAGB == True  # still should have room
-            assert fb.FLAGC == False # no data now
+            yield readtrans(fb, 1)
+            assert fb.FLAGB      # still should have room
+            assert not fb.FLAGC  # no data now
             assert fm.isempty(fm.EP2)
             yield delay(13*fm.IFCLK_TICK)
 
@@ -76,31 +78,31 @@ def test_config1_host_write():
             data[0] = 0xFE
             fm.write(data, fm.EP2)
             yield delay(3*fm.IFCLK_TICK)
-            assert fb.FLAGB == True  # still should have room
-            assert fb.FLAGC == True  # should have data now
+            assert fb.FLAGB  # still should have room
+            assert fb.FLAGC  # should have data now
             assert fb.FDO == 0xFE
             assert not fm.isempty(fm.EP2)
 
-            yield _read(fb, 33)
-            assert fb.FLAGB == True  # still should have room
-            assert fb.FLAGC == False # now data now
+            yield readtrans(fb, 33)
+            assert fb.FLAGB      # still should have room
+            assert not fb.FLAGC  # now data now
             assert fm.isempty(fm.EP2)
 
             # read one more
-            yield _read(fb, 1)
+            yield readtrans(fb, 1)
 
             # fill the FIFO
             data = [randint(0, 0xFF) for _ in range(512)]
             fm.write(data, fm.EP2)
             yield delay(3*fm.IFCLK_TICK)
-            assert fb.FLAGB == True  # still should have room
-            assert fb.FLAGC == True  # should have data now
+            assert fb.FLAGB  # still should have room
+            assert fb.FLAGC  # should have data now
             assert fb.FDO == data[0]
             assert not fm.isempty(fm.EP2)
 
-            yield _read(fb, 512)
-            assert fb.FLAGB == True  # still should have room
-            assert fb.FLAGC == False # now data now
+            yield readtrans(fb, 512)
+            assert fb.FLAGB      # still should have room
+            assert not fb.FLAGC  # now data now
             assert fm.isempty(fm.EP2)
 
             # The model should handle flow, control it will take
@@ -109,25 +111,25 @@ def test_config1_host_write():
             data = [randint(0, 0xFF) for _ in range(517)]
             fm.write(data, fm.EP2)
             yield delay(3*fm.IFCLK_TICK)
-            assert fb.FLAGB == True  # still should have room
-            assert fb.FLAGC == True  # should have data now
+            assert fb.FLAGB  # still should have room
+            assert fb.FLAGC  # should have data now
             assert fb.FDO == data[0]
             assert not fm.isempty(fm.EP2)
 
-            yield _read(fb, 512)
-            assert fb.FLAGB == True  # still should have room
-            assert fb.FLAGC == True  # now data now
+            yield readtrans(fb, 512)
+            assert fb.FLAGB  # still should have room
+            assert fb.FLAGC  # now data now
 
-            yield _read(fb, 7)
-            assert fb.FLAGB == True  # still should have room
-            assert fb.FLAGC == False # now data now
+            yield readtrans(fb, 7)
+            assert fb.FLAGB      # still should have room
+            assert not fb.FLAGC  # now data now
             assert fm.isempty(fm.EP2)
 
             raise StopSimulation
 
         return tbdut, tbstim
 
-    run_testbench(_bench_host_write)
+    run_testbench(bench_host_write)
 
 
 def test_config1_host_read():
@@ -136,9 +138,8 @@ def test_config1_host_read():
 
     fm = Fx2Model(config=1, verbose=True, trace=False)
     fb = fm.get_bus()
-    tbdut = slave_fifo(fm, fb)
 
-    def _write(fb, data):
+    def writetrans(fb, data):
         yield fb.IFCLK.posedge
         for dd in data:
             fb.FDI.next = dd
@@ -147,10 +148,13 @@ def test_config1_host_read():
         fb.SLWR.next = True
         yield delay(3*fm.IFCLK_TICK)
     
-    def _read(fm, num=1):
+    def readtrans(fm, num=1):
         pass
 
-    def _bench_host_read():
+    def bench_host_read():
+
+        tbdut = slave_fifo(fm, fb)
+
         @instance
         def tbstim():
             fb.ADDR.next = 0
@@ -168,30 +172,30 @@ def test_config1_host_read():
             # FLAGC == True.
             # Config1 onl
 
-            assert fb.FLAGB == True
-            assert fb.FLAGC == False
+            assert fb.FLAGB
+            assert not fb.FLAGC
             assert not fm.isdata(fm.EP6)
 
-            yield _write(fb, [0xCE])
-            assert fb.FLAGB == True
-            assert fb.FLAGC == False
+            yield writetrans(fb, [0xCE])
+            assert fb.FLAGB
+            assert not fb.FLAGC
             assert fm.isdata(fm.EP6, num=1)
             dd = fm.read(fm.EP6, num=1)
             assert dd[0] == 0xCE
 
-            assert fb.FLAGB == True
-            assert fb.FLAGC == False
+            assert fb.FLAGB
+            assert not fb.FLAGC
 
             data = [randint(0, 0xFF) for _ in range(512)]
-            yield _write(fb, data)
-            assert fb.FLAGB == False
-            assert fb.FLAGC == False
+            yield writetrans(fb, data)
+            assert not fb.FLAGB
+            assert not fb.FLAGC
             assert fm.isdata(fm.EP6, num=1)    # more than 1
             assert fm.isdata(fm.EP6, num=512)  # more than 1
 
-            yield _write(fb, [0xCE])
-            assert fb.FLAGB == False
-            assert fb.FLAGC == False
+            yield writetrans(fb, [0xCE])
+            assert not fb.FLAGB
+            assert not fb.FLAGC
             assert fm.isdata(fm.EP6, num=1)    # more than 1
             assert fm.isdata(fm.EP6, num=512)  # more than 1
 
@@ -199,15 +203,15 @@ def test_config1_host_read():
             for wd, rd in zip(data, rdata):
                 assert wd == rd
             yield delay(13*fm.IFCLK_TICK)
-            assert fb.FLAGB == True
-            assert fb.FLAGC == False
+            assert fb.FLAGB
+            assert not fb.FLAGC
             assert not fm.isdata(fm.EP6)
 
             raise StopSimulation
 
         return tbdut, tbstim
 
-    run_testbench(_bench_host_read)
+    run_testbench(bench_host_read)
 
 
 if __name__ == '__main__':

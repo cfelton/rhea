@@ -17,13 +17,30 @@ from rhea.system import Global, Clock, Reset
 from rhea.system import Wishbone
 from rhea.system import FIFOBus
 
-from rhea.utils.test import run_testbench, tb_convert, tb_args
+from rhea.utils.test import run_testbench, tb_convert, tb_args, tb_default_args
+
+
+clock = Clock(0, frequency=100e6)
+reset = Reset(0, active=1, async=True)
+glbl = Global(clock, reset)
+portmap = dict(
+    glbl=glbl,
+    spibus=SPIBus(),
+    fifobus=FIFOBus(),
+    cso=spi_controller.cso()
+)
 
 
 def m_test_top(clock, reset, sck, mosi, miso, ss):
     # @todo: create a top-level for conversion ...
-    g_spi = spi_controller()
-    return g_spi
+    glbl = Global(clock, reset)
+    spibus = SPIBus(sck, mosi, miso, ss)
+    fifobus = FIFOBus()
+    cso = spi_controller.cso()
+    cso.isstatic = True
+    cfg_inst = cso.get_generators()
+    spi_inst = spi_controller(glbl, spibus, fifobus, cso=cso)
+    return spi_inst
 
 
 def convert():
@@ -36,11 +53,76 @@ def convert():
     tb_convert(m_test_top, clock, reset, sck, mosi, miso, ss)
 
 
-def test_spi():
-    testbench_spi(argparse.Namespace(trace=False))
+@pytest.mark.xfail()
+def test_spi_cso_controlled(args=None):
+    args = tb_default_args(args)
+
+    clock = Clock(0, frequency=50e6)
+    reset = Reset(0, active=1, async=False)
+    glbl = Global(clock, reset)
+    spibus = SPIBus()
+    cso = spi_controller.cso()
+    fifobus = FIFOBus(size=16)
+
+    spiee = SPIEEPROM()
+    asserr = Signal(bool(0))
+
+    def bench_spi_cso():
+        tbdut = spi_controller(glbl, spibus, fifobus, cso=cso)
+        tbeep = spiee.gen(clock, reset, spibus)
+        tbclk = clock.gen(hticks=5)
+
+        @instance
+        def tbstim():
+            yield reset.pulse(33)
+            yield delay(100)
+            yield clock.posedge
+
+            try:
+                # enable the SPI core
+                cso.enable.next = True
+                cso.bypass_fifo.next = True
+                cso.loopback.next = True
+
+                # write to the transmit FIFO
+                for data in (0x02, 0x00, 0x00, 0x00, 0x55):
+                    cso.tx_byte.next = data
+                    cso.tx_write.next = True
+                    yield clock.posedge
+                cso.tx_write.next = False
+
+                while cso.tx_fifo_count > 0:
+                    yield delay(100)
+
+                while cso.rx_fifo_count < 5:
+                    yield delay(100)
+
+                for data in (0x02, 0x00, 0x00, 0x00, 0x55):
+                    cso.rx_read.next = True
+                    assert data == cso.rx_byte, "data mismatch"
+                    yield clock.posedge
+                cso.rx_read.next = False
+                yield clock.posedge
+
+            except AssertionError as err:
+                cso.rx_read.next = False
+                cso.tx_write.next = False
+                print("@W: exception {}".format(err))
+                yield delay(100)
+                traceback.print_exc()
+                raise err
+
+            raise StopSimulation
+
+        return tbdut, tbeep, tbclk, tbstim
+
+    run_testbench(bench_spi_cso, args=args)
 
 
-def testbench_spi(args=None):
+# enable when the register-file automation is complete
+@pytest.mark.xfail()
+def test_spi_memory_mapped(args=None):
+    args = tb_default_args(args)
     
     base_address = ba = 0x400
     clock = Clock(0, frequency=50e6)
@@ -149,4 +231,4 @@ def test_convert():
 
 
 if __name__ == '__main__':
-    testbench_spi(tb_args())
+    test_spi_cso_controlled(tb_args())

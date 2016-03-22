@@ -7,9 +7,9 @@ LCD display ...
 """
 from myhdl import Signal, intbv, enum, always_seq, concat, now
 
-from ._lt24intf import LT24Interface
-from ._lt24lcd_init_sequence import init_sequence, build_init_rom
-from ._lt24lcd_driver import lt24lcd_driver
+from .lt24intf import LT24Interface
+from .lt24lcd_init_sequence import init_sequence, build_init_rom
+from .lt24lcd_driver import lt24lcd_driver
 
 def lt24lcd(glbl, vmem, lcd):
     """ A video display driver for the terasic LT24 LCD display. 

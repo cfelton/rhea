@@ -5,12 +5,12 @@ from __future__ import absolute_import
 from .memspace import MemorySpace
 
 # register file objects
-from .csr import ControlStatus
 from .regfile import RegisterBits
 from .regfile import Register
 from .regfile import RegisterFile
 
 # memory-mapped (CSR) interfaces
+from .memmap import MemoryMap
 from .memmap import MemoryMapped
 from .barebone import Barebone
 from .wishbone import Wishbone

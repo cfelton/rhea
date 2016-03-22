@@ -1,7 +1,7 @@
 
 
 """
-The following decribes the display initialization sequence.  This
+The following describes the display initialization sequence.  This
 init sequence was adapted from the display init sequence provided 
 in the terasic example ILI9341.c
 
@@ -12,12 +12,12 @@ Init sequence overview
 ----------------------
 
    0x11: (section 8.2.12) turn off sleep mode, the datasheet indicates
-         a delay of 5msecs before next command and 120ms before this 
+         a delay of 5 msecs before next command and 120ms before this
          command can be sent if in sleep mode (0x10).
 
    0xCF: (8.4.2) Power control B, DC enable
 
-   0xED: (8.4.6) Power on sequency control
+   0xED: (8.4.6) Power on sequence control
 
    0xE8: (8.4.3) Driver timing control A
 
@@ -97,6 +97,7 @@ seq += [dict(cmd=0xF6, data=[0x01, 0x30, 0x00], pause=0)]
 seq += [dict(cmd=0x29, data=[], pause=30)]  # display on
 seq += [dict(cmd=0x2C, data=[], pause=30)] 
 init_sequence = seq
+
 
 def build_init_rom(init_sequence):
     mem, maxpause = [], 0

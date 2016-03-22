@@ -7,9 +7,15 @@ from . import Reset
 
 
 class Global:
-    """ global clock, reset, and control signals """
-
     def __init__(self, clock=None, reset=None, frequency=1):
+        """ global clock, reset, and control signals
+
+        Arguments:
+             clock (Signal): system global clock
+             reset (ResetSignal): the system global reset
+
+        If a clock or reset is not passed one is created.
+        """
         if clock is None:
             self.clock = Clock(0, frequency=frequency) 
         else:

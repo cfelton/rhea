@@ -117,6 +117,7 @@ class Barebone(MemoryMapped):
         to = 0
         yield self.clock.posedge
         self.read.next = False
+        rd = int(self.read_data)
         while not self.done and to < self.timeout:
             rd = int(self.read_data)
             yield self.clock.posedge
