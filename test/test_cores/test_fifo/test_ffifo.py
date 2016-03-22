@@ -9,6 +9,7 @@ import random
 from random import randrange
 import os
 from argparse import Namespace
+
 import pytest
 
 from argparse import Namespace
@@ -41,7 +42,7 @@ def test_ffifo(args=None):
 
     fbus = FIFOBus(width=args.width, size=args.size)
 
-    def bench_ffifo():
+    def _bench_ffifo():
         
         # @todo: use args.fast, args.use_srl_prim
         tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
@@ -61,6 +62,7 @@ def test_ffifo(args=None):
 
                 # write some bytes
                 for ii in range(num_bytes):
+
                     #print('nbyte %x wdata %x' % (num_bytes, ii))
 
                     fbus.write_data.next = ii
@@ -270,7 +272,6 @@ def test_underflow_ffifo(args=None):
             for ii in range(5):
                 yield clock.posedge
             raise StopSimulation
-
         return tbdut, tbclk,tbstim
 
     with pytest.raises(ValueError):
@@ -292,7 +293,7 @@ def test_rw_ffifo(args=None):
     fbus = FIFOBus(width=args.width, size=args.size)
 
     def _bench_rw_ffifo():
-
+        
         # @todo: use args.fast, args.use_srl_prim
         tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
 
@@ -379,7 +380,6 @@ def test_rw_ffifo(args=None):
     # r/w at the same time
     for trial in range(100):   
          run_testbench(_bench_rw_ffifo)
-
 
 if __name__ == '__main__':
     for size in (4, 8, 16):
