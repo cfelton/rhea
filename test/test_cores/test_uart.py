@@ -15,6 +15,12 @@ from rhea.system import FIFOBus
 
 from rhea.utils.test import run_testbench, tb_args
 
+# temp, due to pytest 10x runtime error.
+long_test = pytest.mark.skipif(
+    not pytest.config.getoption("--runslow"),
+    reason="need --runslow option to run"
+)
+
 def testbench_uart_model(args=None):
     # @todo: get numbytes from args
     numbytes = 7
@@ -62,7 +68,7 @@ def testbench_uart_model(args=None):
     run_testbench(_bench_uart_model, args=args)
 
 
-#@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
+@long_test
 def testbench_uart(args=None):
     # @todo: get numbytes from args
     numbytes = 13
