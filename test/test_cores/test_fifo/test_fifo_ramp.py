@@ -18,14 +18,9 @@ from rhea.system import Wishbone
 from rhea.system import FIFOBus
 
 from rhea.utils.test import run_testbench, tb_args
+from rhea.utils.test import skip_long_sim_test
 
-# temp, due to pytest 10x runtime error.
-long_test = pytest.mark.skipif(
-    not pytest.config.getoption("--runslow"),
-    reason="need --runslow option to run"
-)
-
-@long_test
+@skip_long_sim_test
 def test_fifo_ramp():
     tb_fifo_ramp(Namespace(trace=False))
 

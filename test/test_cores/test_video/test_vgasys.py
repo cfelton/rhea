@@ -24,19 +24,13 @@ from rhea.cores.video import VGA
 from rhea.models.video import VGADisplay
 
 from rhea.utils.test import run_testbench
+from rhea.utils.test import skip_long_sim_video_test
 
 # local wrapper to build a VGA system
 from mm_vgasys import mm_vgasys
 from mm_vgasys import convert
 
-# temp, due to pytest 10x runtime error.
-long_video_test = pytest.mark.skipif(
-    not pytest.config.getoption("--vidtest"),
-    reason="need --runslow option to run"
-)
-
-
-@long_video_test
+@skip_long_sim_video_test
 def test_vgasys():
     args = Namespace(resolution=(80, 60), 
                      color_depth=(10, 10, 10),
@@ -116,7 +110,7 @@ def tb_vgasys(args=None):
     # run the verification simulation
     run_testbench(_bench_vgasys)
 
-@long_video_test
+@skip_long_sim_video_test
 def test_vgasys_conversion():
     convert()
 
