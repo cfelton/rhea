@@ -25,7 +25,7 @@ in MyHDL.  The myhdl package can be retrieved from http://www.myhdl.org
 the name
 --------
 Pronounced ray (as in ray-gun), just a random name and not 
-pronoucned the same as the bird or moon.
+pronounced the same as the bird or moon.
  
  
 dependencies
