@@ -12,7 +12,7 @@ from rhea.cores.fifo import fifo_async
 from rhea.cores.fifo import fifo_fast
 
 
-def m_fifo_2clock_cascade(
+def fifo_2clock_cascade(
     wclk,       # in:  write side clock
     datain,     # in:  write data
     src_rdy_i,  # in:  
@@ -34,7 +34,7 @@ def m_fifo_2clock_cascade(
     dataout_d = Signal(intbv(0, min=dataout.min, max=dataout.max))
 
     args = Namespace(width=36, size=128, name='fifo_2clock_cascade')
-    fbus = FIFOBus(args=args)
+    fbus = FIFOBus(size=args.size, width=args.width)
     # need to update the fbus refernces to reference the Signals in
     # the moudule port list (function arguments).
     fbus.write = wr
@@ -71,15 +71,15 @@ def m_fifo_2clock_cascade(
     return rtl_assign1, rtl_assign2, gfifo, rtl_delay
 
 
-def m_fifo_short(clock, reset, clear, 
-                 datain, src_rdy_i, dst_rdy_o,
-                 dataout, src_rdy_o, dst_rdy_i):
+def fifo_short(clock, reset, clear,
+               datain, src_rdy_i, dst_rdy_o,
+               dataout, src_rdy_o, dst_rdy_i):
 
     wr = Signal(bool(0))
     rd = Signal(bool(0))
 
     args = Namespace(width=36, size=16, name='fifo_2clock_cascade')
-    fbus = FIFOBus(args=args)
+    fbus = FIFOBus(size=args.size, width=args.width)
     # need to update the fbus refernces to reference the Signals in
     # the module port list (function arguments).
     fbus.write = wr
@@ -97,7 +97,7 @@ def m_fifo_short(clock, reset, clear,
         dst_rdy_o.next = not fbus.full
         src_rdy_o.next = not fbus.empty
 
-    gfifo = fifo_fast(clock, reset, fbus)
+    gfifo = fifo_fast(reset, clock, fbus)
 
     return rtl_assign1, rtl_assign2, gfifo
     
@@ -117,14 +117,14 @@ def convert(args=None):
 
     reset = ResetSignal(0, active=1, async=True)
 
-    toVerilog(m_fifo_2clock_cascade, 
+    toVerilog(fifo_2clock_cascade,
               wclk, datain, src_rdy_i, dst_rdy_o, space,
               rclk, dataout, src_rdy_o, dst_rdy_i, occupied,
               reset)
 
     clock = Signal(bool(0))
     clear = Signal(bool(0))
-    toVerilog(m_fifo_short,
+    toVerilog(fifo_short,
               clock, reset, clear,
               datain, src_rdy_i, dst_rdy_o,
               dataout, src_rdy_o, dst_rdy_i)
