@@ -45,8 +45,8 @@ def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
     instsynctx = syncro(clock, tx, serial_out)
 
     # FIFOs for tx and rx
-    insttxfifo = fifo_fast(clock, reset, fbustx)
-    instrxfifo = fifo_fast(clock, reset, fbusrx)
+    insttxfifo = fifo_fast(reset, clock, fbustx)
+    instrxfifo = fifo_fast(reset, clock, fbusrx)
 
     # generate a strobe for the desired baud rate
     instbaud = uartbaud(glbl, baudce, baudce16, baudrate=baudrate)
