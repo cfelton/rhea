@@ -8,7 +8,7 @@ from rhea.system import FIFOBus
 from .fifo_srl import fifo_srl
 
 
-def fifo_fast(clock, reset, fbus, use_srl_prim=False):
+def fifo_fast(reset, clock, fbus, use_srl_prim=False):
     """
     Often small simple, synchronous, FIFOs can be implemented with 
     specialized hardware in an FPGA (e.g. vertically chaining LUTs).

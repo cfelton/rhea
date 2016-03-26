@@ -6,7 +6,7 @@ from rhea.system import Barebone
 from . import SPIBus
 
 
-def spi_controller_model(clock, reset, ibus, spibus):
+def spi_controller_model(clock, ibus, spibus):
     """
 
       ibus   : internal bus

@@ -41,7 +41,6 @@ class UsbpHost(Fx2Model):
                 print("wbuf ", wbuf)
                 print('rbuf ', rbuf)
             assert wbuf[i] == rbuf[i], "Write Address Failed wbuf[%d](%02x) != rbuf[%d](%02x)" % (i, wbuf[i], i, rbuf[i])
-            
 
     def ReadAddress(self, addr, data, w=1):
 

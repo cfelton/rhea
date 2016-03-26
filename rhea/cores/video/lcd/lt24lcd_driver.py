@@ -6,16 +6,17 @@ from myhdl import Signal, intbv, enum, always_seq, concat, now
 def lt24lcd_driver(glbl, lcd, cmd, datalen, data, 
                    datasent, datalast, cmd_in_progress, maxlen=76800):
     """
-    :param glbl:
-    :param lcd:
-    :param cmd: 
-    :param datalen: number of data xfer to do
-    :param data: data to be sent
-    :param data_sent: one cycle strobe indicating the data xfered
-    :param cmd_in_progress:
-    :return:
-    
-    Typical confgiruration write
+    Arguments:
+        glbl (Global): global signals
+        lcd:
+        cmd:
+        datalen: the number of data transfers to perform
+        data: data to be sent
+        data_sent: one cycle strobe indicating the data has been
+          transferred
+        cmd_in_progress:
+
+    Typical configuration write
        clock:             /--\__/--\__/--\__/--\__/--\__/--\__/--\__
        cmd:               0x00    | 0x2B 
        cmd_in_progress:   ____________/----------------
@@ -24,7 +25,7 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
        datasent           ________________________/----\_____
        
     The transaction is started by setting the `cmd` signal to nonzero,
-    the command byte is transferred and then the frist data, when then
+    the command byte is transferred and then the first data, when then
     first data is transferred the `datasent` is strobe, this indicates 
     to the source (producer) to update `data` to the next value. 
     The `cmd` must go to zero before the next transfer can occur. 
