@@ -2,16 +2,13 @@
 # Copyright (c) 2006-2015 Christopher L. Felton
 #
 
-from __future__ import absolute_import
-from __future__ import division
+from __future__ import absolute_import, division
 
 from math import ceil
 
 from myhdl import Signal, intbv, enum, always_seq, concat, instances, now
 
 from ..fifo import fifo_fast
-from ...system import FIFOBus
-from ..spi import SPIBus
 from ..misc import assign
 
 
@@ -31,7 +28,7 @@ def adc128s022(glbl, fifobus, spibus, channel):
     assert len(fifobus.read_data) == 16 
     sample = Signal(intbv(0)[12:])
     
-    gfifo = fifo_fast(clock, reset, fifobus)
+    gfifo = fifo_fast(reset, clock, fifobus)
     
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # generate the sclk frequency, the clock needs to 
