@@ -14,6 +14,7 @@ from rhea.system import Global, Clock, Reset
 from rhea.system import FIFOBus
 
 from rhea.utils.test import run_testbench, tb_args
+from rhea.utils.test import skip_long_sim_test
 
 def testbench_uart_model(args=None):
     # @todo: get numbytes from args
@@ -62,7 +63,7 @@ def testbench_uart_model(args=None):
     run_testbench(_bench_uart_model, args=args)
 
 
-#@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
+@skip_long_sim_test
 def testbench_uart(args=None):
     # @todo: get numbytes from args
     numbytes = 13

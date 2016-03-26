@@ -12,12 +12,13 @@ from rhea.system import Clock, Reset, Global
 from rhea.cores.video.lcd import LT24Interface
 from rhea.models.video import LT24LCDDisplay
 from rhea.utils.test import run_testbench, tb_args
+from rhea.utils.test import skip_long_sim_test
 
 from mm_lt24lcdsys import mm_lt24lcdsys
 from mm_lt24lcdsys import convert
 
 
-@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
+@skip_long_sim_test
 def test_lt24lcd():
     args = Namespace()
     tb_lt24lcd(args=args)
@@ -70,7 +71,7 @@ def tb_lt24lcd(args=None):
     run_testbench(bench_lt24lcdsys)
 
 
-@pytest.mark.skipif(True, reason="pytest issue/error 10x runtime")
+@skip_long_sim_test
 def test_conversion():
     convert()
 
