@@ -64,8 +64,8 @@ def test_memmap_command_bridge(args=None):
     def bench_command_bridge():
         tbclk = clock.gen()
         tbdut = command_bridge(glbl, fbtx, fbrx, memmap)
-        tbfii = fifo_fast(clock, reset, fbtx)
-        tbfio = fifo_fast(clock, reset, fbrx)
+        tbfii = fifo_fast(reset, clock, fbtx)
+        tbfio = fifo_fast(reset, clock, fbrx)
         # @todo: add other bus types
         tbmem = memmap_peripheral_bb(clock, reset, memmap)
 
