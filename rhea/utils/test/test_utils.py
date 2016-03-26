@@ -4,6 +4,7 @@ import shutil
 from glob import glob
 import argparse
 
+import pytest
 import myhdl
 from myhdl import traceSignals, Simulation
 
@@ -140,3 +141,9 @@ def tb_mon_():
     """ """
     pass
 
+# temp, due to pytest 10x runtime error.
+
+skip_long_sim_test = pytest.mark.skipif(
+    not pytest.config.getoption("--runslow"),
+    reason="long test, needs --runslow option to run"
+)
