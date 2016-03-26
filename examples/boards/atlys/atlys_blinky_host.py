@@ -40,8 +40,8 @@ def atlys_blinky_host(clock, reset, led, sw, pmod,
     cmd_tx = Signal(bool(0))
     uart_inst = uartlite(glbl, uart_fifo, uart_rx, cmd_tx)
 
-    #map uart_fifo to separate readpath and writepath
-    assign_rw = uart_fifo.assign_read_write_paths(fbusrx,fbustx)
+    # map uart_fifo to separate readpath and writepath
+    assign_rw = uart_fifo.assign_read_write_paths(fbusrx, fbustx)
 
     # create the packet command instance
     cmd_inst = command_bridge(glbl, fbusrx, fbustx, memmap)
@@ -49,7 +49,7 @@ def atlys_blinky_host(clock, reset, led, sw, pmod,
     @always_seq(clock.posedge, reset=reset)
     def beh_led_control():
         memmap.done.next = not (memmap.write or memmap.read)
-        if memmap.write: # and memmap.mem_addr == 0x20:
+        if memmap.write and memmap.mem_addr == 0x20:
             ledreg.next = memmap.write_data
 
     @always_comb

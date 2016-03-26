@@ -1,12 +1,12 @@
-
-from __future__ import absolute_import
-
 #
 # Copyright (c) 2006-2014 Christopher L. Felton
 #
 
+from __future__ import absolute_import
+
 from math import log, ceil
 
+import myhdl
 from myhdl import *
 
 from rhea.system import FIFOBus
@@ -20,13 +20,16 @@ def fifo_async(reset, wclk, rclk, fbus):
     The following is a general purpose, platform independent 
     asynchronous FIFO (dual clock domains).
 
-    Cross-clock boundrary FIFO, based on: 
+    Cross-clock boundary FIFO, based on:
     "Simulation and Synthesis Techniques for Asynchronous FIFO Design"
 
     Typically in the "mn" package the FIFOBus interface is used to 
     describe 
     Timing:
     """
+    # @todo: use the clock_write and clock_read from the FIFOBus
+    # @todo: interface, make this interface compliant with the
+    # @todo: fifos: fifo_async(reset, clock, fifobus)
 
     # verify that the "interface" passed has the required Signals
     # (attributes).
@@ -67,18 +70,18 @@ def fifo_async(reset, wclk, rclk, fbus):
         fbus.full.next = wfull
 
     _we = Signal(bool(0))
+
     @always_comb
     def rtl_wr():
         _we.next = fbus.write and not fbus.full
     
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Memory for the FIFO
     g_fifomem = fifo_mem_generic(wclk, _we, fbus.write_data, waddr,
                                  rclk, fbus.read_data,  raddr,
                                  mem_size=fbus.size)
 
-
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # --Text from the paper--
     # The read pointer is a dual nbit Gray code counter.  The nbit 
     # pointer (rptr) is passed to the write clock domain through the 
@@ -87,7 +90,7 @@ def fifo_async(reset, wclk, rclk, fbus):
     # the next rising rclk edge when the next rptr value equals the 
     # sync wptr value. 
     rbin = Signal(modbv(0)[Asz+1:])
-    #raddr.assign(rbin[Asz:0]
+    # raddr.assign(rbin[Asz:0]
 
     @always_seq(rclk.posedge, reset=rrst)
     def rtl_rptrs():
@@ -103,7 +106,7 @@ def fifo_async(reset, wclk, rclk, fbus):
         # the data is register from the memory, the data is delayed
         fbus.read_valid.next = fbus.read and not rempty
         
-    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # --Text from the paper--
     # The write pointer is a dual nbit gray code conter.  The nbit 
     # pointer (wptr) is passed to the read clock domain through the 
@@ -111,7 +114,7 @@ def fifo_async(reset, wclk, rclk, fbus):
     # FIFO buffer.  The FIFO full asserted when the next modified 
     # value equals the sync'd and modified wrptr2 value (except MSBs).
     wbin = Signal(modbv(0)[Asz+1:])
-    #waddr.assign(wbin[Asz:0])
+    # waddr.assign(wbin[Asz:0])
 
     @always_seq(wclk.posedge, reset=wrst)
     def rtl_wptrs():
@@ -121,7 +124,7 @@ def fifo_async(reset, wclk, rclk, fbus):
         wpn = (wbn >> 1) ^ wbn
         wptr.next = wpn
 
-        # the dillio with the full determination ...
+        # what the dillio with the full determination ...
         wfull.next = (wpn == concat(~wq2_rptr[Asz+1:Asz-1],
                                     wq2_rptr[Asz-1:0]))    
     
@@ -130,8 +133,7 @@ def fifo_async(reset, wclk, rclk, fbus):
         waddr.next = wbin[Asz:0]
         raddr.next = rbin[Asz:0]
 
-
-    return instances()
+    return myhdl.instances()
 
 
 fifo_async.fbus_intf = FIFOBus

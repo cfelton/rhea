@@ -41,6 +41,7 @@ class AXI4StreamLite(Streamers):
         super(AXI4StreamLite, self).__init__(glbl, data_width)
         # currently top-level port interfaces can't contain multiple
         # levels (nested).  This will be enhanced in the future.
+        self.clock = glbl.clock
         self.aw = AXI4StreamChannel(glbl, address_width)  # write address channel
         self.w = AXI4StreamChannel(glbl, data_width)      # write data channel
         self.ar = AXI4StreamChannel(glbl, address_width)  # read address channel
@@ -80,7 +81,6 @@ class AXI4StreamLite(Streamers):
 
     def assign_downstream_port(self, pobj):
         assert isinstance(pobj, AXI4StreamLitePort)
-
 
     def register(self, upstream):
         sti, gens = upstream, []
