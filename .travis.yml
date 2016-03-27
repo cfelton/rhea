@@ -81,14 +81,16 @@ matrix:
 
 # run the test
 script:
-  - rm -f .coverage
+  #- rm -f .coverage
   - cd examples
-  - coverage run --source=rhea -m pytest --durations=10
-  - mv .coverage ../.coverage.ex
+  #- coverage run --source=rhea -m pytest --durations=10
+  - py.test --durations=10
+  #- mv .coverage ../.coverage.ex
   - cd ../test
-  - coverage run --source=rhea -m pytest $RUNLONG --durations=10
-  - mv .coverage ../.coverage.mn
-  - coverage combine
+  #- coverage run --source=rhea -m pytest $RUNLONG --durations=10
+  - py.test $RUNLONG --durations=10
+  #- mv .coverage ../.coverage.mn
+  #- coverage combine
 
 after_success:
   - coveralls
