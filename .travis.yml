@@ -72,12 +72,13 @@ install:
   - pip install Pillow
   - pip install .
 
-matrix:
-  exclude:
-    - python: "pypy"
-  include:
-    - python: "pypy"
-      env: RUNLONG="--runlong"
+# the longtests still take too long with pypy
+#matrix:
+#  exclude:
+#    - python: "pypy"
+#  include:
+#    - python: "pypy"
+#      env: RUNLONG="--runlong"
 
 # run the test
 script:
@@ -88,7 +89,7 @@ script:
   #- mv .coverage ../.coverage.ex
   - cd ../test
   #- coverage run --source=rhea -m pytest $RUNLONG --durations=10
-  - py.test $RUNLONG --durations=10
+  - py.test --durations=10
   #- mv .coverage ../.coverage.mn
   #- coverage combine
 
