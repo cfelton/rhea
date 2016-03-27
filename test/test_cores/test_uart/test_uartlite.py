@@ -16,7 +16,8 @@ from rhea.system import FIFOBus
 from rhea.utils.test import run_testbench, tb_args
 from rhea.utils.test import skip_long_sim_test
 
-def testbench_uart_model(args=None):
+
+def test_uart_model(args=None):
     # @todo: get numbytes from args
     numbytes = 7
     clock = Clock(0, frequency=50e6)
@@ -25,7 +26,7 @@ def testbench_uart_model(args=None):
     si, so = Signal(bool(1)), Signal(bool(1))
     uartmdl = UARTModel()
 
-    def _bench_uart_model():
+    def bench_uart_model():
         tbdut = uartmdl.process(glbl, si, so)
         tbclk = clock.gen()
 
@@ -60,11 +61,11 @@ def testbench_uart_model(args=None):
 
         return tbdut, tbclk, tblpbk, tbstim
 
-    run_testbench(_bench_uart_model, args=args)
+    run_testbench(bench_uart_model, args=args)
 
 
 @skip_long_sim_test
-def testbench_uart(args=None):
+def test_uart(args=None):
     # @todo: get numbytes from args
     numbytes = 13
     clock = Clock(0, frequency=12e6)
@@ -72,18 +73,18 @@ def testbench_uart(args=None):
     glbl = Global(clock, reset)
     mdlsi, mdlso = Signal(bool(1)), Signal(bool(1))
     uartmdl = UARTModel()
-    fifortx = FIFOBus()
+    fifobus = FIFOBus()
 
-    def _bench_uart():
+    def bench_uart():
         tbmdl = uartmdl.process(glbl, mdlsi, mdlso)
-        tbdut = uartlite(glbl, fifortx, mdlso, mdlsi)
+        tbdut = uartlite(glbl, fifobus, mdlso, mdlsi)
         tbclk = clock.gen()
 
         @always_comb
         def tblpbk():
-            fifortx.write_data.next = fifortx.read_data
-            fifortx.write.next = (not fifortx.full) & fifortx.read
-           
+            fifobus.read.next = not fifobus.empty
+            fifobus.write.next = fifobus.read_valid
+            fifobus.write_data.next = fifobus.read_data
 
         @instance
         def tbstim():
@@ -112,12 +113,12 @@ def testbench_uart(args=None):
 
         return tbdut, tbmdl, tbclk, tblpbk, tbstim
  
-    run_testbench(_bench_uart, args=args)
+    run_testbench(bench_uart, args=args)
 
 
 if __name__ == '__main__':
     args = tb_args(tests=['model', 'uart'])
     if args.test == 'model' or args.test == 'all':
-        testbench_uart_model(args)
+        test_uart_model(args)
     if args.test == 'uart' or args.test == 'all':
-        testbench_uart(args)
+        test_uart(args)

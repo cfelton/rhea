@@ -1,5 +1,6 @@
 
 import os
+import sys
 import shutil
 from glob import glob
 import argparse
@@ -7,6 +8,14 @@ import argparse
 import pytest
 import myhdl
 from myhdl import traceSignals, Simulation
+
+
+skip_long_sim_test = pytest.mark.skipif(reason="long running tests")
+if hasattr(sys, '_called_from_test'):
+    skip_long_sim_test = pytest.mark.skipif(
+        not pytest.config.getoption("--runlong"),
+        reason="long running tests, needs --runlong option to run"
+    )
 
 
 def run_testbench(bench, timescale='1ns', args=None):
@@ -140,10 +149,3 @@ def tb_clean_vcd(name):
 def tb_mon_():
     """ """
     pass
-
-# temp, due to pytest 10x runtime error.
-
-skip_long_sim_test = pytest.mark.skipif(
-    not pytest.config.getoption("--runslow"),
-    reason="long test, needs --runslow option to run"
-)

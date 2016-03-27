@@ -8,7 +8,7 @@ from rhea.system import MemoryMapped, Barebone, FIFOBus
 from . import controller_basic
 
 
-def command_bridge(glbl, fifobusi, fifobuso, mmbus):
+def command_bridge(glbl, fifobus, mmbus):
     """ Convert a command packet to a memory-mapped bus transaction
     
     This module will decode the incomming packet and start a bus 
@@ -37,16 +37,14 @@ def command_bridge(glbl, fifobusi, fifobuso, mmbus):
 
     Ports:
       glbl: global signals and control
-      fifobusi: input fifobus, host packets to device (interface)
-      fifobuso: output fifobus, device responses to host (interface)
+      fifobus: FIFOBus interface, read and write path
       mmbus: memory-mapped bus (interface)
 
     this module is convertible
     """
-    assert isinstance(fifobusi, FIFOBus)
-    assert isinstance(fifobuso, FIFOBus)
+    assert isinstance(fifobus, FIFOBus)
     assert isinstance(mmbus, MemoryMapped)
-    fbrx, fbtx = fifobusi, fifobuso
+
     clock, reset = glbl.clock, glbl.reset 
     bb = Barebone(glbl, data_width=mmbus.data_width,
                   address_width=mmbus.address_width)
@@ -93,10 +91,10 @@ def command_bridge(glbl, fifobusi, fifobuso, mmbus):
 
     @always_comb
     def beh_fifo_read():
-        if ready and not fbrx.empty:
-            fbrx.read.next = True
+        if ready and not fifobus.empty:
+            fifobus.read.next = True
         else:
-            fbrx.read.next = False
+            fifobus.read.next = False
 
     @always_seq(clock.posedge, reset=reset)
     def beh_state_machine():
@@ -107,18 +105,18 @@ def command_bridge(glbl, fifobusi, fifobuso, mmbus):
             bytecnt[:] = 0
 
         elif state == states.wait_for_packet:
-            if fbrx.read_valid:
+            if fifobus.read_valid:
                 # check the known bytes, if the values is unexpected
                 # goto the error state and flush all received bytes.
                 for ii in range(nknown):
                     idx = pidx[ii]
                     val = pval[ii]
                     if bytecnt == idx:
-                        if fbrx.read_data != val:
+                        if fifobus.read_data != val:
                             error.next = True
                             state.next = states.error
 
-                packet[bytecnt].next = fbrx.read_data
+                packet[bytecnt].next = fifobus.read_data
                 bytecnt[:] = bytecnt + 1
 
             # @todo: replace 20 with len(CommandPacket().header)
@@ -172,22 +170,22 @@ def command_bridge(glbl, fifobusi, fifobuso, mmbus):
                 state.next = states.response
 
         elif state == states.response:
-            fbtx.write.next = False
+            fifobus.write.next = False
             if bytecnt < packet_length:
-                if not fbtx.full:
-                    fbtx.write.next = True
-                    fbtx.write_data.next = packet[bytecnt]
+                if not fifobus.full:
+                    fifobus.write.next = True
+                    fifobus.write_data.next = packet[bytecnt]
                     bytecnt[:] = bytecnt + 1
                 state.next = states.response_full
             else:
                 state.next = states.end
                 
         elif state == states.response_full:
-            fbtx.write.next = False
+            fifobus.write.next = False
             state.next = states.response
 
         elif state == states.error:
-            if not fbrx.read_valid:
+            if not fifobus.read_valid:
                 state.next = states.end
                 ready.next = False
 

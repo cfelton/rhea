@@ -72,15 +72,30 @@ install:
   - pip install Pillow
   - pip install .
 
+matrix:
+  include:
+    - python: "3.5"
+      env: RUNLONG=""
+    - python: "3.4"
+      env: RUNLONG=""
+    - python: "2.7"
+      env: RUNLONG=""
+    - python: "pypy"
+      env: RUNLONG="--runlong"
+
 # run the test
 script:
+  - rm .coverage
   - cd examples
-  - py.test -s
-# There is some issue that causes the tests executed with py.test
-# to take 10x longer, run the tests individually until resolved.
+  - coverage run --source=rhea -m pytest $RUNLONG --durations=10
+  - mv .coverage ../.coverage.ex
   - cd ../test
-#  - make test
-  - py.test -s --duration=10
+  - coverage run --source=rhea -m pytest $RUNLONG --durations=10
+  - mv .coverage ../.coverage.mn
+  - coverage combine
+
+after_success:
+  - coveralls
 
 notifications:
   email: false
