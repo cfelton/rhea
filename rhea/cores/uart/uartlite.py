@@ -1,5 +1,6 @@
 
-from myhdl import Signal, instances, always_seq, always_comb
+import myhdl
+from myhdl import Signal, always_comb
 from ..misc import syncro
 from .uartbase import uartbaud, uarttx, uartrx
 from ..fifo import fifo_fast
@@ -25,65 +26,66 @@ def uartlite(glbl, fifobus, serial_in, serial_out, baudrate=115200):
 
     Returns:
         myhdl generators
-        instsyncrx, instsynctx : syncs of external r/w line to the internal r/t
-        insttxfifo, instrxfifo : The actual TX and RX fifos
-        instbaud : baud strobe instantiation
-        insttx, instrx : uart tx and rx generators
-        sync_read,sync_write : convert one ext. Fbus to dual, for r/w
+          : syncs of external r/w line to the internal r/t
+          : The actual TX and RX FIFOs
+          : baud strobe instantiation
+          : uart tx and rx generators
+          : map internal FIFOBus to external user FIFOBus
 
     This module is myhdl convertible
     """
     clock, reset = glbl.clock, glbl.reset
     baudce, baudce16 = [Signal(bool(0)) for _ in range(2)]
     tx, rx = Signal(bool(1)), Signal(bool(1))
-    fbusrx = FIFOBus(fifobus.size, fifobus.width)
+
+    # the FIFO interfaces for each FIFO path
     fbustx = FIFOBus(fifobus.size, fifobus.width)
+    fbusrx = FIFOBus(fifobus.size, fifobus.width)
     
     # create synchronizers for the input signals, the output
     # are not needed, guarantee IO registers
-    instsyncrx = syncro(clock, serial_in, rx)
-    instsynctx = syncro(clock, tx, serial_out)
+    syncrx_inst = syncro(clock, serial_in, rx)
+    synctx_inst = syncro(clock, tx, serial_out)
 
     # FIFOs for tx and rx
-    insttxfifo = fifo_fast(reset, clock, fbustx)
-    instrxfifo = fifo_fast(reset, clock, fbusrx)
+    fifo_tx_inst = fifo_fast(reset, clock, fbustx)
+    fifo_rx_inst = fifo_fast(reset, clock, fbusrx)
 
     # generate a strobe for the desired baud rate
-    instbaud = uartbaud(glbl, baudce, baudce16, baudrate=baudrate)
+    baud_inst = uartbaud(glbl, baudce, baudce16, baudrate=baudrate)
 
-    # instantiate
-    insttx = uarttx(glbl, fbustx, tx, baudce)
-    instrx = uartrx(glbl, fbusrx, rx, baudce16)
+    # instantiate the UART paths
+    tx_inst = uarttx(glbl, fbustx, tx, baudce)
+    rx_inst = uartrx(glbl, fbusrx, rx, baudce16)
 
-    # separate the general fifobus into two
-    # for transmitting and receiving
+    # separate the general fifobus into two for transmitting and receiving
 
     @always_comb
     def assign_read():
-        """Map external UART FIFOBus interface attribs with internal RX FIFO interface.
-      
+        """Map external UART FIFOBus interface to internal
+        Map the external UART FIFOBus interface attribute signals to
+        internal RX FIFO interface.
         """
-        # fifobus.read_data is the channel that the UART 
-        # reads data on and fifobus.write_data is the one 
+        # fifobus.read_data is the channel that the UART
+        # reads data on and fifobus.write_data is the one
         # it writes to.
-        # read into the fifobus from the RX fifo queue 
-        # whenever available by ckecking the queue
+        # read into the fifobus from the RX fifo queue
+        # whenever available by checking the queue
+        fbusrx.read.next = fifobus.read
         fifobus.empty.next = fbusrx.empty
-        fifobus.read_data.next = fbusrx.read_data       
-        fifobus.read.next = not fbusrx.empty  
-        fbusrx.read.next = not fbusrx.empty  
+        fifobus.read_data.next = fbusrx.read_data
         fifobus.read_valid.next = fbusrx.read_valid
 
     @always_comb
     def assign_write():
-        """Map external UART FIFOBus interface attribs with internal TX FIFO interface.
-
+        """Map external UART FIFOBus interface to internal
+        Map external UART FIFOBus interface attribute signals to
+        internal TX FIFO interface.
         """
         # queue to TX fifo whenever given ext. strobe
         # which will auto. be transferred by uarttx()
-        fifobus.full.next = fbustx.full
+        fbustx.write.next = fifobus.write & (not fbustx.full)
         fbustx.write_data.next = fifobus.write_data
-        fbustx.write.next = fifobus.write & (not fbustx.full )
-        
-         
-    return instances()
+        fifobus.full.next = fbustx.full
+
+    return myhdl.instances()

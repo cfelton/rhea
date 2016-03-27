@@ -97,8 +97,8 @@ class FIFOBus(Streamers):
         of this interface and same for write
 
         Arguments:
-            readpath: user readpath
-            writepath: user writepath
+            readpath (FIFOBus): user readpath
+            writepath (FIFOBus): user writepath
 
                         +- write -> FIFOBus FIFO -> read
            FIFOBus User |
@@ -127,6 +127,7 @@ class FIFOBus(Streamers):
             # read, from self perspective, self will be reading
             readpath.read.next = self.read
             self.read_data.next = readpath.read_data
+            self.read_valid.next = readpath.read_valid
             self.empty.next = readpath.empty
 
         return beh_assign
