@@ -73,21 +73,17 @@ install:
   - pip install .
 
 matrix:
+  exclude:
+    - python: "pypy"
   include:
-    - python: "3.5"
-      env: RUNLONG=""
-    - python: "3.4"
-      env: RUNLONG=""
-    - python: "2.7"
-      env: RUNLONG=""
     - python: "pypy"
       env: RUNLONG="--runlong"
 
 # run the test
 script:
-  - rm .coverage
+  - rm -f .coverage
   - cd examples
-  - coverage run --source=rhea -m pytest $RUNLONG --durations=10
+  - coverage run --source=rhea -m pytest --durations=10
   - mv .coverage ../.coverage.ex
   - cd ../test
   - coverage run --source=rhea -m pytest $RUNLONG --durations=10

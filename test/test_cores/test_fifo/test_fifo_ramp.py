@@ -20,6 +20,7 @@ from rhea.system import FIFOBus
 from rhea.utils.test import run_testbench, tb_args
 from rhea.utils.test import skip_long_sim_test
 
+
 @skip_long_sim_test
 def test_fifo_ramp():
     tb_fifo_ramp(Namespace(trace=False))
