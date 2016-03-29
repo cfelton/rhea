@@ -15,10 +15,14 @@ with a clock divide register.
 """
 from __future__ import absolute_import, division
 
-from myhdl import *
+import myhdl
+from myhdl import (Signal, intbv, modbv, enum, concat,
+                   always, always_seq, always_comb,
+                   instance, now)
 
 from ..fifo import fifo_fast
-from rhea.system import FIFOBus
+from rhea.system import Signals, Clock, Reset, Global, FIFOBus
+from . import SPIBus
 
 from .cso import ControlStatus
 
@@ -68,11 +72,8 @@ def spi_controller(
     # separate tx and rx shift-registers (could be one in the same)
     treg = Signal(intbv(0)[8:])  # tx shift register
     rreg = Signal(intbv(0)[8:])  # rx shift register
-    
-    x_sck = Signal(False)
-    x_ss = Signal(False)
-    x_mosi = Signal(False)
-    x_miso = Signal(False)
+
+    x_sck, x_ss, x_mosi, x_miso = Signals(bool(0), 4)
 
     # internal FIFO bus interfaces
     #   external FIFO side (FIFO to external SPI bus)
@@ -95,8 +96,9 @@ def spi_controller(
 
     # FIFO for the wishbone data transfer
     if include_fifo:
-        fifo_tx_inst = fifo_fast(clock, reset, itx)
-        fifo_rx_inst = fifo_fast(clock, reset, irx)
+        fifo_fast.debug = spi_controller.debug
+        fifo_tx_inst = fifo_fast(reset, clock, itx)
+        fifo_rx_inst = fifo_fast(reset, clock, irx)
 
     @always_comb
     def rtl_assign():
@@ -236,13 +238,14 @@ def spi_controller(
             itx.write_data.next = cso.tx_byte
 
             cso.rx_empty.next = irx.empty
-            cso.rx_full.next = irx.empty
+            cso.rx_full.next = irx.full
             cso.rx_byte.next = irx.read_data
+            cso.rx_byte_valid.next = irx.read_valid
 
             # @todo: if cso.tx_byte write signal (written by bus) drive the
             # @todo: FIFO write signals, same if the cso.rx_byte is accessed
             itx.write.next = cso.tx_write
-            irx.read_data.next = cso.rx_read
+            irx.read.next = cso.rx_read
 
         else:
             # data comes from external FIFO bus interface
@@ -260,39 +263,43 @@ def spi_controller(
 
     @always_comb
     def rtl_x_mosi():
-        # @todo lsbf control signal
+        # @todo lsb control signal
         x_mosi.next = treg[7]
 
-    @always(clock.posedge)
-    def rtl_spi_sigs():
-        spibus.sck.next = x_sck
-
+    @always_comb
+    def rtl_gate_mosi():
         if cso.loopback:
             spibus.mosi.next = False
-            x_miso.next = x_mosi
         else:
             spibus.mosi.next = x_mosi
-            x_miso.next = spibus.mosi
 
+    @always_comb   #(clock.posedge)
+    def rtl_spi_sigs():
+        spibus.sck.next = x_sck
+        if cso.loopback:
+            x_miso.next = x_mosi
+        else:
+            x_miso.next = spibus.miso
+
+    @always_comb
+    def rtl_slave_select():
         if cso.manual_slave_select:
             spibus.ss.next = ~cso.slave_select
+        elif x_ss:
+            spibus.ss.next = 0xFF
         else:
-            if x_ss:
-                spibus.ss.next = 0xFF
-            else:
-                spibus.ss.next = ~cso.slave_select
+            spibus.ss.next = ~cso.slave_select
 
-    # myhdl generators in the __debug__ conditionals is not 
-    # converted.
+    # myhdl generators in the __debug__ conditionals are not converted.
     if spi_controller.debug:
         @instance
         def mon_state():
-            print("  :{:8d}: initial state {}".format(
+            print("  :{:<8d}: initial state {}".format(
                 now(), str(state)))
                 
             while True:
                 yield state
-                print("  :{:8d}: state trasition --> {}".format(
+                print("  :{:<8d}: state transition --> {}".format(
                     now(), str(state)))
                 
         fbidle = intbv('0000')[4:]
@@ -303,7 +310,7 @@ def spi_controller(
                 yield clock.posedge
                 ccfb = concat(itx.write, itx.read, irx.write, irx.read)
                 if ccfb != fbidle:
-                    fstr = "  :{:8d}: tx: w{} r{}, f{} e{}, rx: w{} r{} f{} e{}"
+                    fstr = "  :{:<8d}: tx: w{} r{}, f{} e{}, rx: w{} r{} f{} e{}"
                     print(fstr.format(now(),
                         int(itx.write), int(itx.read), int(itx.full), int(itx.empty),
                         int(irx.write), int(irx.read), int(irx.full), int(irx.empty),)
@@ -312,23 +319,28 @@ def spi_controller(
         @always(clock.posedge)
         def mon_tx_fifo_write():
             if itx.write:
-                print("   WRITE tx fifo {:02X}".format(int(itx.wdata)))
+                print("   WRITE tx fifo {:02X}".format(int(itx.write_data)))
             if itx.read:
-                print("   READ tx fifo {:02X}".format(int(itx.rdata)))
+                print("   READ tx fifo {:02X}".format(int(itx.read_data)))
                 
         @always(clock.posedge)
         def mon_rx_fifo_write():
             if irx.write:
-                print("   WRITE rx fifo {:02X}".format(int(irx.wdata)))
+                print("   WRITE rx fifo {:02X}".format(int(irx.write_data)))
                 
             if irx.read:
-                print("   READ rx fifo {:02X}".format(int(irx.rdata)))
+                print("   READ rx fifo {:02X}".format(int(irx.read_data)))
 
     # return the myhdl generators
-    gens = instances()
+    gens = myhdl.instances()
     return gens
 
 spi_controller.debug = False
 spi_controller.cso = ControlStatus
-# @todo: complete the portmap
-spi_controller.portmap = dict()
+
+spi_controller.portmap = dict(
+    glbl=Global(),
+    spibus=SPIBus(),
+    fifobus=FIFOBus(),
+    cso=spi_controller.cso()
+)

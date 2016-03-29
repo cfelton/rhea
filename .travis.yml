@@ -81,6 +81,7 @@ install:
 #      env: RUNLONG="--runlong"
 
 # run the test
+# coverage with pypy hangs
 script:
   #- rm -f .coverage
   - cd examples

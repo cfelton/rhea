@@ -37,7 +37,7 @@ class ControlStatus(ControlStatusBase):
         then the tools know these are read-only signals.
         """
         self.enable = Bit(1)
-        self.freeze = Bit()
+        self.freeze = Bit(0)
         self.bypass_fifo = Bit(config=True)
         self.loopback = Bit(config=True)
         self.clock_polarity = Bit(config=True)
@@ -47,17 +47,18 @@ class ControlStatus(ControlStatusBase):
         self.slave_select = Byte(config=True)
         self.slave_select_fault = Bit(driven=True)
 
-        self.tx_empty = Bit(driven=True)
-        self.tx_full = Bit(driven=True)
+        self.tx_empty = Bit()
+        self.tx_full = Bit()
         self.tx_byte = Byte()
-        self.tx_write = Bit()
-        self.tx_fifo_count = Byte(driven=True)
+        self.tx_write = Bit()    # WriteStrobe(self.tx_byte)
+        self.tx_fifo_count = Byte()
 
-        self.rx_empty = Bit(driven=True)
-        self.rx_full = Bit(driven=True)
-        self.rx_byte = Byte(driven=True)
-        self.rx_read = Bit()
-        self.rx_fifo_count = Byte(driven=True)
+        self.rx_empty = Bit()
+        self.rx_full = Bit()
+        self.rx_byte = Byte()
+        self.rx_read = Bit()     # ReadStrobe(self.rx_byte)
+        self.rx_byte_valid = Bit()
+        self.rx_fifo_count = Byte()
 
         super(ControlStatus, self).__init__()
 
