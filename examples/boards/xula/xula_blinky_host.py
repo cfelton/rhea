@@ -27,8 +27,6 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
     tick_inst = glbl_timer_ticks(glbl, include_seconds=True)
 
     # create the interfaces to the UART
-    fbustx = FIFOBus(width=8, size=4)
-    fbusrx = FIFOBus(width=8, size=4)
     uart_fifo = FIFOBus(width=8, size=4)
 
     # create the memmap (CSR) interface
@@ -39,11 +37,8 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
                          serial_in=bcm14_txd,
                          serial_out=bcm15_rxd)
 
-    #map uart_fifo to separate readpath and writepath
-    assign_rw = uart_fifo.assign_read_write_paths(fbusrx,fbustx)
-
     # create the packet command instance
-    cmd_inst = command_bridge(glbl, fbusrx, fbustx, memmap)
+    cmd_inst = command_bridge(glbl, uart_fifo, memmap)
 
     @always_seq(clock.posedge, reset=reset)
     def beh_led_control():
@@ -67,7 +62,7 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
             tone.next = (~tone) & 0x1
         led.next = ledreg | tone[5:] 
             
-    return (tick_inst, uart_inst, cmd_inst, assign_rw,
+    return (tick_inst, uart_inst, cmd_inst,
             beh_led_control, beh_led_read, beh_assign)
 
 

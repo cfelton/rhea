@@ -14,7 +14,7 @@ led_port_pin_map = {
 }
 
                    
-def xula_blink(led, button, clock, reset=None):
+def xula_blinky(led, button, clock, reset=None):
     """ a simple LED blinks example.
     This is intended to be used with the Xula, Stickit motherboard
     and an LED / button pmod board.
@@ -47,7 +47,7 @@ def build(args):
     # add the ports here (all the IO are a generic "chan")
     brd.add_port(**led_port_pin_map[args.brd])
     brd.add_port(name='button', pins=(33,))
-    flow = brd.get_flow(xula_blink)
+    flow = brd.get_flow(xula_blinky)
     flow.run()
     info = flow.get_utilization()
     pprint(info)
