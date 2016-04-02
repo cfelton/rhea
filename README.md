@@ -32,7 +32,7 @@ dependencies
 ------------
    - [myhdl](http://www.myhdl.org) 1.0 or later
    - [pytest](http://www.pytest.org) for the test suite
-   - [Pillow](https://pillow.readthedocs.org/en/3.0.x/) some video tests utilize the imaging library
+   - [Pillow](https://pillow.readthedocs.org/en/3.0.x/) >= 2.9, some video tests utilize the imaging library
    - FPGA vendor tools, only for automated build tools.
    
    
