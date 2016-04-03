@@ -30,7 +30,7 @@ pronounced the same as the bird or moon.
  
 dependencies
 ------------
-   - [myhdl](http://www.myhdl.org) 1.0 or later
+   - [myhdl](http://www.myhdl.org) currently 0.9 (watch the 1.0 rhea branch)
    - [pytest](http://www.pytest.org) for the test suite
    - [Pillow](https://pillow.readthedocs.org/en/3.0.x/) >= 2.9, some video tests utilize the imaging library
    - FPGA vendor tools, only for automated build tools.
@@ -56,7 +56,10 @@ wish to try out this package get
 [the development myhdl](https://github.com/jandecaluwe/myhdl)  (you will 
 need to clone it and install the source).  The first 
 *rhea* release will not occur until myhdl 1.0 is released (probably much
-later).
+later).  03-APR-2016 Update, there have been some new features to the
+myhdl 1.0 development (myhdl master branch) the master branch of rhea 
+has not caught up with this development (yet), version 0.9.1 will need
+to be used.
 
 This code/package is licensed under the MIT license.  This allows 
 anyone to use the package in their projects with no limitations.  
