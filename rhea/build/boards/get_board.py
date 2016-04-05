@@ -9,7 +9,7 @@ from __future__ import print_function
 from .xilinx import (Xula, Xula2, Xula2StickItMB, 
                      Pone, Anvyl, Mojo, Nexys, Atlys,
                      Zybo, Parallella, SX1, UFO400, XUPV2P)
-from .altera import (DE0Nano, DE0NanoSOC, DE0CV, DE1_SOC)
+from .altera import (DE0Nano, DE0NanoSOC, DE0CV, DE1SoC)
 from .lattice import (Icestick, CATBoard)
 
 
@@ -19,7 +19,7 @@ xbrd = {'xula': Xula, 'xula2': Xula2, 'xula2_stickit_mb': Xula2StickItMB,
         'parallella': Parallella, 'sx1': SX1, 'ufo400': UFO400,
         'xupv2p': XUPV2P,}
 
-abrd = {'de0nano': DE0Nano, 'de0nano_soc': DE0NanoSOC, 'de0cv': DE0CV, 'de1_SoC': DE1_SOC,}
+abrd = {'de0nano': DE0Nano, 'de0nano_soc': DE0NanoSOC, 'de0cv': DE0CV, 'de1_SoC': DE1SoC,}
 
 lbrd = {'icestick': Icestick, 'catboard': CATBoard}
 
