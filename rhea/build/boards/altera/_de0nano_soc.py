@@ -38,7 +38,7 @@ class DE0NanoSOC(FPGA):
         # bi-directional GPIO, 
         # @todo: finish the GPIO pins  (Completed)
 
-        'gpio_0': dict(pins=(	'V12', # GPIO_0[0]
+        'gpio': dict(pins=(	'V12', # GPIO_0[0]
 				'AF7', # GPIO_0[1] 
 				'W12', # GPIO_0[2]
 				'AF8', # GPIO_0[3]
@@ -74,9 +74,8 @@ class DE0NanoSOC(FPGA):
 				'AE11', # GPIO_0[33]
 				'AF11', # GPIO_0[34]
 				'AE12', # GPIO_0[35]
-				)),
-    
-        'gpio_1': dict(pins=(	'Y15', # GPIO_1[0]
+
+    			'Y15', # GPIO_1[0]
 				'AG28', # GPIO_1[1] 
 				'AA15', # GPIO_1[2]
 				'AH27', # GPIO_1[3]
@@ -115,7 +114,7 @@ class DE0NanoSOC(FPGA):
 				)),
 
     
-        'arduino_IO': dict(pins=(	'AG13', # Arduino_IO0  RXD
+        'arduino_io': dict(pins=(	'AG13', # Arduino_IO0  RXD
 					'AF13', # Arduino_IO1  TXD
 					'AG10', # Arduino_IO2
 					'AG9', # Arduino_IO3
@@ -134,7 +133,7 @@ class DE0NanoSOC(FPGA):
 					'AH7', # Arduino_Reset_n 
 				)),
 	
-        'ADC': dict(pins=('L10', # ADC_CONVST    Conversion Start
+        'adc': dict(pins=('L10', # ADC_CONVST    Conversion Start
 			  'L9',  #ADC_SCK        SErial DAta Clock
 			  'H6',  #ADC_SDI        Serial Data Input (FPGA to ADC)
 			  'H5'   #ADC_SDO	 Serial Data Output (ADC to FPGA)
