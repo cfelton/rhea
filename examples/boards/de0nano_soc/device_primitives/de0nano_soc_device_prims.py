@@ -112,7 +112,7 @@ def program():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--compile", action='store_true', default=False)
+    parser.add_argument("--build", action='store_true', default=False)
     parser.add_argument("--program", action='store_true', default=False)
     parser.add_argument("--trace", action='store_true', default=False)
     args = parser.parse_args()
@@ -120,7 +120,7 @@ def main():
     # run a simple tests to check all is ok
     test_devprim(args=args)
 
-    if args.compile:
+    if args.build:
         build_bitfile()
 
     if args.program:

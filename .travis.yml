@@ -72,15 +72,30 @@ install:
   - pip install Pillow
   - pip install .
 
+# the longtests still take too long with pypy
+#matrix:
+#  exclude:
+#    - python: "pypy"
+#  include:
+#    - python: "pypy"
+#      env: RUNLONG="--runlong"
+
 # run the test
+# coverage with pypy hangs
 script:
+  #- rm -f .coverage
   - cd examples
-  - py.test -s
-# There is some issue that causes the tests executed with py.test
-# to take 10x longer, run the tests individually until resolved.
+  #- coverage run --source=rhea -m pytest --durations=10
+  - py.test --durations=10
+  #- mv .coverage ../.coverage.ex
   - cd ../test
-#  - make test
-  - py.test -s --duration=10
+  #- coverage run --source=rhea -m pytest $RUNLONG --durations=10
+  - py.test --durations=10
+  #- mv .coverage ../.coverage.mn
+  #- coverage combine
+
+after_success:
+  - coveralls
 
 notifications:
   email: false

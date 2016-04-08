@@ -45,7 +45,7 @@ def test_ffifo(args=None):
     def _bench_ffifo():
         
         # @todo: use args.fast, args.use_srl_prim
-        tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
+        tbdut = cores.fifo.fifo_fast(reset, clock, fbus, use_srl_prim=False)
         
         @instance
         def tbstim():
@@ -125,7 +125,7 @@ def test_overflow_ffifo(args=None):
     
     def _bench_fifo_overflow():
         # @todo: use args.fast, args.use_srl_prim
-        tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
+        tbdut = cores.fifo.fifo_fast(reset, clock, fbus, use_srl_prim=False)
 
         @always(delay(10))
         def tbclk():
@@ -204,7 +204,7 @@ def test_underflow_ffifo(args=None):
 
     def _bench_fifo_underflow():
         # @todo: use args.fast, args.use_srl_prim
-        tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
+        tbdut = cores.fifo.fifo_fast(reset, clock, fbus, use_srl_prim=False)
     
         @always(delay(10))
         def tbclk():
@@ -295,7 +295,7 @@ def test_rw_ffifo(args=None):
     def _bench_rw_ffifo():
         
         # @todo: use args.fast, args.use_srl_prim
-        tbdut = cores.fifo.fifo_fast(clock, reset, fbus, use_srl_prim=False)
+        tbdut = cores.fifo.fifo_fast(reset, clock, fbus, use_srl_prim=False)
 
         @instance
         def tbstim():

@@ -6,20 +6,23 @@ import traceback
 import pytest
 import argparse
 
-from myhdl import *
+import myhdl
+from myhdl import (Signal, intbv, instance, always_comb,
+                   delay, StopSimulation)
 
 from rhea.cores.spi import spi_controller
 from rhea.cores.spi import SPIBus
 
 from rhea.models.spi import SPIEEPROM
 
-from rhea.system import Global, Clock, Reset
+from rhea.system import Global, Clock, Reset, Signals
 from rhea.system import Wishbone
 from rhea.system import FIFOBus
 
 from rhea.utils.test import run_testbench, tb_convert, tb_args, tb_default_args
 
 
+# global signals used by many
 clock = Clock(0, frequency=100e6)
 reset = Reset(0, active=1, async=True)
 glbl = Global(clock, reset)
@@ -31,43 +34,53 @@ portmap = dict(
 )
 
 
-def m_test_top(clock, reset, sck, mosi, miso, ss):
-    # @todo: create a top-level for conversion ...
+def spi_controller_top(clock, reset, sck, mosi, miso, ss):
+    """SPI top-level for conversion testing"""
     glbl = Global(clock, reset)
     spibus = SPIBus(sck, mosi, miso, ss)
     fifobus = FIFOBus()
+
     cso = spi_controller.cso()
     cso.isstatic = True
     cfg_inst = cso.get_generators()
+
+    spi_controller.debug = False
     spi_inst = spi_controller(glbl, spibus, fifobus, cso=cso)
-    return spi_inst
+
+    @always_comb
+    def fifo_loopback():
+        fifobus.write_data.next = fifobus.read_data
+        fifobus.write.next = fifobus.read_valid
+        fifobus.read.next = not fifobus.empty
+
+    return myhdl.instances()
 
 
 def convert():
+    """convert the faux-top-level"""
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
-    sck = Signal(bool(0))
-    mosi = Signal(bool(0))
-    miso = Signal(bool(0))
-    ss = Signal(bool(0))
-    tb_convert(m_test_top, clock, reset, sck, mosi, miso, ss)
+    sck, mosi, miso, ss = Signals(bool(0), 4)
+    tb_convert(spi_controller_top, clock, reset, sck, mosi, miso, ss)
 
 
-@pytest.mark.xfail()
-def test_spi_cso_controlled(args=None):
+def test_spi_controller_cso(args=None):
     args = tb_default_args(args)
 
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
     spibus = SPIBus()
-    cso = spi_controller.cso()
+    # a FIFOBus to push-pull data from the SPI controller
     fifobus = FIFOBus(size=16)
+    # control-status object for the SPI controller
+    cso = spi_controller.cso()
 
     spiee = SPIEEPROM()
     asserr = Signal(bool(0))
 
     def bench_spi_cso():
+        spi_controller.debug = True    # enable debug monitors
         tbdut = spi_controller(glbl, spibus, fifobus, cso=cso)
         tbeep = spiee.gen(clock, reset, spibus)
         tbclk = clock.gen(hticks=5)
@@ -85,7 +98,8 @@ def test_spi_cso_controlled(args=None):
                 cso.loopback.next = True
 
                 # write to the transmit FIFO
-                for data in (0x02, 0x00, 0x00, 0x00, 0x55):
+                values = (0x02, 0x00, 0x00, 0x00, 0x55)
+                for data in values:
                     cso.tx_byte.next = data
                     cso.tx_write.next = True
                     yield clock.posedge
@@ -97,24 +111,46 @@ def test_spi_cso_controlled(args=None):
                 while cso.rx_fifo_count < 5:
                     yield delay(100)
 
-                for data in (0x02, 0x00, 0x00, 0x00, 0x55):
-                    cso.rx_read.next = True
-                    assert data == cso.rx_byte, "data mismatch"
-                    yield clock.posedge
+                ii, nticks = 0, 0
+                while ii < len(values):
+                    if cso.rx_empty:
+                        cso.rx_read.next = False
+                    else:
+                        cso.rx_read.next = True
+                    if cso.rx_byte_valid:
+                        assert values[ii] == cso.rx_byte, \
+                            "{:<4d}: data mismatch, {:02X} != {:02X}".format(
+                                ii, int(values[ii]), int(cso.rx_byte))
+                        ii += 1
+                        nticks = 0
+                    yield clock.posedge, cso.rx_empty.posedge
+                    cso.rx_read.next = False
+
+                    if nticks > 30:
+                        raise TimeoutError
+                    nticks += 1
+
                 cso.rx_read.next = False
                 yield clock.posedge
 
             except AssertionError as err:
-                cso.rx_read.next = False
-                cso.tx_write.next = False
-                print("@W: exception {}".format(err))
+                asserr.next = True
+                print("@E: assertion {}".format(err))
                 yield delay(100)
                 traceback.print_exc()
                 raise err
 
             raise StopSimulation
 
-        return tbdut, tbeep, tbclk, tbstim
+        # monitor signals for debugging
+        tx_write, rx_read = Signals(bool(0), 2)
+
+        @always_comb
+        def tbmon():
+            rx_read.next = cso.rx_read
+            tx_write.next = cso.tx_write
+
+        return tbdut, tbeep, tbclk, tbstim, tbmon
 
     run_testbench(bench_spi_cso, args=args)
 
@@ -129,15 +165,13 @@ def test_spi_memory_mapped(args=None):
     reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl)    
-    fiforx, fifotx = FIFOBus(size=16), FIFOBus(size=16)
+    fifobus = FIFOBus(size=16)
     spiee = SPIEEPROM()
     spibus = SPIBus()
     asserr = Signal(bool(0))
     
-    def _bench_spi():
-        tbdut = spi_controller(glbl, regbus, 
-                          fiforx, fifotx, spibus,
-                          base_address=base_address)
+    def bench_spi():
+        tbdut = spi_controller(glbl, spibus, fifobus=fifobus, mmbus=regbus)
         tbeep = spiee.gen(clock, reset, spibus)
         tbclk = clock.gen(hticks=5)
         # grab all the register file outputs
@@ -222,13 +256,13 @@ def test_spi_memory_mapped(args=None):
         
         return tbstim, tbdut, tbeep, tbclk, tbmap
 
-    run_testbench(_bench_spi, args=args)
+    run_testbench(bench_spi, args=args)
 
 
-@pytest.mark.xfail
 def test_convert():
     convert()
 
 
 if __name__ == '__main__':
-    test_spi_cso_controlled(tb_args())
+    # test_spi_controller_cso(tb_args())
+    test_convert()

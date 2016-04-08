@@ -13,10 +13,10 @@ other tests verify the generic ability.
 from random import randint
 import traceback
 
-from myhdl import (always_seq, always_comb, instance, delay,
-                   StopSimulation,)
+from myhdl import (Signal, intbv, always_seq, always_comb,
+                   instance, delay, StopSimulation,)
 
-from rhea.system import Global, Clock, Reset
+from rhea.system import Global, Clock, Reset, Signals
 from rhea.system import Barebone, FIFOBus
 from rhea.cores.memmap import command_bridge
 from rhea.cores.fifo import fifo_fast
@@ -55,17 +55,21 @@ def test_memmap_command_bridge(args=None):
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
-    fbtx, fbrx = FIFOBus(), FIFOBus()
+    fifobus = FIFOBus()
     memmap = Barebone(glbl, data_width=32, address_width=28)
 
-    fbtx.clock = clock
-    fbrx.clock = clock
+    fifobus.clock = clock
 
     def bench_command_bridge():
         tbclk = clock.gen()
-        tbdut = command_bridge(glbl, fbtx, fbrx, memmap)
-        tbfii = fifo_fast(clock, reset, fbtx)
-        tbfio = fifo_fast(clock, reset, fbrx)
+        tbdut = command_bridge(glbl, fifobus, memmap)
+
+        readpath, writepath = FIFOBus(), FIFOBus()
+        readpath.clock = writepath.clock = clock
+        tbmap = fifobus.assign_read_write_paths(readpath, writepath)
+        tbftx = fifo_fast(reset, clock, writepath)   # user write path
+        tbfrx = fifo_fast(reset, clock, readpath)    # user read path
+
         # @todo: add other bus types
         tbmem = memmap_peripheral_bb(clock, reset, memmap)
 
@@ -75,23 +79,30 @@ def test_memmap_command_bridge(args=None):
         @instance
         def tbstim():
             yield reset.pulse(32)
+            fifobus.read.next = False
+            fifobus.write.next = False
+            assert not fifobus.full
+            assert fifobus.empty
+            assert fifobus.read_data == 0
+            fifobus.write_data.next = 0
 
             try:
                 # test a single address
                 pkt = CommandPacket(True, 0x0000)
-                yield pkt.put(fbtx)
-                yield pkt.get(fbrx, read_value, [0])
+                yield pkt.put(readpath)
+                yield pkt.get(writepath, read_value, [0])
+
                 pkt = CommandPacket(False, 0x0000, [0x5555AAAA])
-                yield pkt.put(fbtx)
-                yield pkt.get(fbrx, read_value, [0x5555AAAA])
+                yield pkt.put(readpath)
+                yield pkt.get(writepath, read_value, [0x5555AAAA])
 
                 # test a bunch of random addresses
                 for ii in range(nloops):
                     randaddr = randint(0, (2**20)-1)
                     randdata = randint(0, (2**32)-1)
                     pkt = CommandPacket(False, randaddr, [randdata])
-                    yield pkt.put(fbtx)
-                    yield pkt.get(fbrx, read_value, [randdata])
+                    yield pkt.put(readpath)
+                    yield pkt.get(writepath, read_value, [randdata])
 
             except Exception as err:
                 print("Error: {}".format(str(err)))
@@ -100,7 +111,19 @@ def test_memmap_command_bridge(args=None):
             yield delay(2000)
             raise StopSimulation
 
-        return tbclk, tbdut, tbfii, tbfio, tbmem, tbstim
+        wp_read, wp_valid = Signals(bool(0), 2)
+        wp_read_data = Signal(intbv(0)[8:])
+        wp_empty, wp_full = Signals(bool(0), 2)
+
+        @always_comb
+        def tbmon():
+            wp_read.next = writepath.read
+            wp_read_data.next = writepath.read_data
+            wp_valid.next = writepath.read_valid
+            wp_full.next = writepath.full
+            wp_empty.next = writepath.empty
+
+        return tbclk, tbdut, tbmap, tbftx, tbfrx, tbmem, tbstim, tbmon
 
     run_testbench(bench_command_bridge, args=args)
 

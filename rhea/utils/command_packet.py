@@ -1,6 +1,6 @@
 
 import struct
-from myhdl import delay
+from myhdl import now, delay
 
 # packet definition constants
 PACKET_LENGTH = 12

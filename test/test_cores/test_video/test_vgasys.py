@@ -30,6 +30,7 @@ from rhea.utils.test import skip_long_sim_test
 from mm_vgasys import mm_vgasys
 from mm_vgasys import convert
 
+
 @skip_long_sim_test
 def test_vgasys():
     args = Namespace(resolution=(80, 60), 

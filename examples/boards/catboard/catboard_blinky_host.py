@@ -26,23 +26,18 @@ def catboard_blinky_host(clock, led, uart_tx, uart_rx):
     tick_inst = glbl_timer_ticks(glbl, include_seconds=True)
 
     # create the interfaces to the UART
-    fbustx = FIFOBus(width=8, size=4)
-    fbusrx = FIFOBus(width=8, size=4)
-    uart_fifo = FIFOBus(width=8, size=4)
+    fifobus = FIFOBus(width=8, size=4)
 
     # create the memmap (CSR) interface
     memmap = Barebone(glbl, data_width=32, address_width=32)
 
     # create the UART instance.
-    uart_inst = uartlite(glbl, uart_fifo,
+    uart_inst = uartlite(glbl, fifobus,
                          serial_in=uart_rx,
                          serial_out=uart_tx)
-    
-    #map uart_fifo to separate readpath and writepath
-    assign_rw = uart_fifo.assign_read_write_paths(fbusrx,fbustx)
 
     # create the packet command instance
-    cmd_inst = command_bridge(glbl, fbusrx, fbustx, memmap)
+    cmd_inst = command_bridge(glbl, fifobus, memmap)
 
     @always_seq(clock.posedge, reset=None)
     def beh_led_control():
@@ -66,7 +61,7 @@ def catboard_blinky_host(clock, led, uart_tx, uart_rx):
             tone.next = (~tone) & 0x1
         led.next = ledreg | tone[5:] 
             
-    return (tick_inst, uart_inst, cmd_inst, assign_rw,
+    return (tick_inst, uart_inst, cmd_inst,
             beh_led_control, beh_led_read, beh_assign)
 
 

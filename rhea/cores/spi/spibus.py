@@ -1,6 +1,6 @@
 
 from myhdl import Signal, intbv, delay
-
+from rhea.system import Clock
 
 class SPIBus(object):
     def __init__(self, sck=None, mosi=None, miso=None, ss=None):
@@ -8,7 +8,7 @@ class SPIBus(object):
         """
         self.htck = 234
         if any([port is None for port in (sck, mosi, miso, ss)]):
-            self.sck = Signal(True)
+            self.sck = Clock(0, frequency=100e3)
             self.mosi = Signal(True)
             self.miso = Signal(True)
             self.ss = Signal(intbv(0xFF)[8:])

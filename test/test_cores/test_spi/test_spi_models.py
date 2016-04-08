@@ -14,20 +14,18 @@ from rhea.cores.spi import SPISlave
 def test_spi_models(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=125e6)
-    reset = Reset(0, active=1, async=False)
-    glbl = Global(clock, reset)
+    glbl = Global(clock)
     ibus = Barebone(glbl)
     spibus = SPIBus()
 
     def bench():
 
-        tbdut = spi_controller_model(clock, reset, ibus, spibus)
+        tbdut = spi_controller_model(clock, ibus, spibus)
         tbspi = SPISlave().process(spibus)
         tbclk = clock.gen()
 
         @instance
         def tbstim():
-            yield reset.pulse(40)
             yield clock.posedge
 
             yield ibus.writetrans(0x00, 0xBE)
