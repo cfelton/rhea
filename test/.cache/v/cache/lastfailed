@@ -1,6 +1,1 @@
-{
-  "test_cores/test_fifo/test_fifo_ramp.py": true, 
-  "test_cores/test_uart.py": true, 
-  "test_cores/test_video/test_lt24lcdsys.py": true, 
-  "test_cores/test_video/test_vgasys.py": true
-}
+{}

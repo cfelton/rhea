@@ -7,11 +7,9 @@ from blink import blinky
 
 
 def run_de1():
-    brd = get_board('de1_SoC')
+    brd = get_board('de1_soc')
     flow = build.flow.Quartus(brd=brd, top=blinky)
     flow.run(use='verilog')
-    # info = flow.get_utilization()
-    # pprint(info)
     
 
 if __name__ == '__main__':
