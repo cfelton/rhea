@@ -37,13 +37,16 @@ mojo: #xilinx/anvyl.bit
 #########################################################
 # Altera boards
 #########################################################
-altera: de0nano #de0
+altera: de0nano #de0 de1-SoC
 
 de0nano: #altera/
 	time $(PYTHON) ex_de0nano.py
 
 de0cv: #altera/
 	$(PYTHON) ex_de0cv.py
+
+de0nano: #altera/
+	time $(PYTHON) ex_de1_SoC.py
 
 #de2cII: #altera/
 #	$(PYTHON) ex_de2cII.py
