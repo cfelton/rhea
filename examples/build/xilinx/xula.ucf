@@ -1,8 +1,0 @@
-#
-NET "led<0>" LOC = "p36" ;
-NET "led<1>" LOC = "p37" ;
-NET "clock" LOC = "p43" ;
-#
-NET "clock" TNM_NET = "clock"; 
-TIMESPEC "TS_clock" = PERIOD "clock" 83.3333333 ns HIGH 50%;
-#
