@@ -2,7 +2,6 @@
 # Copyright (c) 2014-2015 Christopher Felton
 #
 
-
 import os
 import shutil
 import inspect

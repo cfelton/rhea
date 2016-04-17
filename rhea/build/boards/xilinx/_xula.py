@@ -33,7 +33,7 @@ class Xula(FPGA):
         return ISE(brd=self, top=top)
 
 
-class XulaStickIt(Xula):
+class XulaStickItMB(Xula):
     def __init__(self):
         """ StickIt board port definitions
         This class defines the port to pin mapping for the Xess StickIt
@@ -165,7 +165,7 @@ class Xula2StickItMB(Xula2):
         # be simultaneously used.
         chan_pins = self.default_ports['chan']['pins']
         chan_pins = chan_pins + self.default_clocks['chan_clk']['pins']
-        assert len(chan_pins) == 33, "len == {}".format(len(chan_pins))
+        # assert len(chan_pins) == 33, "len == {}".format(len(chan_pins))
         self.default_ports['chan']['pins'] = chan_pins
 
         super(Xula2StickItMB, self).__init__()
