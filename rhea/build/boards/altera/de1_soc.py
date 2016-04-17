@@ -94,12 +94,12 @@ class DE1SOC(FPGA):
 
         # LT24 pins 
         # @todo: use an extintf interface/object DE1_SOC Board
-        'lcd_on': dict(pins=('AC22',)),  		 # GPIO 1 pin
-        'lcd_resetn': dict(pins=('AD21',)),		 # GPIO 1 pin
-        'lcd_csn': dict(pins=('AA20',)),		 # GPIO 1 pin
-        'lcd_rs': dict(pins=('AH27',)),			 # GPIO 1 pin
-        'lcd_wrn': dict(pins=('AH24',)),		 # GPIO 1 pin
-        'lcd_rdn': dict(pins=('AG26',)),		 # GPIO 1 pin
+        'lcd_on': dict(pins=('AC22',)),          # GPIO 1 pin
+        'lcd_resetn': dict(pins=('AD21',)),	     # GPIO 1 pin
+        'lcd_csn': dict(pins=('AA20',)),         # GPIO 1 pin
+        'lcd_rs': dict(pins=('AH27',)),	         # GPIO 1 pin
+        'lcd_wrn': dict(pins=('AH24',)),         # GPIO 1 pin
+        'lcd_rdn': dict(pins=('AG26',)),         # GPIO 1 pin
         'lcd_data': dict(pins=(
             'AF26', 'AF25', 'AE24', 'AE23',		 # GPIO 1, Data 0:3
             'AJ27', 'AK29', 'AK28',  'AK27',	 # GPIO 1, Data 4:7
@@ -108,28 +108,30 @@ class DE1SOC(FPGA):
 
         # VGA Pins added for the On board VGA DAC chip. ADV7123
         # triple 10 Bit High speed Video DAC by analog devices.
+        # The names are the same as the user manual but lowercase.
         # Red Data
-        'vga_r_data': dict(pins=('A13', 'C13', 'E13', 'B12',        # Data 0:3
-                                 'C12', 'D12', 'E12',  'F13',)),    # Data 4:7
+        'vga_r': dict(pins=('A13', 'C13', 'E13', 'B12',        # Data 0:3
+                            'C12', 'D12', 'E12',  'F13',)),    # Data 4:7
 
         # Green Data
-        'vga_g_data': dict(pins=('J9', 'J10', 'H12', 'G10',         # Data 0:3
-                                 'G11', 'G12', 'F11',  'E11', )),   # Data 4:7
+        'vga_g': dict(pins=('J9', 'J10', 'H12', 'G10',         # Data 0:3
+                            'G11', 'G12', 'F11',  'E11', )),   # Data 4:7
 
         # Blue
-        'vga_b_data': dict(pins=('B13', 'G13', 'H13', 'F14',        # Data 0:3
-                                 'H14', 'F15', 'G15',  'J14', )),   # Data 4:7
+        'vga_b': dict(pins=('B13', 'G13', 'H13', 'F14',        # Data 0:3
+                            'H14', 'F15', 'G15',  'J14', )),   # Data 4:7
 
-        'vga_clock': dict(pins=('A11',)),                           # pin
-        'VGA_BLANK_N': dict(pins=('F10',)),                         # pin
-        'VGA_HS': dict(pins=('B11',)),                              # pin
-        'VGA_VS': dict(pins=('D11',)),                              # pin
-        'VGA_SYNC_N': dict(pins=('C10',)),                          # pin
+        'vga_clk': dict(pins=('A11',)),
+        'vga_sync_n': dict(pins=('C10',)),
+        'vga_blank_n': dict(pins=('F10',)),
+        'vga_vs': dict(pins=('D11',)),
+        'vga_hs': dict(pins=('B11',)),
     }
 
     program_device_cli = (
-        Template("quartus_pgm -c \"DE-SoC [1-1]\" -m jtag -o \"p;$bitfile.sof@2\" "),
-             )
+        Template(
+            "quartus_pgm -c \"DE-SoC [1-1]\" -m jtag -o \"p;$bitfile.sof@2\" "),
+    )
     # example quartus_pgm -c USB-Blaster -m jtag -o bpv:design.pof
     program_nonvolatile_cli = (Template(""),)
 
