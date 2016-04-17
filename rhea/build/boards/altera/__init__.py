@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-from ._de0nano import DE0Nano
-from ._de0nano_soc import DE0NanoSOC
+from .de0nano import DE0Nano
+from .de0nano_soc import DE0NanoSOC
 from .de1_soc import DE1SOC
-from ._de0cv import DE0CV
+from .de0cv import DE0CV
