@@ -45,6 +45,12 @@ de0nano: #altera/
 de0cv: #altera/
 	$(PYTHON) ex_de0cv.py
 
+#de0nano_soc: #altera/
+#	$(PTYHON) ex_de0nano_soc.py
+
+#de1_soc: #altera/
+#	$(PYTHON) ex_de1_soc.py
+
 #de2cII: #altera/
 #	$(PYTHON) ex_de2cII.py
 
