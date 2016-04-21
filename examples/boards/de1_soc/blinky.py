@@ -10,7 +10,7 @@ from rhea.build.boards import get_board
                    
 def de1_soc_blink(led, clock, reset=None):
     """ simple de1_soc LED blink """
-    assert len(led) == 8
+    assert len(led) == 10
     
     maxcnt = int(clock.frequency)
     cnt = Signal(intbv(0, min=0, max=maxcnt))
@@ -28,7 +28,7 @@ def de1_soc_blink(led, clock, reset=None):
     def rtl_assign():
         led.next[0] = toggle
         led.next[1] = not toggle
-        for ii in range(2, 8):
+        for ii in range(2, 10):
             led.next[ii] = 0
         
     return rtl, rtl_assign

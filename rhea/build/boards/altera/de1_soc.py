@@ -19,7 +19,7 @@ class DE1SOC(FPGA):
     family = 'Cyclone V'
     device = '5CSEMA5F31C6'
     speed = '6'
-    _name = 'de1_SoC'
+    _name = 'de1_soc'
     revision = 'F'
 
     # As Per page 23 of the user Guide for DE1-SoC
