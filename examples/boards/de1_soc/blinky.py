@@ -9,7 +9,7 @@ from rhea.build.boards import get_board
 
                    
 def de1_soc_blink(led, clock, reset=None):
-    """ simple de1_SoC LED blink """
+    """ simple de1_soc LED blink """
     assert len(led) == 8
     
     maxcnt = int(clock.frequency)
@@ -35,8 +35,8 @@ def de1_soc_blink(led, clock, reset=None):
 
     
 def build(args):
-    brd = get_board('de1_SoC')
-    flow = brd.get_flow(de1_SoC_blink)
+    brd = get_board('de1_soc')
+    flow = brd.get_flow(de1_soc_blink)
     flow.run()
     info = flow.get_utilization()
     pprint(info)
