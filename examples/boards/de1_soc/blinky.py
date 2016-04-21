@@ -8,7 +8,7 @@ from myhdl import (Signal, ResetSignal, intbv, always_seq, always,
 from rhea.build.boards import get_board
 
                    
-def de1_SoC_blink(led, clock, reset=None):
+def de1_soc_blink(led, clock, reset=None):
     """ simple de1_SoC LED blink """
     assert len(led) == 8
     
