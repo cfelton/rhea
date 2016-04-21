@@ -116,7 +116,7 @@ to get started.
   >> git clone https://github.com/cfelton/rhea
   >> cd rhea
   # requires setuptools
-  >> python setup.py develop
+  >> sudo python setup.py develop
 ```
 
 
