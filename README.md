@@ -18,8 +18,10 @@ a merge of the `mn` and `gizflo` projects.
 rhea 
 ====
 
-The `rhea` python package is a collection of HDL cores written 
-in MyHDL.  The myhdl package can be retrieved from http://www.myhdl.org
+The `rhea` python package is a collection of HDL cores written in 
+[MyHDL](http://www.myhdl.org).  The `rhea` package also includes
+a small set of utilities to augment the myhdl types and functions
+as well as FPGA build automation tools. 
 
 
 the name
