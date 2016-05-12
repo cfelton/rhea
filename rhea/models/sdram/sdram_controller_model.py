@@ -5,12 +5,9 @@ from __future__ import absolute_import
 import myhdl
 from myhdl import instance
 
-# @todo: move "interfaces" to system (or interfaces)
-from ...cores.sdram import SDRAMInterface
-
-from ...system import MemoryMapped
-# @todo: utilize FIFOBus
-from ...system import FIFOBus
+from rhea.cores.sdram import SDRAMInterface
+from rhea.system import MemoryMapped
+from rhea.system import FIFOBus
 
 
 def sdram_controller_model(sdram_intf, internal_intf):
