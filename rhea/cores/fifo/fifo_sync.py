@@ -12,11 +12,11 @@ from .fifo_mem import fifo_mem_generic
 def fifo_sync(clock, reset, fbus):
     """ Simple synchronous FIFO
 
-    PORTS
-    =====
+    Arguments:
+        clock: system clock
+        reset: system reset
+        fbus (FIFOBus): FIFO bus interface
 
-    PARAMETERS
-    ==========
     """
 
     # @todo: this is intended to be used for small fast fifo's but it
@@ -31,19 +31,19 @@ def fifo_sync(clock, reset, fbus):
 
     wptr = Signal(modbv(0, min=0, max=N))
     rptr = Signal(modbv(0, min=0, max=N))
-    _vld = Signal(False)
+    vld = Signal(False)
 
     # generic memory model
-    g_fifomem = fifo_mem_generic(clock, fbus.write, fbus.write_data, wptr,
-                                 clock, fbus.read_data, rptr,
-                                 mem_size=fbus.size)
+    fifomem_inst = fifo_mem_generic(clock, fbus.write, fbus.write_data, wptr,
+                                    clock, fbus.read_data, rptr,
+                                    mem_size=fbus.size)
 
     # @todo: almost full and almost empty flags
     read = fbus.read
     write = fbus.write
 
     @always_seq(clock.posedge, reset=reset)
-    def rtl_fifo():
+    def beh_fifo():
         if fbus.clear:
             wptr.next = 0
             rptr.next = 0
@@ -68,11 +68,11 @@ def fifo_sync(clock, reset, fbus):
             wptr.next = wptr + 1
             rptr.next = rptr + 1
 
-        _vld.next = read
+        vld.next = read
 
     @always_comb
-    def rtl_assign():
-        fbus.read_valid.next = _vld & fbus.read
+    def beh_assign():
+        fbus.read_valid.next = vld & fbus.read
                 
     nvacant = Signal(intbv(N, min=-0, max=N+1))  # # empty slots
     ntenant = Signal(intbv(0, min=-0, max=N+1))  # # filled slots
@@ -83,8 +83,8 @@ def fifo_sync(clock, reset, fbus):
             nvacant.next = N
             ntenant.next = 0
         else:
-            v = nvacant
-            f = ntenant
+            v = int(nvacant)
+            f = int(ntenant)
             
             if fbus.read_valid:
                 v = v + 1
@@ -96,9 +96,10 @@ def fifo_sync(clock, reset, fbus):
             nvacant.next = v
             ntenant.next = f
 
+    # the FIFOBus count references the local signal
     fbus.count = ntenant
 
-    return (g_fifomem, rtl_fifo, rtl_assign, dbg_occupancy,)
+    return (fifomem_inst, beh_fifo, beh_assign, dbg_occupancy,)
 
 
 # attached a generic fifo bus object to the module
