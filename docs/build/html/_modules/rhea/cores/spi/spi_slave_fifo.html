@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rhea.cores.spi.spi_slave_fifo &mdash; rhea 0.1pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.1pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="rhea 0.1pre documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">rhea 0.1pre documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rhea.cores.spi.spi_slave_fifo</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">myhdl</span> <span class="kn">import</span> <span class="n">Signal</span><span class="p">,</span> <span class="n">intbv</span><span class="p">,</span> <span class="n">always_seq</span>
+
+<span class="kn">from</span> <span class="nn">rhea.system</span> <span class="kn">import</span> <span class="n">FIFOBus</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">SPIBus</span>
+
+
+<span class="k">def</span> <span class="nf">spi_slave_fifo</span><span class="p">(</span><span class="n">glbl</span><span class="p">,</span> <span class="n">spibus</span><span class="p">,</span> <span class="n">fifobus</span><span class="p">,</span> <span class="n">cso</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="spi_slave_fifo"><a class="viewcode-back" href="../../../../cores/spi.html#rhea.cores.spi.spi_slave_fifo">[docs]</a>    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is an SPI slave peripheral, when the master starts clocking</span>
+<span class="sd">    any data in the TX FIFO (fifobus.write) will be sent (the next</span>
+<span class="sd">    byte) and the received byte will be copied to RX FIFO</span>
+<span class="sd">    (fifobus.read).  The `cso` interface can be used to configure</span>
+<span class="sd">    how the SPI slave peripheral behaves.</span>
+
+<span class="sd">    Arguments (Ports):</span>
+<span class="sd">        glbl (Global): global clock and reset</span>
+<span class="sd">        spibus  (SPIBus): the external SPI interface</span>
+<span class="sd">        fifobus (FIFOBus): the fifo interface</span>
+<span class="sd">        cso (SPIControlStatus): the control status signals</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c"># Use an async FIFO to transfer from the SPI SCK clock domain and</span>
+    <span class="c"># the internal clock domain.  This allows for high-speed SCK.</span>
+    <span class="n">clock</span><span class="p">,</span> <span class="n">reset</span> <span class="o">=</span> <span class="n">glbl</span><span class="o">.</span><span class="n">clock</span><span class="p">,</span> <span class="n">glbl</span><span class="o">.</span><span class="n">reset</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spibus</span><span class="p">,</span> <span class="n">SPIBus</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">fifobus</span><span class="p">,</span> <span class="n">FIFOBus</span><span class="p">)</span>
+
+    <span class="nd">@always_seq</span><span class="p">(</span><span class="n">clock</span><span class="o">.</span><span class="n">posedge</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="n">reset</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">beh_loopback</span><span class="p">():</span>
+        <span class="n">spibus</span><span class="o">.</span><span class="n">miso</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">spibus</span><span class="o">.</span><span class="n">mosi</span>
+
+    <span class="k">return</span> <span class="n">beh_loopback</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">rhea 0.1pre documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Christopher L. Felton.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

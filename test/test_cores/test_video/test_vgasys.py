@@ -1,59 +1,37 @@
 
-
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
-
-"""
-"""
+from __future__ import print_function, division
 
 import argparse
 from argparse import Namespace
 import time 
 
-import pytest
-from myhdl import *
 
-import rhea
-from rhea.system import Clock
-from rhea.system import Reset
-from rhea.system import Global
+import myhdl
+from myhdl import Signal, instance, delay, StopSimulation
+
+from rhea import Clock, Reset, Global
 from rhea.cores.video import VGA
 
 # a video display model to check the timings
 from rhea.models.video import VGADisplay
 
-from rhea.utils.test import run_testbench
-from rhea.utils.test import skip_long_sim_test
+from rhea.utils.test import run_testbench, tb_default_args
 
 # local wrapper to build a VGA system
 from mm_vgasys import mm_vgasys
 from mm_vgasys import convert
 
 
-@skip_long_sim_test
-def test_vgasys():
-    args = Namespace(resolution=(80, 60), 
-                     color_depth=(10, 10, 10),
-                     line_rate=4000,
-                     refresh_rate=60)
-    tb_vgasys(args)
-
-
-def tb_vgasys(args=None):
-
+def test_vgasys(args=None):
     if args is None:
-        args = Namespace()
-        resolution = (80, 60)
-        line_rate = 4000
-        refresh_rate = 60
-        color_depth = (10, 10, 10)
-    else:
-        # @todo: retrieve these from ...
-        resolution = args.resolution
-        refresh_rate = args.refresh_rate
-        line_rate = args.line_rate
-        color_depth = args.color_depth
+        args = Namespace(resolution=(80, 60), color_depth=(8, 8, 8),
+                         line_rate=4000, refresh_rate=60)
+    args = tb_default_args(args)
+
+    resolution = args.resolution
+    refresh_rate = args.refresh_rate
+    line_rate = args.line_rate
+    color_depth = args.color_depth
 
     clock = Clock(0, frequency=1e6)
     reset = Reset(0, active=0, async=False)
@@ -62,26 +40,29 @@ def tb_vgasys(args=None):
     # intergace to the VGA driver and emulated display 
     vga = VGA(color_depth=color_depth)
 
+    @myhdl.block
     def bench_vgasys():
         # top-level VGA system 
-        tbdut = mm_vgasys(clock, reset, vselect, 
-                          vga.hsync, vga.vsync, 
-                          vga.red, vga.green, vga.blue,
-                          vga.pxlen, vga.active,
-                          resolution=resolution,
-                          color_depth=color_depth,
-                          refresh_rate=refresh_rate,
-                          line_rate=line_rate)
+        tbdut = mm_vgasys(
+            clock, reset, vselect, vga.hsync, vga.vsync,
+            vga.red, vga.green, vga.blue, vga.pxlen, vga.active,
+            resolution=resolution,
+            color_depth=color_depth,
+            refresh_rate=refresh_rate,
+            line_rate=line_rate
+        )
 
         # group global signals
         glbl = Global(clock=clock, reset=reset)
 
         # a display for each dut        
-        mvd = VGADisplay(frequency=clock.frequency,
-                         resolution=resolution,
-                         refresh_rate=refresh_rate,
-                         line_rate=line_rate,
-                         color_depth=color_depth)
+        mvd = VGADisplay(
+            frequency=clock.frequency,
+            resolution=resolution,
+            refresh_rate=refresh_rate,
+            line_rate=line_rate,
+            color_depth=color_depth
+        )
 
         # connect VideoDisplay model to the VGA signals
         tbvd = mvd.process(glbl, vga)
@@ -112,15 +93,17 @@ def tb_vgasys(args=None):
     run_testbench(bench_vgasys)
 
 
-@skip_long_sim_test
 def test_vgasys_conversion():
     convert()
 
 
 if __name__ == '__main__':
-    args = Namespace(resolution=(80, 60), 
-                     color_depth=(10, 10, 10),
-                     line_rate=4000,
-                     refresh_rate=60)
-    tb_vgasys(args)
+    args = Namespace(
+        resolution=(80, 60),
+        color_depth=(10, 10, 10),
+        line_rate=4000,
+        refresh_rate=60
+    )
+    test_vgasys(
+        args)
     convert()

@@ -1,23 +1,13 @@
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import print_function, division
 
-import sys
-import os
-import argparse
 from argparse import Namespace
-from array import array
 from random import randint
 
-import pytest
+import myhdl
+from myhdl import instance, delay, StopSimulation
 
-from myhdl import *
-
-# resuse some of the interfaces
-import rhea
-from rhea.system import Clock
-from rhea.system import Reset
-from rhea.system import Global
+from rhea import Clock, Reset, Global
 from rhea.system import Wishbone
 
 from rhea.cores.sdram import SDRAMInterface
@@ -25,16 +15,14 @@ from rhea.cores.sdram import sdram_sdr_controller
 from rhea.models.sdram import SDRAMModel
 from rhea.models.sdram import sdram_controller_model
 
-from rhea.utils.test import run_testbench
+from rhea.utils.test import run_testbench, tb_default_args
 
 
-def test_sdram():
-    tb_sdram(Namespace())
-    
-    
-def tb_sdram(args):
+def test_sdram(args=None):
     """ SDRAM controller testbench
     """
+    args = tb_default_args(args)
+
     # @todo: get the number of address to test from argparse
     num_addr = 100   # number of address to test
     
@@ -57,7 +45,8 @@ def tb_sdram(args):
     max_addr = 2048   # @todo: add actual SDRAM memory size limit
     max_data = 2**16  # @todo: add actual databus width
 
-    def _bench_sdram():
+    @myhdl.block
+    def bench_sdram():
         """
         This test exercises a SDRAM controller ...
         """
@@ -113,8 +102,8 @@ def tb_sdram(args):
 
         return tbclk, tbclk_sdram, tbstim, tbmdl_sdm, tbmdl_ctl
 
-    run_testbench(_bench_sdram, timescale='1ps')
+    run_testbench(bench_sdram, timescale='1ps')
 
 
 if __name__ == '__main__':
-    tb_sdram(Namespace())
+    test_sdram(Namespace())

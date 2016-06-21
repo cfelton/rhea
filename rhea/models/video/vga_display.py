@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import Signal, intbv, instance, enum, always, now 
 from PIL import Image
 from .video_display import VideoDisplay
@@ -44,6 +45,7 @@ class VGADisplay(VideoDisplay):
         # keep track ~~of a bunch~~ of stuff
         self.info = {'hpusle': [], 'vpulse': [],}
 
+    @myhdl.block
     def process(self, glbl, vga):
         """
         """
@@ -110,8 +112,8 @@ class VGADisplay(VideoDisplay):
             yield vga.pxlen.posedge
             if vga.state == vga.States.ACTIVE:
                 pixel = list(map(int, (vga.red, vga.green, vga.blue,)))
-                #print(c.vcnt, c.hcnt)
-                # determine if this is the last pixel for the display
+                # print(c.vcnt, c.hcnt)
+                #  determine if this is the last pixel for the display
                 last = c.hcnt == self.num_hpxl-1 and c.vcnt == self.num_vpxl-1
                 self.set_pixel(c.hcnt, c.vcnt, pixel, last)
                 c.hcnt += 1
@@ -135,7 +137,7 @@ class VGADisplay(VideoDisplay):
             # depending on how the "pixel clock" divides into the
             # active area the front-porch could be slightly longer
             # the calculations need to be updated to adjust for this
-            #assert vga.state == vga.States.HOR_FRONT_PORCH
+            # assert vga.state == vga.States.HOR_FRONT_PORCH
             yield glbl.clock.posedge
             c.hfpcnt += 1
         # end
@@ -195,10 +197,10 @@ class VGADisplay(VideoDisplay):
         c = counters
         if vga.active:
             # @todo; copy uvmem to vvmem
-            #self.state = self.States.INIT
+            # self.state = self.States.INIT
             self.state = self.States.END
         else:
             yield glbl.clock.posedge
-            #assert vga.porch == vga.Porch.VER_FRONT
+            # assert vga.porch == vga.Porch.VER_FRONT
             c.vbpcnt += 1
 

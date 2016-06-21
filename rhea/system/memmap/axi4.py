@@ -3,8 +3,8 @@ from __future__ import absolute_import
 
 from math import log, ceil
 
+import myhdl
 from myhdl import Signal, intbv, always_seq
-
 from . import MemoryMapped
 
 
@@ -83,7 +83,8 @@ class AXI4Lite(MemoryMapped):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def map_generic(self):
         pass
-    
+
+    @myhdl.block
     def peripheral_regfile(self, glbl, regfile, name):
         clock, reset = glbl.clock, glbl.reset
         readtrans = Signal(bool(0))

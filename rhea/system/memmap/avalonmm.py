@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import (Signal, intbv, always_seq, always, always_comb,
                    instances, enum, delay, concat)
 
@@ -57,6 +58,7 @@ class AvalonMM(MemoryMapped):
         self._readdatavalid.append(readdatavalid)
         self._waitrequest.append(waitrequest)
 
+    @myhdl.block
     def interconnect(self):
         """ combine all the peripheral outputs
         """
@@ -65,7 +67,7 @@ class AvalonMM(MemoryMapped):
         av = self
 
         @always_seq(self.clk.posedge, reset=self.reset)
-        def rtl_or_combine():
+        def beh_or_combine():
             rddats, valids, waits = 0, 0, 0
             for ii in range(ndevs):
                 rddats = rddats | av._readdata[ii]
@@ -76,8 +78,9 @@ class AvalonMM(MemoryMapped):
             av.readdatavalid.next = valids
             av.waitrequest.next = waits
 
-        return rtl_or_combine
+        return beh_or_combine
 
+    @myhdl.block
     def peripheral_regfile(self, regfile, name='', base_address=0x0):
         """ memory-mapped avalon peripheral interface
         """
@@ -105,7 +108,7 @@ class AvalonMM(MemoryMapped):
         selected = Signal(bool(0))
 
         @always_seq(clock.posedge, reset=reset)
-        def rtl_selected():
+        def beh_selected():
             if av.address >= base_address and av.address < max_address:
                 selected.next = True
             else:
@@ -120,7 +123,7 @@ class AvalonMM(MemoryMapped):
 
         # read side of the bus transaction
         @always(clock.posedge)
-        def rtl_read():
+        def beh_read():
             if reset == int(reset.active):
                 for ii in range(nregs):
                     prd[ii].next = False
@@ -139,7 +142,7 @@ class AvalonMM(MemoryMapped):
 
         # write side of the bus transaction
         @always(clock.posedge)
-        def rtl_write():
+        def beh_write():
             if reset == int(reset.active):
                 for ii in range(nregs):
                     ro = rol[ii]
@@ -161,9 +164,9 @@ class AvalonMM(MemoryMapped):
                         pwr[ii].next = False
 
         # get the generators that assign the named bits
-        gas = regfile.get_assigns()
+        assign_insts = regfile.get_assigns()
 
-        return instances()
+        return myhdl.instances()
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # @todo: map_to_generic(self)

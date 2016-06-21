@@ -2,20 +2,18 @@
 # Copyright (c) 2006-2013 Christopher L. Felton
 #
 
-import collections
 from random import randint
 import traceback
 
-from myhdl import *
+import myhdl
+from myhdl import Signal, ResetSignal, intbv, modbv, always, always_comb
+from myhdl import instance, delay, StopSimulation
 
-from rhea.system import Clock
-from rhea.system import Reset
-from rhea.system import Global
-from rhea.system import RegisterFile
-from rhea.system import Register
+from rhea import Clock, Reset, Global
+from rhea.system import Register, RegisterFile
 from rhea.system import Wishbone
-
-from rhea.utils.test import *
+from rhea.utils.test import (run_testbench, tb_default_args,
+                             tb_convert, tb_args,)
 
 # only one register-file under test at a time, allow the generated
 # register-file to be accessible from the testbench
@@ -71,13 +69,15 @@ def create_regfile():
     return regfile
 
 
+@myhdl.block
 def peripheral_top(clock, reset, mon):
     glbl = Global(clock, reset)
     wb = Wishbone(glbl)
-    gp1 = memmap_peripheral(glbl, wb, mon)
-    return gp1
+    inst = memmap_peripheral(glbl, wb, mon)
+    return inst
 
 
+@myhdl.block
 def memmap_peripheral(glbl, regbus, mon):
     global regfile
     regfile = create_regfile()
@@ -86,6 +86,7 @@ def memmap_peripheral(glbl, regbus, mon):
     return regfile_inst
 
 
+@myhdl.block
 def memmap_peripheral_bits(glbl, regbus, mon):
     global regfile
 
@@ -95,7 +96,7 @@ def memmap_peripheral_bits(glbl, regbus, mon):
     count = modbv(0, min=0, max=1)
 
     @always(clock.posedge)
-    def rtl_roregs():
+    def beh_roregs():
         count[:] = count + 1
         
         # only 'ro' registers can have named bits that can
@@ -112,7 +113,7 @@ def memmap_peripheral_bits(glbl, regbus, mon):
 
         regfile.cnt.next = count[5:]
         
-    return regfile_inst, rtl_roregs
+    return regfile_inst, beh_roregs
 
 
 def test_register_def():
@@ -131,7 +132,8 @@ def test_register_file(args=None):
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl) 
 
-    def _bench_regfile():
+    @myhdl.block
+    def bench_regfile():
         tbdut = memmap_peripheral(glbl, regbus, 0xAA)
         tbor = regbus.interconnect()
         tbmclk = clock.gen(hticks=5)
@@ -181,7 +183,7 @@ def test_register_file(args=None):
 
         return tbmclk, tbstim, tbdut, tbmon, tbor
 
-    run_testbench(_bench_regfile, args=args)
+    run_testbench(bench_regfile, args=args)
 
 
 def test_register_file_bits():
@@ -192,7 +194,8 @@ def test_register_file_bits():
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl) 
 
-    def _bench_regfile_bits():
+    @myhdl.block
+    def bench_regfile_bits():
         tbdut = memmap_peripheral_bits(glbl, regbus, 0xAA)
         tbor = regbus.interconnect()
         tbmclk = clock.gen()
@@ -226,18 +229,15 @@ def test_register_file_bits():
 
         return tbmclk, tbstim, tbdut, tbor, tbrclk
 
-    run_testbench(_bench_regfile_bits)
+    run_testbench(bench_regfile_bits)
 
 
 def test_convert():
     clock = Signal(bool(0))
     reset = ResetSignal(0, active=0, async=True)
     mon = Signal(intbv(0)[8:])
-
-    toVerilog.directory = 'output'
-    toVerilog(peripheral_top, clock, reset, mon)
-    toVHDL.directory = 'output'
-    toVHDL(peripheral_top, clock, reset, mon)
+    inst = peripheral_top(clock, reset, mon)
+    tb_convert(inst)
 
     
 if __name__ == '__main__':

@@ -3,8 +3,8 @@ from __future__ import absolute_import
 
 from copy import copy
 
+import myhdl
 from myhdl import Signal, intbv, enum, instance, delay, now
-from PIL import Image
 from .video_display import VideoDisplay
 
 
@@ -17,6 +17,7 @@ class LT24LCDDisplay(VideoDisplay):
         super(LT24LCDDisplay, self).__init__(resolution=res, color_depth=cd)
         self.name = 'lt24lcd'                
 
+    @myhdl.block
     def process(self, glbl, lcd):
         """
         """

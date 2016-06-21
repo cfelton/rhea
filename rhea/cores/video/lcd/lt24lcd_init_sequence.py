@@ -44,7 +44,7 @@ ROM is organized as:
 
 # init sequence from terasic uP code
 # @todo: only a couple pauses, remove them from the sequence
-# @todo: save space in the ROM 
+#        save space in the ROM
 seq = []
 seq += [dict(cmd=0x00,
              data=[], pause=120)]

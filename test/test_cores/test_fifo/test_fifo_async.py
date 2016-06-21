@@ -1,60 +1,44 @@
 #
 # Copyright (c) 2014 Christopher L. Felton
+# See the licence file in the top directory
 #
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
 from argparse import Namespace
 
-from myhdl import *
+import myhdl
+from myhdl import (Signal, ResetSignal, intbv, modbv, delay, instance,
+                   always, always_comb, StopSimulation)
+from myhdl.conversion import verify
 
-from rhea.system import FIFOBus
+from rhea.system import Clock, FIFOBus, Global, Signals
 from rhea.cores.fifo import fifo_async
 
 from rhea.utils.test import run_testbench
 
 
-def test_afifo(args=None):
-    """ verify the asynchronous FIFO    
-    """
-    if args is None:
-        args = Namespace(width=8, size=16, name='test')
-    
-    reset = ResetSignal(0, active=1, async=True)
-    wclk, rclk = [Signal(bool(0)), Signal(bool(0))]
-    fbus = FIFOBus(width=args.width, size=args.size)
-    start = Signal(bool(0))
-
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    # clocks
-    @always(delay(10))
-    def tbwclk():
-        wclk.next = not wclk
-    
-    @always(delay(12))
-    def tbrclk():
-        rclk.next = not rclk
-
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@myhdl.block
+def procuder_consumer(clock_write, clock_read, fbus, start):
     # FIFO writer and reader
     _wr = Signal(bool(0))
+    w = len(fbus.write_data)
 
     @instance
     def tb_always_wr():
         was_full = False
-        wrd = modbv(0)[args.width:]
+        wrd = modbv(0)[w:]
         while True:
             if start:
                 break
-            yield wclk.posedge
+            yield clock_write.posedge
 
         while True:
-            yield wclk.posedge
+            yield clock_write.posedge
             if not fbus.full and was_full:
                 was_full = False
                 for _ in range(17):
-                    yield wclk.posedge
+                    yield clock_write.posedge
             elif not fbus.full:
                 fbus.write_data.next = wrd
                 _wr.next = True
@@ -71,33 +55,51 @@ def test_afifo(args=None):
 
     @instance
     def tb_always_rd():
-        rdd = modbv(0)[args.width:]
+        rdd = modbv(0)[w:]
         while True:
             if start:
                 break
-            yield wclk.posedge
+            yield clock_write.posedge
 
         while True:
             try:
-                yield rclk.posedge
+                yield clock_read.posedge
                 if not fbus.empty:
                     fbus.read.next = True
                 else:
                     fbus.read.next = False
-                    
+
                 if fbus.read_valid:
                     tmp = fbus.read_data
                     assert tmp == rdd, " %d != %d " % (tmp, rdd)
                     rdd[:] += 1
             except AssertionError as err:
                 for _ in range(10):
-                    yield rclk.posedge
+                    yield clock_read.posedge
                 raise err
 
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def _test1():
-        
-        tbdut = fifo_async(reset, wclk, rclk, fbus)
+    return myhdl.instances()
+
+
+def test_async_fifo(args=None):
+    """ verify the asynchronous FIFO    
+    """
+    if args is None:
+        args = Namespace(width=8, size=16, name='test')
+    
+    reset = ResetSignal(0, active=1, async=True)
+    wclk = Clock(0, frequency=22e6)
+    rclk = Clock(0, frequency=50e6)
+    fbus = FIFOBus(width=args.width)
+    start = Signal(bool(0))
+
+    @myhdl.block
+    def bench_async_fifo():
+
+        tbclkw = wclk.gen()
+        tbclkr = rclk.gen()
+        tbdut = fifo_async(wclk, rclk, fbus, reset)
+        tbpr = procuder_consumer(wclk, rclk, fbus, start)
                 
         @instance
         def tbstim():
@@ -143,20 +145,30 @@ def test_afifo(args=None):
                 fbus.read.next = False
                 yield rclk.posedge
                 assert fbus.empty
-                    
-            # Test overflows        
-            # Test underflows        
-            # Test write / read same time
-            
+
             raise StopSimulation
         
-        return tbdut, tbwclk, tbrclk, tbstim
+        return myhdl.instances()
 
-    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    def _test2():
-        
-        tbdut = fifo_async(reset, wclk, rclk, fbus)
-         
+
+def test_(args=None):
+
+    if args is None:
+        args = Namespace(width=8, size=16, name='test')
+
+    reset = ResetSignal(0, active=1, async=True)
+    wclk = Clock(0, frequency=22e6)
+    rclk = Clock(0, frequency=50e6)
+    fbus = FIFOBus(width=args.width)
+    start = Signal(bool(0))
+
+    @myhdl.block
+    def bench_():
+        tbclkw = wclk.gen()
+        tbclkr = rclk.gen()
+        tbdut = fifo_async(wclk, rclk, fbus, reset)
+        tbpr = procuder_consumer(wclk, rclk, fbus, start)
+
         @instance
         def tbstim():
             print("start test 2")
@@ -173,13 +185,87 @@ def test_afifo(args=None):
 
             raise StopSimulation
 
-        return (tbdut, tbwclk, tbrclk, tb_always_wr, tb_always_wr_gate, 
-                tb_always_rd, tbstim)
+        return myhdl.instances()
 
-    # run the tests
-    for tt in (_test1, _test2,):
-        run_testbench(tt)
+    run_testbench(bench_)
+
+
+@myhdl.block
+def bench_conversion_fifo_async():
+    args = Namespace(width=8, size=32, fifosize=64, name='test')
+
+    clock_write, clock_read = Signals(bool(0), 2)
+    reset = ResetSignal(0, active=1, async=False)
+
+    fbus = FIFOBus(width=args.width)
+    fifosize = args.fifosize
+    tbdut = fifo_async(clock_write, clock_read, fbus, reset, size=fifosize)
+
+    @instance
+    def tbclkr():
+        clock_read.next = False
+        while True:
+            yield delay(5)
+            clock_read.next = not clock_read
+
+    @instance
+    def tbclkw():
+        clock_write.next = False
+        while True:
+            yield delay(5)
+            clock_write.next = not clock_write
+
+    @instance
+    def tbstim():
+        print("start simulation")
+        fbus.write.next = False
+        fbus.write_data.next = 0
+        fbus.read.next = False
+        fbus.clear.next = False
+
+        print("reset")
+        reset.next = reset.active
+        yield delay(10)
+        reset.next = not reset.active
+        yield delay(10)
+
+        print("some clock cycles")
+        for ii in range(10):
+            yield clock_write.posedge
+
+        print("some writes")
+        for ii in range(fifosize):
+            fbus.write.next = True
+            fbus.write_data.next = ii
+            yield clock_write.posedge
+        fbus.write.next = False
+        yield clock_write.posedge
+
+        for ii in range(fifosize):
+            fbus.read.next = True
+            yield clock_read.posedge
+            print("%d %d %d %d" % (
+                fbus.write, fbus.write_data, fbus.read, fbus.read_data,))
+        fbus.read.next = False
+
+        print("end simulation")
+        raise StopSimulation
+
+    return myhdl.instances()
+
+
+def test_fifo_async_conversion():
+    inst = bench_conversion_fifo_async()
+    inst.convert(hdl='Verilog', directory=None)
+
+
+def test_fifo_async_verify():
+    verify.simulator = 'iverilog'
+    inst = bench_conversion_fifo_async()
+    assert inst.verify_convert() == 0
 
 
 if __name__ == '__main__':
-    test_afifo()
+    test_async_fifo()
+    test_fifo_async_conversion()
+    test_fifo_async_verify()

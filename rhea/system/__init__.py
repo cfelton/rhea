@@ -12,7 +12,6 @@ from .glbl import Global
 from .hwtypes import Constants, Signals, Bit, Byte
 
 from .cso import ControlStatusBase
-from .cso import assign_config
 
 from .memmap import MemorySpace
 from .memmap import RegisterBits

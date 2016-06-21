@@ -1,6 +1,7 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import Signal, intbv
 
 from rhea.system import ControlStatus
@@ -27,9 +28,11 @@ class PRBSControlStatus(ControlStatus):
     error_count.driven = True
 
 
+@myhdl.block
 def prbs_tester(glbl, prbso, prbsi, memmap, order=23):
-    """
-    Ports:
+    """PRBS tester, generator and checker
+
+    Arguments:
       glbl: global signals, clock, reset, enable, etc.
       prbso: PRBS output
       prbsi: PRBS input

@@ -1,10 +1,11 @@
 
-from __future__ import division
-
 """
 This is an LT24 LCD driver example.
 """
 
+from __future__ import division
+
+import myhdl
 from myhdl import (Signal, intbv, always_comb, always_seq,
                    always, TristateSignal, concat, instances)
 
@@ -22,6 +23,7 @@ from rhea.build.boards import get_board
 brd = None
 
 
+@myhdl.block
 def de0nano_lt24lcd(clock, reset, led,
     # LT24 LCD display signals
     lcd_on, lcd_resetn, lcd_csn, lcd_rs,
@@ -37,40 +39,38 @@ def de0nano_lt24lcd(clock, reset, led,
 
     # ----------------------------------------------------------------
     # global ticks
-    gtick = glbl_timer_ticks(glbl, include_seconds=True, 
-                             user_timer=16)
+    tick_inst = glbl_timer_ticks(glbl, include_seconds=True, user_timer=16)
 
     heartbeat = Signal(bool(0))
+
     @always_seq(clock.posedge, reset=reset)
-    def rtl_leds():
+    def beh_leds():
         if glbl.tick_sec:
             heartbeat.next = not heartbeat
         led.next = concat(intbv(0)[7:], heartbeat)
-
 
     # ----------------------------------------------------------------
     # LCD dislay
     lcd = LT24Interface()    
     resolution, color_depth = lcd.resolution, lcd.color_depth
-    lcd.assign(lcd_on, lcd_resetn, lcd_csn, lcd_rs, lcd_wrn, 
-               lcd_rdn, lcd_data)
+    lcd.assign(
+        lcd_on, lcd_resetn, lcd_csn, lcd_rs, lcd_wrn, lcd_rdn, lcd_data
+    )
+
     # color bars and the interface between video source-n-sink
     vmem = VideoMemory(resolution=resolution, color_depth=color_depth)
-    gbar = color_bars(glbl, vmem, resolution=resolution, 
-                      color_depth=color_depth)
+    bar_inst = color_bars(glbl, vmem, resolution=resolution, color_depth=color_depth)
+
     # LCD video driver
-    glcd = lt24lcd(glbl, vmem, lcd)
+    lcd_inst = lt24lcd(glbl, vmem, lcd)
 
-
-    gens = gtick, rtl_leds, gbar, glcd
-
-    return gens
+    return myhdl.instances()
 
 
 # the default port map
 # @todo: should be able to extact this from the board
-# @todo: definition:
-# @todo: portmap = brd.map_ports(de0nano_converters)    
+#        definition:
+#        portmap = brd.map_ports(de0nano_converters)
 de0nano_lt24lcd.portmap = {
     'clock': Clock(0, frequency=50e6),
     'reset': Reset(0, active=0, async=True),
@@ -93,7 +93,6 @@ def build():
 
     
 def program():
-    global flow
     if flow is not None:
         flow.program()
 

@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cores &mdash; rhea 0.1pre documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="rhea 0.1pre documentation" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../index.html">rhea 0.1pre documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="cores">
+<h1>Cores<a class="headerlink" href="#cores" title="Permalink to this headline">¶</a></h1>
+<p>The following is a list of currently implemented cores.</p>
+<div class="section" id="fifo">
+<h2>FIFO<a class="headerlink" href="#fifo" title="Permalink to this headline">¶</a></h2>
+<p>Various synchronous and asynchronous FIFO implementations.</p>
+</div>
+<div class="section" id="fpgalink">
+<h2>fpgalink<a class="headerlink" href="#fpgalink" title="Permalink to this headline">¶</a></h2>
+<p>This is a MyHDL implementation of the HDL for the <em>fpgalink</em>
+project.  The fpgalink HDL core can be instantiated into
+a design:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">rhea.cores.usbext</span> <span class="kn">import</span> <span class="n">m_fpgalink_fx2</span>
+
+<span class="c"># ...</span>
+<span class="c"># fpgalink interface</span>
+<span class="n">g_fli</span> <span class="o">=</span> <span class="n">m_fpgalink_fx2</span><span class="p">(</span><span class="n">clock</span><span class="p">,</span><span class="n">reset</span><span class="p">,</span><span class="n">fx2bus</span><span class="p">,</span><span class="n">flbus</span><span class="p">)</span>
+
+<span class="c"># ...</span>
+</pre></div>
+</div>
+<p>For simulation and verification the <em>fpgalink</em> interface can be
+stimulated using the FX2 model and high-level access functions:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">rhea.models.usbext</span> <span class="kn">import</span> <span class="n">fpgalink_host</span>
+<span class="kn">from</span> <span class="nn">rhea.cores.usbext</span> <span class="kn">import</span> <span class="n">fpgalink</span>
+<span class="kn">from</span> <span class="nn">rhea.cores.usbext</span> <span class="kn">import</span> <span class="n">m_fpgalink_fx2</span>
+
+<span class="c"># instantiate the components, etc (see examples in example dir)</span>
+<span class="c"># ...</span>
+<span class="c"># use high-level accessors to</span>
+<span class="n">fh</span><span class="o">.</span><span class="n">WriteAddress</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mh">0xC3</span><span class="p">])</span>     <span class="c"># write 0xCE to address 1</span>
+<span class="n">fh</span><span class="o">.</span><span class="n">WriteAddress</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>  <span class="c"># write 1,2,3,4 to address 0</span>
+<span class="n">rb</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">ReadAddress</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>         <span class="c"># read address 1</span>
+</pre></div>
+</div>
+<p>The following is a pictorial of the verification environment .</p>
+<p>For more information on the [fpgalink]() software, firmware, and
+general design information see [makestuff]().</p>
+</div>
+<div class="section" id="uart">
+<h2>uart<a class="headerlink" href="#uart" title="Permalink to this headline">¶</a></h2>
+<p>The myHDL implementation of the  Universal Asynchronous
+Receiver/ Transmitter module
+, which is a standard serial communication module between
+devices. It uses a FIFOBus interface to communicate with other modules
+externally and also to communicate with other devices. The baudwith
+of the module can be set by setting the baudwidth parameter. UART
+reads bit-wise starting on a low signal after which a fixed length
+(baudwidth) no of bits can be read, after which the stop high
+signal is received(transmitted).</p>
+</div>
+<div class="section" id="usbp">
+<h2>usbp<a class="headerlink" href="#usbp" title="Permalink to this headline">¶</a></h2>
+<p>USB Peripheral, this is another Cypress FX2 controller interface,
+this has two interfaces a &#8220;control&#8221; interface and a &#8220;streaming&#8221;
+interface.  This FX2 interface is intended to work with the
+[fx2 firmware]() that configures the controller as a USB CDC/ACM
+device (virtual serial port).  The [fx2 firmware]() also has a
+couple vendor unique commands that can be sent using the pyusb
+(or other low-level USB interfaces like libusb).  The Python
+version of the host software (including firmware) can be retrieved
+via pip</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; pip install usbp
+&gt;&gt;&gt; import usbp
+&gt;&gt;&gt; import serial
+</pre></div>
+</div>
+<p>One of the tricky items with USB devices is setting the permissions
+correctly.  On a linux system to set the …</p>
+</div>
+<div class="section" id="spi">
+<h2>spi<a class="headerlink" href="#spi" title="Permalink to this headline">¶</a></h2>
+<p>This is a generic SPI controller.</p>
+</div>
+<div class="section" id="vga">
+<h2>vga<a class="headerlink" href="#vga" title="Permalink to this headline">¶</a></h2>
+<p>VGA controller.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Cores</a><ul>
+<li><a class="reference internal" href="#fifo">FIFO</a></li>
+<li><a class="reference internal" href="#fpgalink">fpgalink</a></li>
+<li><a class="reference internal" href="#uart">uart</a></li>
+<li><a class="reference internal" href="#usbp">usbp</a></li>
+<li><a class="reference internal" href="#spi">spi</a></li>
+<li><a class="reference internal" href="#vga">vga</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/cores/overview.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../index.html">rhea 0.1pre documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Christopher L. Felton.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

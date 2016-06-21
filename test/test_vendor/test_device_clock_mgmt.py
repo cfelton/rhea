@@ -13,9 +13,10 @@ from rhea.system import Clock
 from rhea.system import timespec, ticks_per_ns
 from rhea.vendor import ClockManagement
 from rhea.vendor import device_clock_mgmt
-from rhea.utils.test import run_testbench, tb_args, tb_default_args
+from rhea.utils.test import run_testbench, tb_args, tb_default_args, tb_convert
 
 
+@myhdl.block
 def top_clock_mgmt_wrap(clockext, resetext, dripple, status, args):
     # note: the model will have errors for many frequencies the test
     # will only work for rational periods (inverse of the freq).
@@ -67,7 +68,8 @@ def test_device_clock_mgmt(args=None):
     dripple = Signal(bool(0))
     status = Signal(intbv(0)[4:])
 
-    def _bench_device_pll():
+    @myhdl.block
+    def bench_device_pll():
         tbdut = top_clock_mgmt_wrap(clockext, resetext, dripple,
                                     status, args)
 
@@ -95,10 +97,9 @@ def test_device_clock_mgmt(args=None):
 
         return tbdut, tbclk, tbstim
 
-    run_testbench(_bench_device_pll, args)
-    myhdl.toVerilog.name = top_clock_mgmt_wrap.__name__ + '_' + args.vendor
-    myhdl.toVerilog.directory = 'output'
-    myhdl.toVerilog(top_clock_mgmt_wrap, clockext, resetext, dripple, status, args)
+    run_testbench(bench_device_pll, args=args)
+    inst = top_clock_mgmt_wrap(clockext, resetext, dripple, status, args)
+    inst.convert(hdl="Verilog", directory="output")
 
 
 if __name__ == '__main__':

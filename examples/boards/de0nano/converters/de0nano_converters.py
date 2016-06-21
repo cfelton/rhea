@@ -1,16 +1,16 @@
 
-from __future__ import division
-
 """
 This example uses the A/D converter and the accelerometer.
 The example retrieves the samples from the converters and ...
 """
 
+from __future__ import division
+
+import myhdl
 from myhdl import (Signal, intbv, always_comb, always_seq,
                    always, TristateSignal, concat, instances)
 
-from rhea.system import (Clock, Reset, Global, FIFOBus)
-
+from rhea.system import Clock, Reset, Global, FIFOBus
 from rhea.cores.converters import adc128s022
 from rhea.cores.spi import spi_controller
 from rhea.cores.spi import SPIBus
@@ -19,15 +19,15 @@ from rhea.cores.video import color_bars
 from rhea.cores.video.lcd import lt24lcd
 from rhea.cores.video.lcd import LT24Interface
 from rhea.cores.misc import glbl_timer_ticks
-from rhea.system import FIFOBus
 
 import rhea.build as build
 from rhea.build.boards import get_board
 
-# board defintion for the automated flow
+# board definition for the automated flow
 brd = None
 
 
+@myhdl.block
 def de0nano_converters(clock, reset, led,
     # ADC signals
     adc_cs_n, adc_saddr, adc_sdat, adc_sclk,
@@ -47,60 +47,59 @@ def de0nano_converters(clock, reset, led,
     adcbus = SPIBus()
     adcbus.mosi, adcbus.miso, adcbus.csn, adcbus.sck = (
         adc_saddr, adc_sdat, adc_cs_n, adc_sclk)
-    fifobus = FIFOBus(width=16, size=16)
+    fifobus = FIFOBus(width=16)
     channel = Signal(intbv(0, min=0, max=8))
 
     # ----------------------------------------------------------------
     # global ticks
-    gtick = glbl_timer_ticks(glbl, include_seconds=True, 
-                             user_timer=16)
+    t_inst = glbl_timer_ticks(glbl, include_seconds=True, user_timer=16)
 
     # ----------------------------------------------------------------
     # instantiate the ADC controller (retieves samples)
-    gconv = adc128s022(glbl, fifobus, adcbus, channel)
+    conv_inst = adc128s022(glbl, fifobus, adcbus, channel)
 
     # read the samples out of the FIFO interface
     fiford = Signal(bool(0))
+
     @always(clock.posedge)
-    def rtl_read():
+    def beh_read():
         fiford = not fifobus.empty
 
     @always_comb
-    def rtl_read_gate():
+    def beh_read_gate():
         fifobus.read.next = fiford and not fifobus.empty
 
     # for now assign the samples to the  LEDs for viewing
     heartbeat = Signal(bool(0))
+
     @always_seq(clock.posedge, reset=reset)
-    def rtl_leds():
+    def beh_leds():
         if glbl.tick_sec:
             heartbeat.next = not heartbeat
         led.next = concat(fifobus.read_data[12:5], heartbeat)
-
 
     # ----------------------------------------------------------------
     # LCD dislay
     lcd = LT24Interface()    
     resolution, color_depth = lcd.resolution, lcd.color_depth
-    lcd.assign(lcd_on, lcd_resetn, lcd_csn, lcd_rs, lcd_wrn, 
-               lcd_rdn, lcd_data)
+    lcd.assign(
+        lcd_on, lcd_resetn, lcd_csn, lcd_rs, lcd_wrn, lcd_rdn, lcd_data
+    )
+
     # color bars and the interface between video source-n-sink
     vmem = VideoMemory(resolution=resolution, color_depth=color_depth)
-    gbar = color_bars(glbl, vmem, resolution=resolution, 
+    bar_inst = color_bars(glbl, vmem, resolution=resolution,
                       color_depth=color_depth)
     # LCD video driver
-    glcd = lt24lcd(glbl, vmem, lcd)
+    lcd_inst = lt24lcd(glbl, vmem, lcd)
 
-
-    gens = gtick, gconv, rtl_read, rtl_leds, gbar, glcd
-
-    return gens
+    return myhdl.instances()
 
 
 # the default port map
 # @todo: should be able to extact this from the board
-# @todo: definition:
-# @todo: portmap = brd.map_ports(de0nano_converters)    
+#        definition:
+#        portmap = brd.map_ports(de0nano_converters)
 de0nano_converters.portmap = {
     'clock': Clock(0, frequency=50e6),
     'reset': Reset(0, active=0, async=True),
@@ -131,7 +130,6 @@ def build():
 
     
 def program():
-    global flow
     if flow is not None:
         flow.program()
 

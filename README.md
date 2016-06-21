@@ -9,11 +9,11 @@ a merge of the `mn` and `gizflo` projects.
 
 [![Documentation Status](https://readthedocs.org/projects/rhearay/badge/?version=latest)](http://rhearay.readthedocs.org/en/latest/) 
 [![Build Status](https://travis-ci.org/cfelton/rhea.svg?branch=master)](https://travis-ci.org/cfelton/rhea)
+[![Code Health](https://landscape.io/github/cfelton/rhea/master/landscape.svg?style=flat)](https://landscape.io/github/cfelton/rhea/master)
+[![Coverage Status](https://coveralls.io/repos/github/cfelton/rhea/badge.svg?branch=master)](https://coveralls.io/github/cfelton/rhea?branch=master)
 [![Join the chat at https://gitter.im/cfelton/rhea](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cfelton/rhea?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-
 <!-- banner -->
- 
  
 rhea 
 ====
@@ -38,8 +38,8 @@ dependencies
    - FPGA vendor tools, only for automated build tools.
    
    
-resources
----------
+documenation and resources
+--------------------------
 If you are not familiar with [myhdl](http://www.myhdl.org) starting with the
 [myhdl manual](http://docs.myhdl.org/en/stable/) and 
 [examples](http://www.myhdl.org/examples/) is recommended.  General myhdl 
@@ -58,17 +58,16 @@ wish to try out this package get
 [the development myhdl](https://github.com/jandecaluwe/myhdl)  (you will 
 need to clone it and install the source).  The first 
 *rhea* release will not occur until myhdl 1.0 is released (probably much
-later).  03-APR-2016 Update, there have been some new features to the
-myhdl 1.0 development (myhdl master branch) the master branch of rhea 
-has not caught up with this development (yet), version 0.9.1 will need
-to be used.
+later).  
+
+Getting close to the fist minor release.  The first minor release 
+will contain a small collection of documented cores and frameworks.
 
 This code/package is licensed under the MIT license.  This allows 
 anyone to use the package in their projects with no limitations.  
 Questions and other license options email me.
 
 The following are the definition of some terms used in this README :
-
 
    * cores : the building blocks of a system.  Also, know as IP
      (intellectual property).
@@ -91,7 +90,7 @@ The following are the definition of some terms used in this README :
 
 
 getting started
--------------------
+---------------
 To get started with the latest version (repo version) checkout out the
 code and run setup in *develop* mode.  The dependencies listed above 
 need to be installed.
@@ -129,17 +128,13 @@ The tests can be run from the test directory.
 ```
   # attempt to run the tests
   >> cd test
-  >> make test
-  # >> py.test
+  >> py.test
 ```
 
-**Note** currently an issue exists where the py.test takes an 
-extremely long time (more time than it should).  The py.test
-test runner is currently not used. 
 
 ### generating bitstreams
 
-If the FPGA vendor tools (Xilinx or Altera) are installed the
+If FPGA vendor tools (Xilinx, Altera, Lattice, Yosys) are installed the
 build examples can be run to generate bitstreams.
 
 ```

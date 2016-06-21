@@ -4,8 +4,8 @@
 
 from copy import deepcopy
 
-from myhdl import *
-from myhdl._Signal import _Signal
+import myhdl
+from myhdl import Signal, intbv, always_comb
 from myhdl import SignalType
 
 from ..cso import ControlStatusBase
@@ -22,7 +22,7 @@ class RegisterBits(object):
         return self.__dict__[k]
 
 
-class Register(_Signal):
+class Register(SignalType):
     def __init__(self, name, width, access='rw', default=0,
                  addr=None, comment=""):
         """
@@ -112,6 +112,7 @@ class Register(_Signal):
         else:
             raise TypeError
 
+    @myhdl.block
     def assign_namedbits(self):
         """ assign the named 'ro' bits to the register """
 
@@ -128,11 +129,11 @@ class Register(_Signal):
         nbits = self.width
 
         @always_comb
-        def rtl_assign():
+        def beh_assign():
             for ii in range(nbits):
                 self.next[ii] = wbits[ii]
 
-        return rtl_assign
+        return beh_assign
 
 
 class RegisterFile(MemorySpace):
@@ -246,6 +247,7 @@ class RegisterFile(MemorySpace):
         rd = [rr.rd for rr in self._allregs]
         return wr, rd
 
+    @myhdl.block
     def get_assigns(self):
         assign_inst = []
         for aa, rr in self._roregs:

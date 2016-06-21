@@ -3,7 +3,8 @@ from __future__ import print_function
 
 import pytest
 
-from myhdl import *
+import myhdl
+from myhdl import Signal, intbv, instance, delay, StopSimulation
 
 from button_led_mm import button_led_mm
 
@@ -19,7 +20,8 @@ def test_btn_led():
     leds = Signal(intbv(0)[8:])
     btns = Signal(intbv(0)[4:])
 
-    def _bench_btn_led():
+    @myhdl.build
+    def bench_btn_led():
 
         # bus_type = ('A', 'B', 'W', 'X') # avalon, barebone, wishbone, AXI
         tbdut = button_led_mm(clock, reset, leds, btns, bus_type='wishbone')
@@ -42,7 +44,7 @@ def test_btn_led():
             reset.next = not reset.active
             yield clock.posedge
 
-            #assert leds == 0
+            # assert leds == 0
             
             for ii in range(3):
                 # simulate a button press
@@ -54,19 +56,18 @@ def test_btn_led():
                     yield clock.posedge
                     
                 # @todo: a more interesting check
-                #assert leds != 0
+                # assert leds != 0
             yield delay(100)
 
             raise StopSimulation
 
         return tbdut, tbclk, tbstim
 
-    run_testbench(_bench_btn_led)
+    run_testbench(bench_btn_led)
     # currently an error when converting to both at once,
     # only convert to one at a time.
-    toVerilog.directory = 'output'
-    toVerilog(button_led_mm, clock, reset, leds, btns)
-    #toVHDL(button_led_mm, clock, reset, leds, btns)
+    inst = button_led_mm(clock, reset, leds, btns)
+    inst.convert(hdl='Verilog', directory='output')
 
 
 if __name__ == '__main__':

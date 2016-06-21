@@ -1,5 +1,5 @@
 
-
+import myhdl
 from myhdl import (Signal, intbv, enum, instance, always, delay,
                    concat, now, instances)
 
@@ -14,7 +14,8 @@ def convert(analog, rails=(0, 3.3)):
     sample[:] = smp 
     return sample  # digital
     
-    
+
+@myhdl.block
 def adc128s022_model(spibus, analog_channels, vref_pos=3.3, vref_neg=0.):
     """
     This is a model of the ADC128S022 A/D converter.  It will emulated
@@ -24,7 +25,7 @@ def adc128s022_model(spibus, analog_channels, vref_pos=3.3, vref_neg=0.):
     
     # use the signals names in the datasheet, names from the device
     # perspective
-    sclk, dout, din, csn = (spibus.sck, spibus.miso, spibus.mosi, spibus.csn)
+    sclk, dout, din, csn = spibus()
     
     states = enum('start', 'track', 'hold')
     state = Signal(states.start)

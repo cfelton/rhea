@@ -1,24 +1,28 @@
-
-from __future__ import division
-
 """
 This module contains a video driver for the terasic LT24
 LCD display ...
 """
-from myhdl import Signal, intbv, enum, always_seq, concat, now
+
+from __future__ import division
+
+import myhdl
+from myhdl import Signal, intbv, enum, always_seq, concat
 
 from .lt24intf import LT24Interface
 from .lt24lcd_init_sequence import init_sequence, build_init_rom
 from .lt24lcd_driver import lt24lcd_driver
 
+
+@myhdl.block
 def lt24lcd(glbl, vmem, lcd):
     """ A video display driver for the terasic LT24 LCD display. 
     
     This driver reads pixels from the VideoMemory interface and transfers
     them to the LT24 display.  This hardware module (component) will also
     perform the initial display configuration.
-    
-    Ports:
+
+    (arguments == ports)
+    Arguments:
         glbl (Global): global signals, clock, reset, enable, etc. 
         vmem (VideoMemory): video memory interface, the driver will read 
                             pixels from this interface. 
@@ -92,7 +96,7 @@ def lt24lcd(glbl, vmem, lcd):
     # state-machine
 
     @always_seq(clock.posedge, reset=reset)
-    def rtl_state_machine():
+    def beh_state_machine():
         state_prev.next = state 
         if state == states.init_wait_reset:
             if lcd.reset_complete:
@@ -101,7 +105,7 @@ def lt24lcd(glbl, vmem, lcd):
         elif state == states.init_start:
             v = rom[offset]
             # @todo: change the table to only contain the number of
-            # @todo: bytes to be transferred
+            #        bytes to be transferred
             datalen.next = v - 3
             p = rom[offset+1]
             pause.next = p
@@ -173,7 +177,6 @@ def lt24lcd(glbl, vmem, lcd):
             else:
                 data.next = concat(vmem.red, vmem.green, vmem.blue)
                 state.next = states.display_update_next
-                
 
         elif state == states.display_update_next:
             if cmd_in_progress:
@@ -188,6 +191,6 @@ def lt24lcd(glbl, vmem, lcd):
             if not cmd_in_progress:
                 state.next = states.display_update_start
 
-    return gdrv, rtl_state_machine
+    return myhdl.instances()
 
 

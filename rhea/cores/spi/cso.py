@@ -1,8 +1,11 @@
 
-from myhdl import Signal, always_comb
-from rhea.system import Constants
+import myhdl
+from myhdl import intbv
+
+from rhea import Constants
 from rhea.system import Bit, Byte
-from rhea.system import ControlStatusBase, assign_config
+from rhea.system import ControlStatusBase
+from ..misc import assign
 
 
 class ControlStatus(ControlStatusBase):
@@ -29,7 +32,7 @@ class ControlStatus(ControlStatusBase):
             rx_fifo_count:
 
             slave_select:
-            slave_select_fault
+            slave_select_fault:
 
         The following cso attributes use the pre-defined hardware types,
         these are used to give "hints" to the automated register-file
@@ -62,29 +65,33 @@ class ControlStatus(ControlStatusBase):
 
         super(ControlStatus, self).__init__()
 
+    @myhdl.block
     def default_assign(self):
         cfgbits = self.get_config_bits()
         cfg = Constants(**cfgbits)
-        keep = Signal(bool(0))
 
-        @always_comb
-        def beh_assign():
-            """
-            In the static configuration case only one value makes sense
-            for certain configuration signals, those are set here
-            """
-            self.enable.next = True if keep else True
-            self.freeze.next = False
+        insts = []
 
-        gas = [None for _ in cfgbits]
+        # In the static configuration case only one value makes sense
+        # for certain configuration signals, those are set here
+        insts += [assign(self.enable, True)]
+        insts += [assign(self.freeze, False)]
+
         for ii, k in enumerate(cfgbits):
-            gas[ii] = assign_config(getattr(self, k), getattr(cfg, k))
+            configsig = getattr(self, k)
+            configval = getattr(cfg, k)
+            assert isinstance(configval, (bool, int, intbv))
+            if isinstance(configsig.val, bool):
+                configval = bool(configval)
+            insts += [assign(configsig, configval)]
 
-        return beh_assign, gas
+        return myhdl.instances()
 
-    def get_generators(self):
-        gens = []
+    @myhdl.block
+    def instances(self):
         if self.isstatic:
-            gens.append(self.default_assign())
+            inst = self.default_assign()
+        else:
+            inst = []
 
-        return gens
+        return inst

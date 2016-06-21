@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import (Signal, intbv, always, always_seq, always_comb,
                    instance, instances, concat, enum, now)
 
@@ -14,6 +15,7 @@ from . import Barebone
 
 class Wishbone(MemoryMapped):
     name = 'wishbone'
+
     def __init__(self, glbl=None, data_width=8, address_width=16, name=None):
         """ Wishbose bus object
         Parameters (kwargs):
@@ -65,6 +67,7 @@ class Wishbone(MemoryMapped):
         self._pdat_o.append(dat)
         self._pack_o.append(ack)
 
+    @myhdl.block
     def interconnect(self):
         """ combine all the peripheral outputs
         """
@@ -73,7 +76,7 @@ class Wishbone(MemoryMapped):
         wb = self
         
         @always_seq(self.clk_i.posedge, reset=self.rst_i)
-        def rtl_or_combine():
+        def beh_or_combine():
             dats = 0
             acks = 0
             for ii in range(ndevs):
@@ -82,8 +85,9 @@ class Wishbone(MemoryMapped):
             wb.dat_o.next = dats
             wb.ack_o.next = acks
             
-        return rtl_or_combine
+        return beh_or_combine
 
+    @myhdl.block
     def peripheral_regfile(self, regfile, name=''):
         """ memory-mapped wishbone peripheral interface
         """
@@ -135,20 +139,19 @@ class Wishbone(MemoryMapped):
                            int(wb.dat_i), int(wb.dat_o), int(lwb_do), ))
 
         @always_comb
-        def rtl_assign():
+        def beh_assign():
             lwb_acc.next = wb.cyc_i and wb.stb_i
             lwb_wr.next = wb.cyc_i and wb.stb_i and wb.we_i
 
         @always_seq(clock.posedge, reset=reset)
-        def rtl_selected():
-            if (wb.cyc_i and wb.adr_i >= base_address and
-                wb.adr_i < max_address):
+        def beh_selected():
+            if (wb.cyc_i and wb.adr_i >= base_address and wb.adr_i < max_address):
                 lwb_sel.next = True
             else:
                 lwb_sel.next = False
                 
         @always_seq(clock.posedge, reset=reset)
-        def rtl_bus_cycle():
+        def beh_bus_cycle():
             # set default, only active one cycle 
             newcyc.next = False     
             if wb.cyc_i:
@@ -160,7 +163,7 @@ class Wishbone(MemoryMapped):
                 ackcnt.next = num_ackcyc
 
         @always_comb
-        def rtl_ack():
+        def beh_ack():
             if wb.cyc_i and newcyc:
                 lwb_ack.next = True
             else:
@@ -179,7 +182,7 @@ class Wishbone(MemoryMapped):
         # peripheral know the register has been read).
         # @always_seq(clock.posedge, reset=reset)
         @always_comb
-        def rtl_read():
+        def beh_read():
             if lwb_sel and not lwb_wr and newcyc:
                 for ii in range(nregs):
                     aa = addr_list[ii]
@@ -196,7 +199,7 @@ class Wishbone(MemoryMapped):
         # register) and generate a register write pulse (let the 
         # peripheral know the register has been written).
         @always(clock.posedge)
-        def rtl_write():
+        def beh_write():
             if reset == int(reset.active):
                 for ii in range(nregs):
                     ro = rol[ii]
@@ -218,9 +221,9 @@ class Wishbone(MemoryMapped):
                         pwr[ii].next = False
 
         # get the generators that assign the named bits
-        gas = regfile.get_assigns()
+        assign_inst = regfile.get_assigns()
 
-        return instances()
+        return myhdl.instances()
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def get_generic(self):
@@ -229,6 +232,7 @@ class Wishbone(MemoryMapped):
                            address_width=self.address_width)
         return generic
 
+    @myhdl.block
     def map_to_generic(self, generic):
         clock = self.clock
         wb, bb = self, generic
@@ -241,7 +245,7 @@ class Wishbone(MemoryMapped):
         wb.add_output_bus(lwb_do, lwb_ack)
 
         @always_comb
-        def rtl_assign():
+        def beh_assign():
             bb.write.next = wb.cyc_i and wb.we_i
             bb.read.next = wb.cyc_i and not wb.we_i
             bb.write_data.next = wb.dat_i
@@ -250,7 +254,7 @@ class Wishbone(MemoryMapped):
             bb.mem_addr.next = wb.adr_i[16:]
 
         @always(clock.posedge)
-        def rtl_ack():
+        def beh_ack():
             if not lwb_ack and wb.cyc_i and not inprog:
                 lwb_ack.next = True
                 inprog.next = True
@@ -259,8 +263,9 @@ class Wishbone(MemoryMapped):
             elif not wb.cyc_i:
                 inprog.next = False
 
-        return rtl_assign, rtl_ack
+        return beh_assign, beh_ack
 
+    @myhdl.block
     def map_from_generic(self, generic):
         clock = self.clock
         wb, bb = self, generic
@@ -268,7 +273,7 @@ class Wishbone(MemoryMapped):
         iswrite = Signal(bool(0))
 
         @always_comb
-        def rtl_assign():
+        def beh_assign():
             if bb.write or bb.read:
                 wb.cyc_i.next = True
                 wb.we_i.next = True if bb.write else False
@@ -284,7 +289,7 @@ class Wishbone(MemoryMapped):
             bb.read_data.next = wb.dat_o
 
         @always(clock.posedge)
-        def rtl_delay():
+        def beh_delay():
             if not inprog and (bb.read or bb.write):
                 inprog.next = True
                 iswrite.next = bb.write
@@ -293,10 +298,10 @@ class Wishbone(MemoryMapped):
                 iswrite.next = False
 
         @always_comb
-        def rtl_done():
+        def beh_done():
             bb.done.next = not inprog
 
-        return rtl_assign
+        return myhdl.instances()
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     def writetrans(self, addr, val):

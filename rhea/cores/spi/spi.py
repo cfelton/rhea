@@ -9,9 +9,6 @@ This module is controlled / configured from the register bus.
 data can either be transferred from the register bus or
 it can be transferred from the streaming interface.
 
-This module is register compatible with the Xilinx OPB SPI
-controller.  The interrupt register has been removed and replaced
-with a clock divide register.
 """
 from __future__ import absolute_import, division
 
@@ -21,23 +18,25 @@ from myhdl import (Signal, intbv, modbv, enum, concat,
                    instance, now)
 
 from ..fifo import fifo_fast
-from rhea.system import Signals, Clock, Reset, Global, FIFOBus
+from rhea import Signals, Global
+from rhea.system import FIFOBus
 from . import SPIBus
 
 from .cso import ControlStatus
 
 
+@myhdl.block
 def spi_controller(
     # ---[ Module Ports]---
     glbl,          # global interface, clock, reset, etc.
     spibus,        # external SPI bus
     # optional ports
     fifobus=None,  # streaming interface, FIFO bus
-    mmbus=None,    # memory-mapped bus, contro status access
+    mmbus=None,    # memory-mapped bus, control status access
     cso=None,      # control-status object
     
     # ---[ Module Parameters ]---
-    include_fifo=True,    # include aan 8 byte deep FIFO
+    include_fifo=True,    # include an 8 byte deep FIFO
 ):
     """ SPI (Serial Peripheral Interface) module
     This module is an SPI controller (master) and can be used to interface
@@ -63,6 +62,7 @@ def spi_controller(
     clock, reset = glbl.clock, glbl.reset
     if cso is None:
         cso = spi_controller.cso()
+    fifosize = 8
 
     # -- local signals --
     ena = Signal(False)
@@ -77,9 +77,9 @@ def spi_controller(
 
     # internal FIFO bus interfaces
     #   external FIFO side (FIFO to external SPI bus)
-    itx = FIFOBus(size=fifobus.size, width=fifobus.width)
+    itx = FIFOBus(width=fifobus.width)
     #   internal FIFO side (FIFO to internal bus)
-    irx = FIFOBus(size=fifobus.size, width=fifobus.width)
+    irx = FIFOBus(width=fifobus.width)
     
     states = enum('idle', 'wait_hclk', 'data_in', 'data_change',
                   'write_fifo', 'end')
@@ -97,11 +97,11 @@ def spi_controller(
     # FIFO for the wishbone data transfer
     if include_fifo:
         fifo_fast.debug = spi_controller.debug
-        fifo_tx_inst = fifo_fast(reset, clock, itx)
-        fifo_rx_inst = fifo_fast(reset, clock, irx)
+        fifo_tx_inst = fifo_fast(glbl, fifobus=itx, size=fifosize)
+        fifo_rx_inst = fifo_fast(glbl, fifobus=irx, size=fifosize)
 
     @always_comb
-    def rtl_assign():
+    def beh_assign():
         cso.tx_fifo_count.next = itx.count
         cso.rx_fifo_count.next = irx.count
 
@@ -113,14 +113,14 @@ def spi_controller(
     clock_counts = tuple([(2**ii)-1 for ii in range(13)])
 
     @always(clock.posedge)
-    def rtl_clk_div():
+    def beh_clk_div():
         if cso.enable and clkcnt != 0 and state != states.idle:
             clkcnt.next = (clkcnt - 1)
         else:
             clkcnt.next = clock_counts[cso.clock_divisor]
 
     @always_seq(clock.posedge, reset=reset)
-    def rtl_state_and_more():
+    def beh_state_and_more():
         """
         Designed to the following timing diagram
 
@@ -222,7 +222,7 @@ def spi_controller(
                     assert False, "SPI Invalid State"
 
     @always_comb
-    def rtl_fifo_sel():
+    def beh_fifo_sel():
         """
         The `itx` and `irx` FIFO interfaces are driven by different
         logic depending on the configuration.  This modules accesses
@@ -262,19 +262,19 @@ def spi_controller(
         irx.write_data.next = rreg
 
     @always_comb
-    def rtl_x_mosi():
+    def beh_x_mosi():
         # @todo lsb control signal
         x_mosi.next = treg[7]
 
     @always_comb
-    def rtl_gate_mosi():
+    def beh_gate_mosi():
         if cso.loopback:
             spibus.mosi.next = False
         else:
             spibus.mosi.next = x_mosi
 
-    @always_comb   #(clock.posedge)
-    def rtl_spi_sigs():
+    @always_comb   # (clock.posedge)
+    def beh_spi_sigs():
         spibus.sck.next = x_sck
         if cso.loopback:
             x_miso.next = x_mosi
@@ -282,7 +282,7 @@ def spi_controller(
             x_miso.next = spibus.miso
 
     @always_comb
-    def rtl_slave_select():
+    def beh_slave_select():
         if cso.manual_slave_select:
             spibus.ss.next = ~cso.slave_select
         elif x_ss:
@@ -331,9 +331,8 @@ def spi_controller(
             if irx.read:
                 print("   READ rx fifo {:02X}".format(int(irx.read_data)))
 
-    # return the myhdl generators
-    gens = myhdl.instances()
-    return gens
+    # return the myhdl generators and instances
+    return myhdl.instances()
 
 spi_controller.debug = False
 spi_controller.cso = ControlStatus

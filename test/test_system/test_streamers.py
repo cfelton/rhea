@@ -12,7 +12,7 @@ from rhea.system.stream import AXI4StreamLite
 from rhea.system.stream import AXI4StreamLitePort
 from rhea.system.stream import AvalonStream
 from rhea.utils import keep_port_names
-from rhea.utils.test import run_testbench, tb_default_args, tb_args
+from rhea.utils.test import run_testbench, tb_default_args, tb_args, tb_convert
 
 
 busmap = {
@@ -21,6 +21,7 @@ busmap = {
 }
 
 
+@myhdl.block
 def streamer_top(clock, reset, upstreamport, downstreamport,
                  num_registers=3, keep=True):
 
@@ -36,8 +37,8 @@ def streamer_top(clock, reset, upstreamport, downstreamport,
     downstream = streamtype(glbl, downstreamport.data_width)
 
     gens = []
-    #gens.append(upstream.assign_port(upstreamport))
-    #gens.append(downstream.assign_port(downstreamport))
+    # gens.append(upstream.assign_port(upstreamport))
+    # gens.append(downstream.assign_port(downstreamport))
 
     if keep:
         keep_inst = keep_port_names(upstreamport=upstreamport,
@@ -119,7 +120,8 @@ def testbench_streamer(args=None):
     upstream = AXI4StreamLitePort(data_width=32)
     downstream = AXI4StreamLitePort(data_width=32)
 
-    def _bench_streamer():
+    @myhdl.block
+    def bench_streamer():
         tbdut = streamer_top(clock, reset, upstream, downstream, keep=args.keep)
         tbclk = clock.gen()
 
@@ -155,13 +157,10 @@ def testbench_streamer(args=None):
 
         return tbdut, tbclk, tbstim, tbcap
 
-    run_testbench(_bench_streamer, args=args)
+    run_testbench(bench_streamer, args=args)
 
-    myhdl.toVerilog.name = "{}".format(streamer_top.__name__)
-    if args.keep:
-        myhdl.toVerilog.name += '_keep'
-    myhdl.toVerilog.directory = 'output'
-    myhdl.toVerilog(streamer_top, clock, reset, upstream, downstream)
+    inst = streamer_top(clock, reset, upstream, downstream)
+    tb_convert(inst)
 
 
 def tb_parser():

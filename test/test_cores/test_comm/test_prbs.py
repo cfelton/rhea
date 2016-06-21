@@ -1,6 +1,5 @@
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import print_function, division
 
 from random import randint
 
@@ -22,7 +21,8 @@ def test_known_prbs5(args=None):
 
     expected_pattern = (0xC7, 0xAE, 0x90, 0xE6,)
 
-    def _bench_prbs5():
+    @myhdl.block
+    def bench_prbs5():
         tbdut = prbs_generate(glbl, prbs, order=5, initval=0x1F)
         tbclk = clock.gen(hticks=8000)
         
@@ -44,7 +44,7 @@ def test_known_prbs5(args=None):
                 
         return tbdut, tbclk, tbstim
         
-    run_testbench(_bench_prbs5, timescale='1ps', args=args)
+    run_testbench(bench_prbs5, timescale='1ps', args=args)
     
         
 def test_known_prbs7(args=None):
@@ -57,7 +57,8 @@ def test_known_prbs7(args=None):
     # computed by hand
     expected_pattern = (0x3F, 0x10, 0x0C, 0xC5, 0x13, 0xCD, 0x95, 0x2F)
 
-    def _bench_prbs7():
+    @myhdl.block
+    def bench_prbs7():
         tbdut = prbs_generate(glbl, prbs, order=7, initval=0x7F)
         tbclk = clock.gen(hticks=8000)
 
@@ -76,7 +77,7 @@ def test_known_prbs7(args=None):
 
         return tbdut, tbclk, tbstim
 
-    run_testbench(_bench_prbs7, timescale='1ps', args=args)
+    run_testbench(bench_prbs7, timescale='1ps', args=args)
 
 
 def test_prbs_word_lengths(args=None):
@@ -86,7 +87,8 @@ def test_prbs_word_lengths(args=None):
     glbl = Global(clock, reset)
     prbs = Signal(intbv(0)[8:])
 
-    def _bench_prbs():
+    @myhdl.block
+    def bench_prbs():
         # currently only order 7, 9, 11, 15, 23, and 31 are coded in
         # prbs feedback tap table, limit testing to one of these patterns
         tbdut = prbs_generate(glbl, prbs, order=23)
@@ -108,7 +110,7 @@ def test_prbs_word_lengths(args=None):
         
     for wl in [2**ii for ii in range(11)]:
         prbs = Signal(intbv(0)[wl:])
-        run_testbench(_bench_prbs, timescale='1ps', args=args)        
+        run_testbench(bench_prbs, timescale='1ps', args=args)
 
 
 def test_prbs_check(args=None):
@@ -124,8 +126,9 @@ def test_prbs_check(args=None):
     inject_error = Signal(bool(0))
     word_count = Signal(intbv(0)[64:])
     error_count = Signal(intbv(0)[64:])
-    
-    def _bench_prbs_checker():
+
+    @myhdl.block
+    def bench_prbs_checker():
         tbgen = prbs_generate(glbl, prbs, inject_error=inject_error,
                               order=order)
         tbdut = prbs_check(glbl, prbs, locked, word_count,
@@ -193,7 +196,7 @@ def test_prbs_check(args=None):
                 
         return tbgen, tbdut, tbclk, tbstim 
         
-    run_testbench(_bench_prbs_checker, timescale='1ps', args=args)
+    run_testbench(bench_prbs_checker, timescale='1ps', args=args)
     
     
 def test_conversion(args=None):
@@ -203,25 +206,21 @@ def test_conversion(args=None):
     glbl = Global(clock, reset)
     prbs = Signal(intbv(0)[8:])
 
-    myhdl.toVerilog.directory = 'output'
-    myhdl.toVerilog.no_testbench = True
-    myhdl.toVHDL.directory = 'output'
-    
     # convert the generator
-    myhdl.toVerilog(prbs_generate, glbl, prbs, order=23)
-    myhdl.toVHDL(prbs_generate, glbl, prbs, order=23)    
-    
+    inst = prbs_generate(glbl, prbs, order=23)
+    inst.convert(hdl='Verilog', testbench=False, directory='output')
+
     # convert the checker
     locked = Signal(bool(0))
     word_count = Signal(intbv(0)[64:])
     error_count = Signal(intbv(0)[64:])
 
-    myhdl.toVerilog(prbs_check, glbl, prbs, locked, 
-                    word_count, error_count, order=23)
-    myhdl.toVHDL(prbs_check, glbl, prbs, locked, 
-                 word_count, error_count, order=23)
-                 
-                 
+    inst = prbs_check(glbl, prbs, locked, word_count, error_count, order=23)
+    inst.convert(hdl='Verilog', testbench=False, directory='output')
+    # @todo: add VHDL conversion, currently there is a but
+    #        in myhdl 1.0dev that prevents back-to-back conversion
+
+
 def tb_parser():
     pass
 

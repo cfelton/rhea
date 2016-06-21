@@ -2,7 +2,7 @@
 Note::
 
    This project is in beta mode and under heavy development.  Not all
-   features described in the documentation are implmented.  The features
+   features described in the documentation are implemented.  The features
    described in the documentation are in the process of being implemented.
    Many of the modules, interfaces, and functions may change considerably
    before the first release.
@@ -19,6 +19,9 @@ includes a complete test suite.
 
 
 The ``rhea`` package is divided into the following subpackages:
+
+   - **rhea**: The top-level namespace contains a small number of components
+     (thin layer) use to build the subblocks (cores)
 
    - **system**: The *system* subpackage contains the `interface`_ classes and
      other useful tools to assist in the building of complex digital designs.
@@ -38,10 +41,12 @@ The ``rhea`` package is divided into the following subpackages:
    - **vendor***: The vendor subpackage is an encapsulation of device
      primitives.
 
+.. _interface: http://docs.myhdl.org/en/stable/whatsnew/0.9.html#interfaces-conversion-of-attribute-accesses
 
 .. toctree::
    :maxdepth: 1
 
+   base_building_blocks
    system/overview
    cores/index
    models/index

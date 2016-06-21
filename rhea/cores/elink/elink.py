@@ -1,6 +1,5 @@
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
 
 def elink_module(elink_intf, emesh_intf):
@@ -12,27 +11,22 @@ def elink_module(elink_intf, emesh_intf):
 
     """
 
-    # keep track of all the myhdl generators
+    # keep track of all the myhdl instances
     mod_inst = []
 
     # clock and reset config
-    # g = ecfg_elink()
-    # mod_inst.append(g)
+    # mod_inst += ecfg_elink()
 
     # receiver
-    # g = erx(elink, emesh_e)
-    # mod_inst.append(g)
+    # mod_inst += erx(elink, emesh_e)
 
     # transmitter
-    # g = etx(elink, emesh_e)
-    # mod_inst.append(g)
+    # mod_inst += etx(elink, emesh_e)
 
     # CDC FIFO
-    # g = ecfg_fifo(emesh, emesh_e)
-    # mod_inst.append(g)
+    # mod_inst += ecfg_fifo(emesh, emesh_e)
 
     # Vendor specific IO SERDES
-    # g = io_serdes()
-    # mod_inst.append(g)
+    # mod_inst += io_serdes()
 
     return mod_inst

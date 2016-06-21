@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Serial Peripheral Interface (SPI) &mdash; rhea 0.1pre documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="rhea 0.1pre documentation" href="../index.html" />
+    <link rel="up" title="Cores" href="index.html" />
+    <link rel="next" title="fpgalink" href="usbext.html" />
+    <link rel="prev" title="FIFO" href="fifo.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="usbext.html" title="fpgalink"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fifo.html" title="FIFO"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">rhea 0.1pre documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Cores</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="serial-peripheral-interface-spi">
+<h1>Serial Peripheral Interface (SPI)<a class="headerlink" href="#serial-peripheral-interface-spi" title="Permalink to this headline">¶</a></h1>
+<p>The following is a description of the SPI cores in the <code class="docutils literal"><span class="pre">rhea</span></code> package.</p>
+<div class="section" id="spi-controller">
+<h2>SPI controller<a class="headerlink" href="#spi-controller" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rhea.cores.spi.spi_controller">
+<code class="descclassname">rhea.cores.spi.</code><code class="descname">spi_controller</code><span class="sig-paren">(</span><em>glbl</em>, <em>spibus</em>, <em>fifobus=None</em>, <em>mmbus=None</em>, <em>cso=None</em>, <em>include_fifo=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rhea/cores/spi/spi.html#spi_controller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rhea.cores.spi.spi_controller" title="Permalink to this definition">¶</a></dt>
+<dd><p>SPI (Serial Peripheral Interface) module
+This module is an SPI controller (master) and can be used to interface
+with various external SPI devices.</p>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><p class="first">glbl (Global): clock and reset interface
+spibus (SPIBus): external (off-chip) SPI bus
+fifobus (FIFOBus): interface to the FIFOs, write side is to</p>
+<blockquote>
+<div>the TX the read side from the RX.</div></blockquote>
+<dl class="last docutils">
+<dt>mmbus (MemoryMapped): a memory-mapped bus used to access</dt>
+<dd>the control-status signals.</dd>
+<dt>cso (ControlStatus): the control-status object used to control</dt>
+<dd>this peripheral</dd>
+<dt>include_fifo (bool): include the FIFO ... this is not fully</dt>
+<dd>implemented</dd>
+</dl>
+</dd>
+<dt>Note:</dt>
+<dd>At last check the register-file automation was not complete, only
+the <cite>cso</cite> external control or <cite>cso</cite> configuration can be utilized.</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="spi-slave-fifo">
+<h2>SPI slave FIFO<a class="headerlink" href="#spi-slave-fifo" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="rhea.cores.spi.spi_slave_fifo">
+<code class="descclassname">rhea.cores.spi.</code><code class="descname">spi_slave_fifo</code><span class="sig-paren">(</span><em>glbl</em>, <em>spibus</em>, <em>fifobus</em>, <em>cso=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rhea/cores/spi/spi_slave_fifo.html#spi_slave_fifo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rhea.cores.spi.spi_slave_fifo" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is an SPI slave peripheral, when the master starts clocking
+any data in the TX FIFO (fifobus.write) will be sent (the next
+byte) and the received byte will be copied to RX FIFO
+(fifobus.read).  The <cite>cso</cite> interface can be used to configure
+how the SPI slave peripheral behaves.</p>
+<dl class="docutils">
+<dt>Arguments (Ports):</dt>
+<dd>glbl (Global): global clock and reset
+spibus  (SPIBus): the external SPI interface
+fifobus (FIFOBus): the fifo interface
+cso (SPIControlStatus): the control status signals</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Serial Peripheral Interface (SPI)</a><ul>
+<li><a class="reference internal" href="#spi-controller">SPI controller</a></li>
+<li><a class="reference internal" href="#spi-slave-fifo">SPI slave FIFO</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fifo.html"
+                        title="previous chapter">FIFO</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="usbext.html"
+                        title="next chapter">fpgalink</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/cores/spi.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="usbext.html" title="fpgalink"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fifo.html" title="FIFO"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">rhea 0.1pre documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Cores</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Christopher L. Felton.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

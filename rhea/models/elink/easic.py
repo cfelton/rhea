@@ -1,20 +1,22 @@
 
 from __future__ import absolute_import
 
-from myhdl import *
+import myhdl
+from myhdl import intbv, instance, delay
 
 from rhea.cores.elink import ELink
 from rhea.cores.elink import EMeshPacket
 from rhea.models import FIFO
 
 
+@myhdl.block
 def elink_asic_model(elink):
     """ Model a simple ELink device (something like Epiphany)
 
-    :param elink: Interface to the external ELink enabled device
-    :return: myhdl generators
+    Arguments:
+        elink: Interface to the external ELink enabled device
 
-    not convertible.
+    myhdl not convertible.
     """
     assert isinstance(elink, ELink)
 
@@ -84,4 +86,4 @@ def elink_asic_model(elink):
             else:
                 yield tx.lclk.posedge
 
-    return gclk, p_rx_packets, p_proc_packets, p_tx_packets
+    return myhdl.instances()

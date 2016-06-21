@@ -2,9 +2,10 @@
 from __future__ import print_function
 from __future__ import division
 
-from myhdl import Signal, intbv, instances, always_seq
+import myhdl
+from myhdl import Signal, modbv
 
-from rhea.cores.uart import uart_lite
+from rhea.cores.uart import uartlite
 from rhea.cores.misc import glbl_timer_ticks
 from rhea.system import Global
 
@@ -16,7 +17,6 @@ def cathat(clock, reset, led):
     glbl = Global(clock, reset)
     gticks = glbl_timer_ticks(glbl, include_seconds=True)
 
-    
     lcnt = Signal(modbv(0, min=0, max=4))
 
     @always(clock.posedge)
@@ -29,6 +29,5 @@ def cathat(clock, reset, led):
 
     # @todo: SDRAM controller
 
-        
-    return instances()
+    return myhdl.instances()
             

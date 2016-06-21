@@ -1,10 +1,10 @@
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import print_function, division
 
 import argparse
 from pprint import pprint
 
+import myhdl
 from myhdl import Signal, intbv, ConcatSignal, always_comb, concat
 
 from rhea.system import Global, Clock, Reset
@@ -21,11 +21,14 @@ from rhea.vendor import device_serdes_output
 from rhea.build import get_board
 
 
-def parallella_serdes(clock, 
-                      # porcupine board breakout
-                      serial_tx_p, serial_tx_n,
-                      serial_rx_p, serial_rx_n,
-                      led, reset=None):
+@myhdl.block
+def parallella_serdes(
+    clock,
+    # porcupine board breakout
+    serial_tx_p, serial_tx_n,
+    serial_rx_p, serial_rx_n,
+    led, reset=None
+):
     """ 
     """
     assert len(led) == 8
@@ -45,29 +48,32 @@ def parallella_serdes(clock,
     prbso = [Signal(intbv(0)[1:]) for _ in range(nbanks)]
 
     # diff buffers for the diff signals
-    obuf = output_diff_buffer(prbso, serial_tx_p, serial_tx_n)    
-    ibuf = input_diff_buffer(serial_rx_p, serial_rx_n, prbsi)
+    obuf_inst = output_diff_buffer(prbso, serial_tx_p, serial_tx_n)
+    ibuf_inst = input_diff_buffer(serial_rx_p, serial_rx_n, prbsi)
     
     insts = []
     for bank in range(nbanks):
         
-        gg = prbs_generate(glbl, prbso[bank], inject_error[bank],
-                           order=23)
-        gc = prbs_check(glbl, prbsi[bank], locked[bank],
-                        word_count[bank], error_count[bank],
-                        order=23)
+        gen_inst = prbs_generate(
+            glbl, prbso[bank], inject_error[bank],
+            order=23
+        )
+        insts += [gen_inst]
 
-        for gg in (gg, gc,):
-            insts.append(gg)
+        chk_inst = prbs_check(
+            glbl, prbsi[bank], locked[bank],
+            word_count[bank], error_count[bank],
+            order=23
+        )
+        insts += [chk_inst]
 
     locks = ConcatSignal(*reversed(locked))
 
     @always_comb
     def led_assign():
         led.next = concat("1010", locks[4:])
-            
 
-    return ibuf, obuf, insts, led_assign
+    return myhdl.instances()
 
 
 def build(args):
@@ -84,6 +90,7 @@ def build(args):
     flow.run()
     info = flow.get_utilization()
     pprint(info)
+
 
 def cliparse():
     parser = argparse.ArgumentParser()

@@ -1,13 +1,12 @@
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import print_function, division
 
 from fractions import gcd
+import myhdl
+from myhdl import Signal, intbv, modbv, enum, always_seq, always
 
-from myhdl import (Signal, intbv, modbv, enum, always_seq, 
-                   always, now)
 
-
+@myhdl.block
 def uartbaud(glbl, baudce, baudce16, baudrate=115200):
     """ Generate the UART baudrate strobe
 
@@ -22,11 +21,7 @@ def uartbaud(glbl, baudce, baudce16, baudrate=115200):
     Parameters:
         baudrate: The desired baudrate
 
-    Return:
-        myHDL generators
-        rtlbaud: baudce strobe generator
-        rtlbaud16: baudce16 strobe generator
-                         
+    myhdl convertible
     """
     clock, reset = glbl.clock, glbl.reset
 
@@ -53,7 +48,7 @@ def uartbaud(glbl, baudce, baudce16, baudrate=115200):
     cnt16 = Signal(modbv(0, min=0, max=16))
 
     @always_seq(clock.posedge, reset=reset)
-    def rtlbaud16():
+    def beh_baud16():
         if cnt >= cntmax:
             cnt.next = cnt - cntmax  #baudlimit
             baudce16.next = True
@@ -62,7 +57,7 @@ def uartbaud(glbl, baudce, baudce16, baudrate=115200):
             baudce16.next = False
 
     @always_seq(clock.posedge, reset=reset)
-    def rtlbaud():
+    def beh_baud():
         # this strobe will be delayed one clocke from
         # the baudce16 strobe (non-issue)
         if baudce16:
@@ -74,9 +69,10 @@ def uartbaud(glbl, baudce, baudce16, baudrate=115200):
         else:
             baudce.next = False
 
-    return rtlbaud16, rtlbaud
+    return myhdl.instances()
 
 
+@myhdl.block
 def uarttx(glbl, fbustx, tx, baudce):
     """UART transmitter  function
     
@@ -88,11 +84,7 @@ def uarttx(glbl, fbustx, tx, baudce):
     Parameters:
         baudce : The transmittion baud rate
 
-    Returns:
-        myHDL generator
-        rtltx : Generator to keep open the transmittion line 
-            and write into it from the TX fifo.
-        
+    myhdl convertible
     """
     clock, reset = glbl.clock, glbl.reset
 
@@ -102,7 +94,7 @@ def uarttx(glbl, fbustx, tx, baudce):
     bitcnt = Signal(intbv(0, min=0, max=9))
 
     @always_seq(clock.posedge, reset=reset)
-    def rtltx():
+    def beh_tx():
         # default values
         fbustx.read.next = False
 
@@ -139,27 +131,21 @@ def uarttx(glbl, fbustx, tx, baudce):
         else:
             assert False, "Invalid state %s" % (state)
 
-    return rtltx
+    return myhdl.instances()
 
-# open the receiving line and read into fbusrx bytewise
-# that is, read into rx from fbusrx (receiver bus)
+
+@myhdl.block
 def uartrx(glbl, fbusrx, rx, baudce16):
     """UART receiver function
        
     Arguments(Ports):
         glbl : rhea.Global interface, clock and reset
         fbusrx : FIFOBus interface to the RX fifo
-        rx : The actual reciever line
+        rx : The actual receiver line
+        baudce16 : The receive baud rate, strobes 16x the
+            configured baud rate.
 
-    Parameters:
-        baudce16 : The receive baud rate
-
-    Returns:
-        myHDL generators
-        rtlmid : Get the mid bits        
-        rtlrx : Generator to keep open the receive line 
-            and read from it into RX fifo.
-        
+    myhdl convertible
     """
     clock, reset = glbl.clock, glbl.reset
 
@@ -177,7 +163,7 @@ def uartrx(glbl, fbusrx, rx, baudce16):
     # get the middle of the bits, always sync to the beginning
     # (negedge) of the start bit
     @always(clock.posedge)
-    def rtlmid():
+    def beh_mid():
         rxd.next = rx
         if (rxd and not rx) and state == states.wait:
             mcnt.next = 0
@@ -194,7 +180,7 @@ def uartrx(glbl, fbusrx, rx, baudce16):
             midbit.next = False
 
     @always_seq(clock.posedge, reset=reset)
-    def rtlrx():
+    def beh_rx():
         # defaults
         fbusrx.write.next = False
 
@@ -222,4 +208,4 @@ def uartrx(glbl, fbusrx, rx, baudce16):
             state.next = states.wait
             bitcnt.next = 0
 
-    return rtlmid, rtlrx
+    return myhdl.instances()

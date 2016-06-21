@@ -2,18 +2,19 @@
 import argparse 
 import subprocess
 
+import myhdl
 from myhdl import (Signal, intbv, always_seq, always_comb, 
                    concat, ConcatSignal,)
 
 from rhea.cores.uart import uartlite
 from rhea.cores.memmap import command_bridge
 from rhea.cores.misc import glbl_timer_ticks
-from rhea.system import Global, Clock, Reset
-from rhea.system import Barebone
-from rhea.system import FIFOBus
+from rhea import Global, Clock, Reset
+from rhea.system import Barebone, FIFOBus
 from rhea.build.boards import get_board
 
 
+@myhdl.block
 def atlys_blinky_host(clock, reset, led, sw, pmod,
                       uart_tx, uart_rx):
     """
@@ -29,7 +30,7 @@ def atlys_blinky_host(clock, reset, led, sw, pmod,
     tick_inst = glbl_timer_ticks(glbl, include_seconds=True)
 
     # create the interfaces to the UART
-    fifobus = FIFOBus(width=8, size=32)
+    fifobus = FIFOBus(width=8)
 
     # create the memmap (CSR) interface
     memmap = Barebone(glbl, data_width=32, address_width=32)

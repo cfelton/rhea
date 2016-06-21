@@ -3,17 +3,18 @@ import argparse
 import subprocess
 from pprint import pprint
 
-from myhdl import (Signal, intbv, always_seq, always_comb, concat,)
+import myhdl
+from myhdl import Signal, intbv, always_seq, always_comb
 
+from rhea import Global, Clock, Reset
+from rhea.system import Barebone, FIFOBus
 from rhea.cores.uart import uartlite
 from rhea.cores.memmap import command_bridge
 from rhea.cores.misc import glbl_timer_ticks
-from rhea.system import Global, Clock, Reset
-from rhea.system import Barebone
-from rhea.system import FIFOBus
 from rhea.build.boards import get_board
 
 
+@myhdl.block
 def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
     """
     The LEDs are controlled from the RPi over the UART
@@ -27,15 +28,16 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
     tick_inst = glbl_timer_ticks(glbl, include_seconds=True)
 
     # create the interfaces to the UART
-    uart_fifo = FIFOBus(width=8, size=4)
+    uart_fifo = FIFOBus(width=8)
 
     # create the memmap (CSR) interface
     memmap = Barebone(glbl, data_width=32, address_width=32)
 
     # create the UART instance.
-    uart_inst = uartlite(glbl, uart_fifo,
-                         serial_in=bcm14_txd,
-                         serial_out=bcm15_rxd)
+    uart_inst = uartlite(
+        glbl, uart_fifo, serial_in=bcm14_txd, serial_out=bcm15_rxd,
+        fifosize=4
+    )
 
     # create the packet command instance
     cmd_inst = command_bridge(glbl, uart_fifo, memmap)
@@ -62,8 +64,7 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
             tone.next = (~tone) & 0x1
         led.next = ledreg | tone[5:] 
             
-    return (tick_inst, uart_inst, cmd_inst,
-            beh_led_control, beh_led_read, beh_assign)
+    return myhdl.instances()
 
 
 def build(args):

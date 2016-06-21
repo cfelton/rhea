@@ -1,11 +1,13 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import instance, delay, always_comb
 
 from rhea.system import timespec
 
 
+@myhdl.block
 def _clock_generate(clock, enable, ticks):
     assert len(ticks) == 2
     totticks = sum(ticks)
@@ -25,6 +27,7 @@ def _clock_generate(clock, enable, ticks):
     return mdlclk
 
 
+@myhdl.block
 def device_clock_mgmt_prim(clkmgmt):
     """ This is the generic device PLL module
     The vendor specific implementations will set the v*_code attribute

@@ -1,24 +1,20 @@
 #
 # Copyright (c) 2014 Christopher L. Felton
+# See the licence file in the top directory
 #
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 
 import random
 from random import randrange
-import os
 from argparse import Namespace
 
 import pytest
-
-from argparse import Namespace
-
+import myhdl
 from myhdl import (Signal, ResetSignal, always, delay, instance,
                    StopSimulation)
 
-
-from rhea.system import FIFOBus, Clock, Reset
+from rhea.system import FIFOBus, Global, Clock, Reset
 import rhea.cores as cores
 from rhea.cores.fifo import fifo_fast
 
@@ -27,12 +23,12 @@ from rhea.utils.test import run_testbench
 
 random.seed(3)
 
-def test_ffifo(args=None):
+
+def test_fifo_fast(args=None):
     """ verify the synchronous FIFO
     """
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=0, async=True)
-
 
     if args is None:
         args = Namespace(width=8, size=16, name='test')
@@ -40,12 +36,16 @@ def test_ffifo(args=None):
         # @todo: verify args has the attributes needed for the FIFOBus
         pass 
 
-    fbus = FIFOBus(width=args.width, size=args.size)
+    fbus = FIFOBus(width=args.width)
+    glbl = Global(clock, reset)
 
-    def _bench_ffifo():
+    @myhdl.block
+    def bench_fifo_fast():
         
         # @todo: use args.fast, args.use_srl_prim
-        tbdut = cores.fifo.fifo_fast(reset, clock, fbus, use_srl_prim=False)
+        tbdut = cores.fifo.fifo_fast(
+            glbl, fbus, size=args.size, use_srl_prim=False
+        )
         
         @instance
         def tbstim():
@@ -63,14 +63,13 @@ def test_ffifo(args=None):
                 # write some bytes
                 for ii in range(num_bytes):
 
-                    #print('nbyte %x wdata %x' % (num_bytes, ii))
+                    # print('nbyte %x wdata %x' % (num_bytes, ii))
 
                     fbus.write_data.next = ii
                     fbus.write.next = True
                     # wait for 1 clock cyle to 
                     # allow the fifo ops to occur
                     yield clock.posedge
-                    
 
                 fbus.write.next = False
                 fbus.write_data.next = 0xFE
@@ -78,7 +77,7 @@ def test_ffifo(args=None):
                 # if 16 bytes written make sure FIFO is full
                 yield clock.posedge
                 if num_bytes == args.size:
-                    assert fbus.count == fbus.size
+                    assert fbus.count == args.size
                     assert fbus.full, "FIFO should be full!"
                     assert not fbus.empty, "FIFO should not be empty"
                 
@@ -88,7 +87,7 @@ def test_ffifo(args=None):
                 for ii in range(num_bytes ):
                     fbus.read.next = True
                     yield clock.posedge
-                    #print("rdata %x ii %x " % (fbus.read_data, ii))
+                    # print("rdata %x ii %x " % (fbus.read_data, ii))
                     assert fbus.read_valid
                     assert fbus.read_data == ii, "rdata %x ii %x " % (fbus.read_data, ii)
 
@@ -103,11 +102,12 @@ def test_ffifo(args=None):
                 yield clock.posedge
 
             raise StopSimulation
-        return tbdut, tbstim
-   
-        
+
+        return myhdl.instances()
+
     # normal fifo r/w
-    run_testbench(_bench_ffifo)
+    run_testbench(bench_fifo_fast)
+
 
 def test_overflow_ffifo(args=None):
     """ verify the synchronous FIFO
@@ -121,11 +121,14 @@ def test_overflow_ffifo(args=None):
         # @todo: verify args has the attributes needed for the FIFOBus
         pass 
 
-    fbus = FIFOBus(width=args.width, size=args.size)
-    
-    def _bench_fifo_overflow():
+    fbus = FIFOBus(width=args.width)
+    glbl = Global(clock, reset)
+
+    @myhdl.block
+    def bench_fifo_overflow():
         # @todo: use args.fast, args.use_srl_prim
-        tbdut = cores.fifo.fifo_fast(reset, clock, fbus, use_srl_prim=False)
+        tbdut = cores.fifo.fifo_fast(glbl, fbus,
+                                     size=args.size, use_srl_prim=False)
 
         @always(delay(10))
         def tbclk():
@@ -150,12 +153,12 @@ def test_overflow_ffifo(args=None):
                         fbus.write.next = True
                         yield clock.posedge
                     except ValueError:
-                        assert fbus.count == fbus.size 
+                        assert fbus.count == args.size
                         assert fbus.full, "FIFO should be full!" 
                         assert not fbus.empty, "FIFO should not be empty" 
                     else:
-                        assert fbus.count <= fbus.size
-                        if (fbus.count < fbus.size):
+                        assert fbus.count <= args.size
+                        if fbus.count < args.size:
                             assert not fbus.full
                         
                 fbus.write.next = False
@@ -163,7 +166,7 @@ def test_overflow_ffifo(args=None):
                 for cc in range(5):                
                     yield clock.posedge
 
-                for ii in range(fbus.size):
+                for ii in range(args.size):
                     fbus.read.next = True
                     yield clock.posedge
                     assert fbus.read_valid
@@ -179,16 +182,19 @@ def test_overflow_ffifo(args=None):
             for ii in range(5):
                 yield clock.posedge
             raise StopSimulation
-        return tbdut, tbclk, tbstim
+
+        return myhdl.instances()
+
     for kk in range(100):
         with pytest.raises(ValueError):
-            run_testbench(_bench_fifo_overflow)
+            run_testbench(bench_fifo_overflow)
+
 
 # test underflow
 # should give a ValueError
 # but instead gives an assertion error
 @pytest.mark.xfail
-def test_underflow_ffifo(args=None):
+def test_underflow_fifo_fast(args=None):
     """ verify the synchronous FIFO
     """
     reset = ResetSignal(0, active=1, async=True)
@@ -200,11 +206,15 @@ def test_underflow_ffifo(args=None):
         # @todo: verify args has the attributes needed for the FIFOBus
         pass 
 
-    fbus = FIFOBus(width=args.width, size=args.size)
+    fbus = FIFOBus(width=args.width)
+    glbl = Global(clock, reset)
 
-    def _bench_fifo_underflow():
+    @myhdl.block
+    def bench_fifo_underflow():
         # @todo: use args.fast, args.use_srl_prim
-        tbdut = cores.fifo.fifo_fast(reset, clock, fbus, use_srl_prim=False)
+        tbdut = cores.fifo.fifo_fast(
+            glbl, fbus, size=args.size, use_srl_prim=False
+        )
     
         @always(delay(10))
         def tbclk():
@@ -222,18 +232,18 @@ def test_underflow_ffifo(args=None):
             rand = randrange(args.size+2, 2*args.size+1)
             for num_bytes in range(args.size, rand):
                             
-                for ii in range(fbus.size):
+                for ii in range(args.size):
                     try:
                         fbus.write_data.next = ii
                         fbus.write.next = True
                         yield clock.posedge
                     except ValueError:
-                        assert fbus.count == fbus.size 
+                        assert fbus.count == args.size
                         assert fbus.full, "FIFO should be full!" 
                         assert not fbus.empty, "FIFO should not be empty" 
                     else:
-                        assert fbus.count <= fbus.size
-                        if (fbus.count < fbus.size):
+                        assert fbus.count <= args.size
+                        if (fbus.count < args.size):
                             assert not fbus.full
                         
                 fbus.write.next = False
@@ -242,7 +252,7 @@ def test_underflow_ffifo(args=None):
                     yield clock.posedge
 
                 if ii == (args.size - 1):
-                    assert fbus.count == fbus.size
+                    assert fbus.count == args.size
                     assert fbus.full, "FIFO should be full!"
                     assert not fbus.empty, "FIFO should not be empty"
 
@@ -258,7 +268,7 @@ def test_underflow_ffifo(args=None):
                     except ValueError:
                         assert fbus.empty
                     else:   
-                        #print("rdata %x ii %x " % (fbus.read_data, ii))
+                        # print("rdata %x ii %x " % (fbus.read_data, ii))
                         assert fbus.read_valid
                         assert fbus.read_data == ii, "rdata %x ii %x " % (fbus.read_data, ii)
                         
@@ -272,15 +282,17 @@ def test_underflow_ffifo(args=None):
             for ii in range(5):
                 yield clock.posedge
             raise StopSimulation
-        return tbdut, tbclk,tbstim
+
+        return myhdl.instances()
 
     with pytest.raises(ValueError):
-        run_testbench(_bench_fifo_underflow)
+        run_testbench(bench_fifo_underflow)
 
-# read/write at the same time
-# fifo should remain unchanged
+
 def test_rw_ffifo(args=None):
     """ verify the synchronous FIFO
+    Read and write at the same time, the FIFO should remain
+    unchanged.
     """
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=0, async=True)
@@ -289,13 +301,18 @@ def test_rw_ffifo(args=None):
         args = Namespace(width=8, size=16, name='test')
     else:
         # @todo: verify args has the attributes needed for the FIFOBus
-        pass 
-    fbus = FIFOBus(width=args.width, size=args.size)
+        pass
 
-    def _bench_rw_ffifo():
+    fbus = FIFOBus(width=args.width)
+    glbl = Global(clock, reset)
+
+    @myhdl.block
+    def bench_rw_fifo_fast():
         
         # @todo: use args.fast, args.use_srl_prim
-        tbdut = cores.fifo.fifo_fast(reset, clock, fbus, use_srl_prim=False)
+        tbdut = cores.fifo.fifo_fast(
+            glbl, fbus, size=args.size, use_srl_prim=False
+        )
 
         @instance
         def tbstim():
@@ -306,17 +323,15 @@ def test_rw_ffifo(args=None):
             for ii in range(5):
                 yield clock.posedge
 
-      
             for num_bytes in range(1, args.size):
 
                 # write some bytes
                 for ii in range(num_bytes):
-                    #print('nbyte %x wdata %x' % (num_bytes, ii))
+                    # print('nbyte %x wdata %x' % (num_bytes, ii))
                    
                     fbus.write_data.next = ii
                     fbus.write.next = True
                     yield clock.posedge
-                    
 
                 fbus.write.next = False
                 fbus.write_data.next = 0xFE
@@ -328,7 +343,7 @@ def test_rw_ffifo(args=None):
                 # if 16 bytes written make sure FIFO is full
                 yield clock.posedge
                 if num_bytes == args.size:
-                    assert fbus.count == fbus.size
+                    assert fbus.count == args.size
                     assert fbus.full, "FIFO should be full!"
                     assert not fbus.empty, "FIFO should not be empty"
                 
@@ -358,7 +373,7 @@ def test_rw_ffifo(args=None):
                 for ii in range(num_bytes):
                     fbus.read.next = True
                     yield clock.posedge
-                    #print("rdata %x ii %x " % (fbus.read_data, ii))
+                    # print("rdata %x ii %x " % (fbus.read_data, ii))
                     assert fbus.read_valid
                     assert fbus.read_data == ((args.size - num_bytes) + ii), \
                                              "rdata %x ii %x " % (fbus.read_data, \
@@ -375,13 +390,15 @@ def test_rw_ffifo(args=None):
                 yield clock.posedge
 
             raise StopSimulation
-        return tbdut, tbstim
+
+        return myhdl.instances()
            
     # r/w at the same time
     for trial in range(100):   
-         run_testbench(_bench_rw_ffifo)
+         run_testbench(bench_rw_fifo_fast)
+
 
 if __name__ == '__main__':
     for size in (4, 8, 16):
         args = Namespace(width=8, size=size, name='test')
-        test_ffifo(args=args)
+        test_fifo_fast(args=args)

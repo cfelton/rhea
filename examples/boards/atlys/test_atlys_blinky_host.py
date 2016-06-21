@@ -8,7 +8,7 @@ from myhdl import (Signal, intbv, instance, delay, StopSimulation)
 
 from rhea.system import Global, Clock, Reset
 from rhea.models.uart import UARTModel
-from rhea.utils.test import run_testbench, tb_args, tb_default_args
+from rhea.utils.test import run_testbench, tb_args, tb_default_args, tb_convert
 from rhea.utils import CommandPacket
 from rhea.utils.command_packet import PACKET_LENGTH
 
@@ -32,7 +32,8 @@ def test_ibh(args=None):
     baudrate = uartmdl.baudrate
     baudticks = int((1/baudrate) / 1e-9)
 
-    def _bench_ibh():
+    @myhdl.block
+    def bench_ibh():
         tbclk = clock.gen()
         tbmdl = uartmdl.process(glbl, uart_tx, uart_rx)
         tbdut = atlys_blinky_host(clock, reset, led, sw, pmod, 
@@ -80,11 +81,9 @@ def test_ibh(args=None):
 
         return tbclk, tbmdl, tbdut, tbstim
 
-    run_testbench(_bench_ibh, args=args)
-    myhdl.toVerilog.directory = 'output'
-    myhdl.toVerilog(atlys_blinky_host, clock, reset,
-                    led, sw, pmod,
-                    uart_tx, uart_rx)
+    run_testbench(bench_ibh, args=args)
+    inst = atlys_blinky_host(clock, reset, led, sw, pmod, uart_tx, uart_rx)
+    tb_convert(inst)
 
 
 if __name__ == '__main__':

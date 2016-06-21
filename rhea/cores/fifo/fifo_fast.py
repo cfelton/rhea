@@ -1,5 +1,6 @@
 #
 # Copyright (c) 2014 Christopher L. Felton
+# See the licence file in the top directory
 #
 
 from math import log, ceil
@@ -11,7 +12,8 @@ from rhea.system import FIFOBus
 from .fifo_srl import fifo_srl
 
 
-def fifo_fast(reset, clock, fbus, use_srl_prim=False):
+@myhdl.block
+def fifo_fast(glbl, fifobus, size=16, use_srl_prim=False):
     """
     Often small simple, synchronous, FIFOs can be implemented with 
     specialized hardware in an FPGA (e.g. vertically chaining LUTs).
@@ -27,28 +29,29 @@ def fifo_fast(reset, clock, fbus, use_srl_prim=False):
     synthesis and map reports.
 
     Arguments (ports):
-        reset: system reset
-        clock: system clock
+        glbl: global signals, clock and reset
         fbus: FIFOBus FIFO interface
 
     Parameters:
-    use_slr_prim: this parameter indicates to use the SRL primitive
-      (inferrable primitive).  If SRL are not inferred from the generic
-      description this option can be used.  Note, srl_prim will only
-      use a size (FIFO depth) of 16.
+        use_slr_prim: this parameter indicates to use the SRL primitive
+            (inferrable primitive).  If SRL are not inferred from the generic
+            description this option can be used.  Note, srl_prim will only
+            use a size (FIFO depth) of 16.
     """
-
     # @todo: this is intended to be used for small fast fifo's but it
-    # @todo: can be used for large synchronous fifo as well
+    #        can be used for large synchronous fifo as well
+
+    clock, reset = glbl.clock, glbl.reset
+    fbus = fifobus  # alias
 
     nitems = 32   # default and max size
     if use_srl_prim:
         nitems = 16
-    elif fbus.size > nitems:
+    elif size > nitems:
         print("@W: fifo_fast only supports size < {}, for fast".format(nitems))
         print("    forcing size (depth) to {}".format(nitems))
     else:
-        nitems = fbus.size
+        nitems = size
 
     mem = [Signal(intbv(0)[fbus.width:]) for _ in range(nitems)]
     addr = Signal(intbv(0, min=0, max=nitems))
@@ -67,18 +70,18 @@ def fifo_fast(reset, clock, fbus, use_srl_prim=False):
         # the SRL based FIFO always writes to address 0 and shifts
         # the FIFO, only a read address is accounted.
         @always(clock.posedge)
-        def rtl_srl_in():
+        def beh_srl_in():
             if srlce:
                 mem[0].next = fbus.write_data
                 for jj in range(1, nitems):
                     mem[jj].next = mem[jj-1]
 
     @always_comb
-    def rtl_srl_out():
+    def beh_srl_out():
         fbus.read_data.next = mem[addr]
 
     @always_comb
-    def rtl_vld():
+    def beh_vld():
         # no delay on reads
         fbus.read_valid.next = fbus.read and not fbus.empty
 
@@ -86,7 +89,7 @@ def fifo_fast(reset, clock, fbus, use_srl_prim=False):
     # zero but on a write all values are shifted up one index, only
     # the read address is accounted in the following.
     @always_seq(clock.posedge, reset=reset)
-    def rtl_fifo():
+    def beh_fifo():
         if fbus.clear:
             addr.next = 0
             fbus.empty.next = True
@@ -120,7 +123,7 @@ def fifo_fast(reset, clock, fbus, use_srl_prim=False):
 
     if fifo_fast.debug:
         @always_seq(clock.posedge, reset=reset)
-        def rtl_occupancy():
+        def beh_occupancy():
             if fbus.clear:
                 nvacant.next = nitems
                 ntenant.next = 0
@@ -131,9 +134,8 @@ def fifo_fast(reset, clock, fbus, use_srl_prim=False):
                 nvacant.next = nvacant - 1
                 ntenant.next = ntenant + 1
 
-    @always_comb
-    def rtl_count():
-        fbus.count.next = ntenant
+    # attach the FIFO count to the FIFOBus
+    fbus.count = ntenant
 
     return myhdl.instances()
 

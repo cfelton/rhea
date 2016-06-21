@@ -1,9 +1,11 @@
 
 
+import myhdl
 from myhdl import always
 from my_board_def import MyCustomBoard
 
 
+@myhdl.block
 def xula_button_blink(clock, leds, btns):
     
     @always(clock.posedge)

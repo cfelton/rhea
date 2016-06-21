@@ -1,4 +1,5 @@
 
+import myhdl
 from myhdl import Signal, intbv, always_comb
 from . import Vendor
 
@@ -27,18 +28,20 @@ class SERDESInterface(Vendor):
         # parallel data
         self.data = Signal(intbv(0)[nbits:])
 
+    @myhdl.block
     def input_buffer(self, seri_p, seri_n):
         @always_comb
-        def rtl():
+        def beh():
             self.serial.next = seri_p and not seri_n
-        return rtl,
+        return beh,
 
+    @myhdl.block
     def output_buffer(self, sero_p, sero_n):
         @always_comb
-        def rtl():
+        def beh():
             sero_p.next = self.serial
             sero_n.next = not self.serial
-        return rtl,
+        return beh,
 
     def get_signals(self):
         return self.clock_serial, self.clock_parallel, self.data

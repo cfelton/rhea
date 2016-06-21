@@ -1,7 +1,4 @@
 
-from __future__ import print_function
-from __future__ import division
-
 """
 Test and verify the memory-mapped command bridge (memmap_command_bridge).
 
@@ -10,13 +7,16 @@ but instead a specific peripheral / slave is used for each bus type,
 other tests verify the generic ability.
 """
 
+from __future__ import print_function, division
+
 from random import randint
 import traceback
 
+import myhdl
 from myhdl import (Signal, intbv, always_seq, always_comb,
                    instance, delay, StopSimulation,)
 
-from rhea.system import Global, Clock, Reset, Signals
+from rhea import Global, Clock, Reset, Signals
 from rhea.system import Barebone, FIFOBus
 from rhea.cores.memmap import command_bridge
 from rhea.cores.fifo import fifo_fast
@@ -24,6 +24,7 @@ from rhea.utils import CommandPacket
 from rhea.utils.test import run_testbench, tb_args, tb_default_args
 
 
+@myhdl.block
 def memmap_peripheral_bb(clock, reset, bb):
     """ Emulate Barebone memory-mapped reads and writes"""
     assert isinstance(bb, Barebone)
@@ -60,6 +61,7 @@ def test_memmap_command_bridge(args=None):
 
     fifobus.clock = clock
 
+    @myhdl.block
     def bench_command_bridge():
         tbclk = clock.gen()
         tbdut = command_bridge(glbl, fifobus, memmap)
@@ -67,8 +69,8 @@ def test_memmap_command_bridge(args=None):
         readpath, writepath = FIFOBus(), FIFOBus()
         readpath.clock = writepath.clock = clock
         tbmap = fifobus.assign_read_write_paths(readpath, writepath)
-        tbftx = fifo_fast(reset, clock, writepath)   # user write path
-        tbfrx = fifo_fast(reset, clock, readpath)    # user read path
+        tbftx = fifo_fast(glbl, writepath)   # user write path
+        tbfrx = fifo_fast(glbl, readpath)    # user read path
 
         # @todo: add other bus types
         tbmem = memmap_peripheral_bb(clock, reset, memmap)

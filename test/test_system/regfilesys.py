@@ -1,8 +1,4 @@
 
-
-from __future__ import print_function
-from __future__ import division
-
 """
 This modules defines a component with a complex register file, loosely
 based off the "gemac_simple" core [1].  
@@ -10,11 +6,13 @@ based off the "gemac_simple" core [1].
 [1]: @todo: background on the core 
 """
 
+from __future__ import print_function, division
+
+import myhdl
 from myhdl import Signal, intbv, always_comb, concat
 
-from rhea.system import Global, Clock, Reset
-from rhea.system import RegisterFile
-from rhea.system import Register 
+from rhea import Global, Clock, Reset
+from rhea.system import Register, RegisterFile
 from rhea.system import Barebone, Wishbone, AvalonMM, AXI4Lite
 
 
@@ -43,6 +41,7 @@ def build_regfile():
     return regfile
 
 
+@myhdl.block
 def memmap_component(glbl, csrbus, cio, user_regfile=None):
     """
     Ports
@@ -67,6 +66,7 @@ def memmap_component(glbl, csrbus, cio, user_regfile=None):
     return regfile_inst, beh_assign
 
 
+@myhdl.block
 def regfilesys(clock, reset):
     """
     """
@@ -77,4 +77,4 @@ def regfilesys(clock, reset):
     mminst = memmap_component(glbl, csrbus, cio)
     
     return mminst
-    
+

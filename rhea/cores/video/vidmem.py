@@ -1,6 +1,7 @@
 
 import math
-from myhdl import *
+import myhdl
+from myhdl import Signal, intbv, always_comb, always, concat
 
 
 class VideoMemory:
@@ -21,11 +22,8 @@ class VideoMemory:
         self.green = Signal(intbv(0)[color_depth[1]:])
         self.blue = Signal(intbv(0)[color_depth[2]:])
 
-        # the memory, if large, eternal required
-        # @todo: check the size, if larger than ?? print warning
-        self.mem = [Signal(intbv(0)[self.width:]) for _ in range(self.size)]
 
-
+@myhdl.block
 def video_memory(glbl, vidmem_write, vidmem_read):
     """
     """
@@ -40,14 +38,14 @@ def video_memory(glbl, vidmem_write, vidmem_read):
     waddr = Signal(intbv(0, min=0, max=vmem.size))
 
     @always_comb
-    def rtl_addr():
+    def beh_addr():
         # @todo: this will be expensive, shortcut/hack ???
         waddr.next = vmem.hpxl + (vmem.vpxl * vmem.resolution[0])
 
     # write
     @always(clock.posedge)
-    def rtl_write():
+    def beh_write():
         if vidmem_write.wr:
             mem[waddr].next = concat(vmem.red, vmem.green, vmem.blue)
 
-    return rtl_addr, rtl_write
+    return myhdl.instances()

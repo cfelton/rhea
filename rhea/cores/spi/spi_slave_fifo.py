@@ -2,12 +2,14 @@
 import myhdl
 from myhdl import Signal, intbv, always, concat
 
-from rhea.system import Signals, FIFOBus
+from rhea import Signals
+from rhea.system import FIFOBus
 from rhea.cores.misc import syncro
 from rhea.cores.fifo import fifo_fast
 from . import SPIBus
 
 
+@myhdl.block
 def spi_slave_fifo(glbl, spibus, fifobus):
     """
     This is an SPI slave peripheral, when the master starts clocking
@@ -16,12 +18,14 @@ def spi_slave_fifo(glbl, spibus, fifobus):
     (fifobus.read).  The `cso` interface can be used to configure
     how the SPI slave peripheral behaves.
 
-    Arguments (Ports):
+    (Arguments == Ports)
+    Arguments:
         glbl (Global): global clock and reset
         spibus  (SPIBus): the external SPI interface
         fifobus (FIFOBus): the fifo interface
         cso (ControlStatus): the control status signals
     """
+    fifosize = 8
 
     # Use an async FIFO to transfer from the SPI SCK clock domain and
     # the internal clock domain.  This allows for high-speed SCK.
@@ -31,13 +35,12 @@ def spi_slave_fifo(glbl, spibus, fifobus):
 
     sck, csn = spibus.sck, spibus.csn
     # the FIFOs for the receive and transmit (external perspective)
-    readpath = FIFOBus(size=fifobus.size, width=fifobus.width)
-    writepath = FIFOBus(size=fifobus.size, width=fifobus.width)
+    readpath = FIFOBus(width=fifobus.width)
+    writepath = FIFOBus(width=fifobus.width)
 
     # the FIFO instances
-    # @todo: replace with fifo_fast
-    tx_fifo_inst = fifo_fast(reset, clock, writepath)
-    rx_fifo_inst = fifo_fast(reset, clock, readpath)
+    tx_fifo_inst = fifo_fast(glbl, writepath, size=fifosize)
+    rx_fifo_inst = fifo_fast(glbl, readpath, size=fifosize)
     mp_fifo_inst = fifobus.assign_read_write_paths(readpath, writepath)
 
     spi_start = Signal(bool(0))
@@ -76,8 +79,8 @@ def spi_slave_fifo(glbl, spibus, fifobus):
                 b2.next = 0
 
     # synchronize the SCK domain to the clock domain
-    isync1_inst = syncro(clock, icap, icaps)
-    isync2_inst = syncro(clock, b2, b3)
+    syncro(clock, icap, icaps)
+    syncro(clock, b2, b3)
 
     gotit = Signal(bool(0))
 

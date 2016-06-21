@@ -2,7 +2,7 @@
 import myhdl
 from myhdl import Signal, intbv
 
-from rhea.system import Global, Clock, Reset
+from rhea import Global, Clock, Reset
 from rhea.cores.video import VideoMemory
 from rhea.cores.video import color_bars
 from rhea.cores.video.lcd import LT24Interface
@@ -11,6 +11,7 @@ from rhea.cores.misc import glbl_timer_ticks
 from rhea.utils.test import tb_move_generated_files
 
 
+@myhdl.block
 def mm_lt24lcdsys(clock, reset,
     lcd_on, lcd_resetn, lcd_csn, lcd_rs,
     lcd_wrn, lcd_rdn, lcd_data):
@@ -30,12 +31,12 @@ def mm_lt24lcdsys(clock, reset,
 
     # simulation mode, reduce the dead time between real-world ticks
     # modules
-    gtck = glbl_timer_ticks(glbl, user_timer=16, tick_div=100)
-    gbar = color_bars(glbl, vmem, resolution=resolution,
-                      color_depth=color_depth)
-    glcd = lt24lcd(glbl, vmem, lcd)
+    tck_inst = glbl_timer_ticks(glbl, user_timer=16, tick_div=100)
+    bar_inst = color_bars(glbl, vmem, resolution=resolution,
+                          color_depth=color_depth)
+    lcd_inst = lt24lcd(glbl, vmem, lcd)
 
-    return gtck, gbar, glcd
+    return myhdl.instances()
 
 
 def convert():
@@ -49,13 +50,10 @@ def convert():
     lcd_rdn = Signal(bool(0))
     lcd_data = Signal(intbv(0)[16:])
 
-    myhdl.toVerilog.directory = 'output'
-    myhdl.toVerilog(mm_lt24lcdsys, clock, reset,
-                    lcd_on, lcd_resetn, lcd_csn, lcd_rs,
-                    lcd_wrn, lcd_rdn, lcd_data)
+    inst = mm_lt24lcdsys(
+        clock, reset, lcd_on, lcd_resetn, lcd_csn, lcd_rs,
+        lcd_wrn, lcd_rdn, lcd_data
+    )
 
-    myhdl.toVHDL.directory = 'output'
-    myhdl.toVHDL(mm_lt24lcdsys, clock, reset,
-                 lcd_on, lcd_resetn, lcd_csn, lcd_rs,
-                 lcd_wrn, lcd_rdn, lcd_data)
-    tb_move_generated_files()
+    inst.convert(hdl='Verilog', directory='output')
+

@@ -1,10 +1,13 @@
 
 
-from myhdl import *
+import myhdl
+from myhdl import Signal, ResetSignal, intbv, modbv, always_comb, always_seq
 from rhea.cores.usbext import fpgalink
 from rhea.cores.usbext import m_fpgalink_fx2
+from rhea.utils.test import tb_convert
 
 
+@myhdl.block
 def fpgalink_nexys(    
     # ~~ FX2 interface signals ~~
     IFCLK,     # 48 MHz clock from FX2 
@@ -23,7 +26,7 @@ def fpgalink_nexys(
     PKTEND,    # submit partial (less than 512)    
     # ~~ peripherals interfaces ~~
     LEDS       # external LEDs
-    ):
+):
     """
     """
 
@@ -38,7 +41,7 @@ def fpgalink_nexys(
     fx2_bus.gotroom = FLAGB
     fx2_bus.write = SLWR
     fx2_bus.read = SLRD
-    #SLOE = SLRD now shadowed signals for conversion
+    # SLOE = SLRD now shadowed signals for conversion
     fx2_bus.pktend = PKTEND
 
     # instantiate the fpgalink interface
@@ -76,7 +79,6 @@ def fpgalink_nexys(
         else:
             f2hData_in.next = 0x55
 
-
     @always_seq(clock.posedge, reset=reset)
     def hdl_fl():
         if h2fValid_out and chanAddr_out == 1:
@@ -93,18 +95,21 @@ def convert():
     FDO = Signal(intbv(0)[8:])
     FDI = Signal(intbv(0)[8:])
     FDS = Signal(bool(0))
-    SLWR,SLRD,SLOE = [Signal(bool(0)) for ii in range(3)]
-    FLAGA,FLAGB,FLAGC,FLAGD = [Signal(bool(0)) for ii in range(4)]
+    SLWR,SLRD,SLOE = [Signal(bool(0)) for _ in range(3)]
+    FLAGA,FLAGB,FLAGC,FLAGD = [Signal(bool(0)) for _ in range(4)]
     ADDR = Signal(intbv(0)[2:])
     IFCLK = Signal(bool(0))
     RST = ResetSignal(bool(1), active=0, async=True)
     LEDS = Signal(intbv(0)[8:])
     PKTEND = Signal(bool(0))
 
-    toVerilog(fpgalink_nexys, IFCLK, RST, SLWR, SLRD, SLOE,
-              FDI, FDO, FDS, ADDR, FLAGA, FLAGB, FLAGC, FLAGD, PKTEND,
-              LEDS)
+    inst = fpgalink_nexys(
+        IFCLK, RST, SLWR, SLRD, SLOE, FDI, FDO,
+        FDS, ADDR, FLAGA, FLAGB, FLAGC, FLAGD, PKTEND, LEDS
+    )
+    tb_convert(inst)
+
 
 if __name__ == '__main__':
     convert()
-    
+

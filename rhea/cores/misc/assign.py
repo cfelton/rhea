@@ -1,12 +1,24 @@
 
-from myhdl import always_comb
+import myhdl
+from myhdl import Signal, SignalType, always_comb
 
 
+@myhdl.block
 def assign(a, b):
-    """ a = b """
+    """ assign a = b
+    """
 
-    @always_comb
-    def assign():
-        a.next = b
+    if isinstance(b, SignalType):
+        @always_comb
+        def beh_assign():
+            a.next = b
+    else:
+        # this is a work around for preserving constant assigns
+        keep = Signal(True)
+        keep.driven = "wire"
 
-    return assign,
+        @always_comb
+        def beh_assign():
+            a.next = b if keep else b
+
+    return beh_assign

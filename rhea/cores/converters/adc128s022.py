@@ -1,25 +1,38 @@
 #
 # Copyright (c) 2006-2015 Christopher L. Felton
+# See the licence file in the top directory
 #
 
 from __future__ import absolute_import, division
 
 from math import ceil
 
-from myhdl import Signal, intbv, enum, always_seq, concat, instances, now
+import myhdl
+from myhdl import Signal, intbv, enum, always_seq, concat
 
+from rhea.system import FIFOBus
+from ..spi import SPIBus
 from ..fifo import fifo_fast
 from ..misc import assign
 
 
+@myhdl.block
 def adc128s022(glbl, fifobus, spibus, channel):
+    """An interface to the ADC 128s022
+
+    Arguments:
+        glbl: global interface, clock, reset, enable, etc.
+        fifobus: FIFO interface
+        channel: channel to read
     """
-    """
+    assert isinstance(fifobus, FIFOBus)
+    assert isinstance(spibus, SPIBus)
+
     # local references
     clock, reset = glbl.clock, glbl.reset 
     # use the signals names in the datasheet, datashee names are 
     # from the device perspective, swapped here
-    sclk, dout, din, csn = (spibus.sck, spibus.mosi, spibus.miso, spibus.csn)
+    sclk, dout, din, csn = spibus()
 
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # get a FIFO to put the samples in, each sample is 12 bits 
@@ -28,7 +41,7 @@ def adc128s022(glbl, fifobus, spibus, channel):
     assert len(fifobus.read_data) == 16 
     sample = Signal(intbv(0)[12:])
     
-    gfifo = fifo_fast(reset, clock, fifobus)
+    fifo_inst = fifo_fast(glbl, fifobus, size=16)
     
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # generate the sclk frequency, the clock needs to 
@@ -46,12 +59,13 @@ def adc128s022(glbl, fifobus, spibus, channel):
     # depending on the system (global) clock frequency the sclk 
     # might not have 50% duty cycle (should be ok)
     # the datasheet indicates it requires at least a 40% cycle
-    # for the high, @todo: add a check 
+    # for the high,
+    # @todo: add a check for duty cycle
     clkcnt = Signal(intbv(hightick, min=0, max=ndiv))
     sclkpos, sclkneg = [Signal(bool(0)) for _ in range(2)]    
     
     @always_seq(clock.posedge, reset=reset)
-    def rtl_sclk_gen():
+    def beh_sclk_gen():
         # default case 
         sclkneg.next = False
         sclkpos.next = False
@@ -82,9 +96,10 @@ def adc128s022(glbl, fifobus, spibus, channel):
     # the ADC will generate continuous samples, each sample retrieval
     # is 16 bits.  The following state-machine assumes there are a
     # couple clock cycles between sclk pos/neg strobes.  Should add
-    # a check @todo: check ndiv > 4 ( ?)
+    # a check
+    # @todo: check ndiv > 4 ( ?)
     @always_seq(clock.posedge, reset=reset)
-    def rtl_state_machine():
+    def beh_state_machine():
         fifobus.write.next = False
         
         if state == states.start:
@@ -112,6 +127,6 @@ def adc128s022(glbl, fifobus, spibus, channel):
                     print("FIFO full dropping sample")
                     
     # assign the serial out bit to the msb of the shift-register
-    gas = assign(dout, sregout(15))
+    assign(dout, sregout(15))
     
-    return instances()
+    return myhdl.instances()

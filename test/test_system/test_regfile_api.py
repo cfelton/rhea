@@ -1,9 +1,9 @@
 
-
+import myhdl
 from myhdl import Signal
 
+from rhea import Global
 from rhea.system import RegisterFile, Register
-from rhea.system import Clock, Reset, Global
 from rhea.system import Barebone
 from rhea.cores.misc import led_blinker
 from rhea.cores.misc import button_controller, button_debounce
@@ -34,23 +34,24 @@ def test_simple():
     print("")
 
 
+@myhdl.block
 def led_blinker_top(clock, reset, leds, buttons):
 
     glbl = Global(clock, reset)
     csrbus = Barebone()
     dbtns = Signal(buttons.val)
 
-    gled = led_blinker(glbl, csrbus, leds)
-    gdbn = button_debounce(glbl, buttons, dbtns)
-    gbtn = button_controller(glbl, csrbus, dbtns)
+    led_inst = led_blinker(glbl, csrbus, leds)
+    dbn_inst = button_debounce(glbl, buttons, dbtns)
+    btn_inst = button_controller(glbl, csrbus, dbtns)
 
     # above all the components have been added, now build the
     # register file (figures out addresses, etc) and then get
     # the memory-mapped bus interconnect
     csrbus.regfile_build()
-    gx = csrbus.interconnect()
+    bus_inst = csrbus.interconnect()
 
-    return gled, gdbn, gbtn, gx
+    return myhdl.instances()
 
 
 def test_led_blinker():

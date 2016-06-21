@@ -1,9 +1,8 @@
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import print_function, division
 
-from myhdl import (Signal, intbv, modbv, always, always_comb,
-                   instances)
+import myhdl
+from myhdl import Signal, modbv, always, always_comb
 
 from rhea.cores.uart import uartlite
 from rhea.cores.misc import glbl_timer_ticks
@@ -11,18 +10,19 @@ from rhea.system import Global
 from rhea.system import FIFOBus
 
 
+@myhdl.block
 def icestick(clock, led, pmod, uart_tx, uart_rx):
     """ Lattice Icestick example
     """
     
     glbl = Global(clock, None)    
-    gticks = glbl_timer_ticks(glbl, include_seconds=True)
+    tick_inst = glbl_timer_ticks(glbl, include_seconds=True)
 
     # get interfaces to the UART fifos
-    fbusrtx = FIFOBus(width=8, size=8)
+    fbusrtx = FIFOBus(width=8)
 
     # get the UART comm from PC
-    guart = uartlite(glbl, fbusrtx, uart_tx, uart_rx)
+    uart_inst = uartlite(glbl, fbusrtx, uart_tx, uart_rx)
 
     @always_comb
     def beh_loopback():
@@ -41,4 +41,4 @@ def icestick(clock, led, pmod, uart_tx, uart_rx):
     
     # other stuff
 
-    return instances()
+    return myhdl.instances()

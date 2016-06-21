@@ -2,34 +2,27 @@
 # Copyright (c) 2006-2013 Christopher L. Felton
 #
 
-
 from __future__ import absolute_import
 
-from myhdl import *
-from rhea.system import Global
+import myhdl
+from myhdl import Signal, intbv, always_comb, always_seq
+from rhea.system import Global, FIFOBus
 from ._regfile_def import regfile
 
 
-def fifo_ramp(
-    # --[ports]--
-    # @todo: use glbl for clock and reset
-    clock,
-    reset,
-    regbus,
-    fifobus,
-    
-    # --[parameters]--
-    base_address = 0x00
-):
+@myhdl.block
+def fifo_ramp(glbl, regbus, fifobus, base_address=0x00):
     """ FIFO Ramp module
     This module provides a simple 8-bit counter that will generate
     a ramp.  This ramp is fed to the USB fifo.  This can be used
     to validate the usb connection and the device to host (IN) data
     rates.
     """
-    glbl = Global(clock=clock, reset=reset)
+    assert isinstance(glbl, Global)
+    assert isinstance(fifobus, FIFOBus)
+    clock, reset = glbl.clock, glbl.reset
     regfile.base_address = base_address
-    g_regbus = regbus.add(regfile, 'fifo_ramp')
+    regbus_inst = regbus.add(regfile, 'fifo_ramp')
     
     enable = Signal(False)
     ramp = Signal(intbv(0)[fifobus.width:])
@@ -41,14 +34,14 @@ def fifo_ramp(
     ramp_mod = int(2**fifobus.width)
 
     @always_comb
-    def rtl_assign():
+    def beh_assign():
         regfile.cnt3.next = (rcnt >> 24) & 0xFF
         regfile.cnt2.next = (rcnt >> 16) & 0xFF
         regfile.cnt1.next = (rcnt >> 8) & 0xFF
         regfile.cnt0.next = rcnt & 0xFF
         
     @always_seq(clock.posedge, reset=reset)
-    def rtl_reg():
+    def beh_reg():
         enable.next = regfile.enable
         div.next = ((regfile.div3 << 24) | 
                     (regfile.div2 << 16) |
@@ -56,7 +49,7 @@ def fifo_ramp(
                      regfile.div0)
         
     @always_seq(clock.posedge, reset=reset)
-    def rtl_ramp():
+    def beh_ramp():
         if regfile.enable and not fifobus.full:
             if wcnt == 0:
                 fifobus.write.next = True
@@ -73,4 +66,4 @@ def fifo_ramp(
             fifobus.write_data.next = 0
             wcnt.next = div
     
-    return instances()
+    return myhdl.instances()

@@ -6,6 +6,7 @@ from myhdl import intbv, modbv
 
 HEADER = (0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00)
 
+
 class ExtendedDisplayIDData(object):
     """
     Extended Display Identification Data (EDID)
@@ -83,14 +84,14 @@ class ExtendedDisplayIDData(object):
     def get_rom_text(self):
         nrows, txt = 128//16, ''
         rom = self._rom
-        #print(nrows*16)
+        # print(nrows*16)
         rowstr = "{:3d}:"+" {:02X} "*16
-        #print(type(rowstr), rowstr)
+        # print(type(rowstr), rowstr)
         for ii in range(nrows):
-            #print(ii*16, *(rom[ii*16:ii*16+16]))
+            # print(ii*16, *(rom[ii*16:ii*16+16]))
             txt += rowstr.format(ii*16, *(map(int, rom[ii*16:ii*16+16]))) 
             txt += "\n"
-            #print(txt)
+            # print(txt)
         return txt
 
     def build_rom(self):

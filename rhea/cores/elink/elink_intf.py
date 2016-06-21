@@ -1,10 +1,12 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import Signal, intbv, delay, instance, always_comb
 
 from . import EMeshPacket
 from rhea.models import FIFO
+
 
 class ELinkChannel(object):
     """ RX or TX channel in an ELink interface
@@ -20,6 +22,7 @@ class ELinkChannel(object):
         # clock rate assuming 1ps simulation step
         self.htick = 500
 
+    @myhdl.block
     def _clkgen(self):
         """ Generate the clock for this interface
         :return:
@@ -33,6 +36,7 @@ class ELinkChannel(object):
 
         return gclkgen
 
+    @myhdl.block
     def instances(self):
         return self._clkgen()
 
@@ -93,6 +97,7 @@ class ELink(object):
             links = self._rx, self._tx
         return links
 
+    @myhdl.block
     def instances(self):
         return self._tx.instances(), self._rx.instances()
 
@@ -142,14 +147,14 @@ class ELink(object):
     def read_bytes(self, bytes, block=True):
         assert isinstance(bytes, list)
 
+    @myhdl.block
     def process(self):
         """ Drive the ELink signals
         This process mimics the behavior of the external ELink logic.
-        :return: myhdl generators
 
         @todo: this really needs to exist in a specific module model???
 
-        not convertible
+        myhdl not convertible
         """
         @instance
         def tx_bytes():

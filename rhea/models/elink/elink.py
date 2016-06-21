@@ -1,21 +1,20 @@
 
 from __future__ import absolute_import
 
-from myhdl import *
-
-from rhea.cores.elink import ELink
-from rhea.cores.elink import EMesh
-from rhea.cores.elink import EMeshPacket
+import myhdl
+from myhdl import instance
+from rhea.cores.elink import ELink, EMesh, EMeshPacket
 
 
+@myhdl.block
 def elink_external_model(elink, emesh):
     """ This is a simple model of the ELink component (FPGA)
 
-    :param elink: Interface to the external ELink device
-    :param emesh: Interface to the internal EMesh
-    :return: myhdl generators
+    Arguments:
+        elink (ELink): Interface to the external ELink device
+        emesh (EMesh): Interface to the internal EMesh
 
-    not convertible.
+    myhdl not convertible.
     """
     print(type(elink), type(emesh))
     assert isinstance(elink, ELink)
@@ -26,10 +25,10 @@ def elink_external_model(elink, emesh):
     tx, rx = elink.connect('north')
 
     # get the clock generator for the interface
-    g_txclk = tx.instances()
+    txclk_inst = tx.instances()
 
     # use the elink process to drive the signals
-    g_elink = elink.process()
+    elink_inst = elink.process()
 
     @instance
     def process_tx():
@@ -40,7 +39,8 @@ def elink_external_model(elink, emesh):
         while True:
             if not emesh.txwr_fifo.is_empty():
                 pkt = emesh.txwr_fifo.read()
-                emesh.txwr.assign(pkt)    # update the interface to reflect this
+                # update the interface to reflect this
+                emesh.txwr.assign(pkt)
                 yield elink.send_packet(pkt)
             elif not emesh.txrd_fifo.is_empty():
                 pkt = emesh.txrd_fifo.read()
@@ -75,6 +75,6 @@ def elink_external_model(elink, emesh):
             print("[ELINK] {}".format(epkt))
             emesh.route_to_fifo(epkt)
 
-    return g_txclk, g_elink, process_tx, process_rx
+    return myhdl.instances()
 
 

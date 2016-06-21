@@ -5,13 +5,16 @@ This example takes a different
 
 from argparse import Namespace
 
-from myhdl import *
+import myhdl
+from myhdl import Signal, ResetSignal, intbv, always, always_comb
 
-from rhea.system import FIFOBus
+from rhea.system import Global, FIFOBus
 from rhea.cores.fifo import fifo_async
 from rhea.cores.fifo import fifo_fast
+from rhea.utils.test import tb_convert
 
 
+@myhdl.block
 def fifo_2clock_cascade(
     wclk,       # in:  write side clock
     datain,     # in:  write data
@@ -27,36 +30,36 @@ def fifo_2clock_cascade(
 
     reset,      # in:  system reset
 ):
-
-
+    """ """
     wr = Signal(bool(0))
     rd = Signal(bool(0))
     dataout_d = Signal(intbv(0, min=dataout.min, max=dataout.max))
 
     args = Namespace(width=36, size=128, name='fifo_2clock_cascade')
-    fbus = FIFOBus(size=args.size, width=args.width)
-    # need to update the fbus refernces to reference the Signals in
-    # the moudule port list (function arguments).
+    fbus = FIFOBus(width=args.width)
+    # need to update the fbus references to reference the Signals in
+    # the module port list (function arguments).
     fbus.write = wr
     fbus.write_data = datain
     fbus.read = rd
     fbus.read_data = dataout_d
 
     @always_comb
-    def rtl_assign1():
+    def beh_assign1():
         wr.next = src_rdy_i & dst_rdy_o
         rd.next = dst_rdy_i & src_rdy_o
 
     @always_comb
-    def rtl_assign2():
+    def beh_assign2():
         dst_rdy_o.next = not fbus.full
         src_rdy_o.next = not fbus.empty
 
     # the original was a chain:
-    #    m_fifo_fast  (16)
-    #    m_fifo_async (??)
-    #    m_fifo_fast  (16)
-    gfifo = fifo_async(reset, wclk, rclk, fbus)
+    #    fifo_fast  (16)
+    #    fifo_async (??)
+    #    fifo_fast  (16)
+    fifo_inst = fifo_async(wclk, rclk, fbus, reset=reset, size=args.size)
+
     # @todo: calculate space and occupied based on fbus.count
         
     # @todo: the output is delayed two clock from the "read" strobe
@@ -65,21 +68,23 @@ def fifo_2clock_cascade(
     #   clock cycle???
     
     @always(rclk.posedge)
-    def rtl_delay():
+    def beh_delay():
         dataout.next = dataout_d
 
-    return rtl_assign1, rtl_assign2, gfifo, rtl_delay
+    return myhdl.instances()
 
 
+@myhdl.block
 def fifo_short(clock, reset, clear,
                datain, src_rdy_i, dst_rdy_o,
                dataout, src_rdy_o, dst_rdy_i):
 
+    glbl = Global(clock, reset)
     wr = Signal(bool(0))
     rd = Signal(bool(0))
 
     args = Namespace(width=36, size=16, name='fifo_2clock_cascade')
-    fbus = FIFOBus(size=args.size, width=args.width)
+    fbus = FIFOBus(width=args.width)
     # need to update the fbus refernces to reference the Signals in
     # the module port list (function arguments).
     fbus.write = wr
@@ -88,18 +93,18 @@ def fifo_short(clock, reset, clear,
     fbus.read_data = dataout
 
     @always_comb
-    def rtl_assign1():
+    def beh_assign1():
         wr.next = src_rdy_i & dst_rdy_o
         rd.next = dst_rdy_i & src_rdy_o
 
     @always_comb
-    def rtl_assign2():
+    def beh_assign2():
         dst_rdy_o.next = not fbus.full
         src_rdy_o.next = not fbus.empty
 
-    gfifo = fifo_fast(reset, clock, fbus)
+    fifo_inst = fifo_fast(glbl, fbus, size=args.size)
 
-    return rtl_assign1, rtl_assign2, gfifo
+    return myhdl.instances()
     
 
 def convert(args=None):
@@ -117,17 +122,22 @@ def convert(args=None):
 
     reset = ResetSignal(0, active=1, async=True)
 
-    toVerilog(fifo_2clock_cascade,
-              wclk, datain, src_rdy_i, dst_rdy_o, space,
-              rclk, dataout, src_rdy_o, dst_rdy_i, occupied,
-              reset)
+    inst = fifo_2clock_cascade(
+        wclk, datain, src_rdy_i, dst_rdy_o, space,
+        rclk, dataout, src_rdy_o, dst_rdy_i, occupied,
+        reset
+    )
+    tb_convert(inst)
 
     clock = Signal(bool(0))
     clear = Signal(bool(0))
-    toVerilog(fifo_short,
-              clock, reset, clear,
-              datain, src_rdy_i, dst_rdy_o,
-              dataout, src_rdy_o, dst_rdy_i)
+    inst = fifo_short(
+        clock, reset, clear,
+        datain, src_rdy_i, dst_rdy_o,
+        dataout, src_rdy_o, dst_rdy_i
+    )
+    tb_convert(inst)
+
 
 
 if __name__ == '__main__':

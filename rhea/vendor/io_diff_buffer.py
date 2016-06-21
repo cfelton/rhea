@@ -1,7 +1,9 @@
 
+import myhdl
 from myhdl import always_comb
 
 
+@myhdl.block
 def input_diff_buffer(in_p, in_n, sig):
 
     num_channels = len(sig)
@@ -23,6 +25,7 @@ def input_diff_buffer(in_p, in_n, sig):
     return gens
 
 
+@myhdl.block
 def output_diff_buffer(sig, out_p, out_n):
 
     num_channels = len(sig)

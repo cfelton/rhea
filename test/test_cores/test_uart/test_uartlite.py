@@ -2,15 +2,14 @@
 from __future__ import division
 
 from random import randint
-import traceback
-import pytest
 
+import myhdl
 from myhdl import (Signal, always_comb, instance, delay, StopSimulation, )
 
 from rhea.cores.uart import uartlite
 from rhea.models.uart import UARTModel
 
-from rhea.system import Global, Clock, Reset
+from rhea import Global, Clock, Reset
 from rhea.system import FIFOBus
 
 from rhea.utils.test import run_testbench, tb_args
@@ -26,6 +25,7 @@ def test_uart_model(args=None):
     si, so = Signal(bool(1)), Signal(bool(1))
     uartmdl = UARTModel()
 
+    @myhdl.block
     def bench_uart_model():
         tbdut = uartmdl.process(glbl, si, so)
         tbclk = clock.gen()

@@ -1,9 +1,7 @@
 
 from __future__ import absolute_import
-
 from abc import ABCMeta, abstractmethod
-
-from myhdl import Signal, SignalType, always_comb
+from myhdl import SignalType
 
 
 class ControlStatusBase(object):
@@ -30,8 +28,7 @@ class ControlStatusBase(object):
         self._isstatic = val
 
     def get_config_bits(self):
-        attrs = vars(self)
-        cfgbits = {}
+        attrs, cfgbits = vars(self), {}
         for k, v in attrs.items():
             if isinstance(v, SignalType) and v.config and not v.driven:
                 cfgbits[k] = v.initial_value
@@ -60,21 +57,6 @@ class ControlStatusBase(object):
         return None
 
     @abstractmethod
-    def get_generators(self):
+    def instances(self):
         """ get any hardware logic associated with the cso"""
         return None
-
-
-def assign_config(sig, val):
-    """
-    Arguments:
-        sig (Signal): The signals to be assigned to a constant value
-        val (int): The constant value
-    """
-    keep = Signal(bool(0))
-    keep.driven = 'wire'
-
-    @always_comb
-    def beh_assign():
-        sig.next = val if keep else val
-    return beh_assign

@@ -6,6 +6,7 @@ Psuedo random bit sequence (PRBS)
 """
 
 from random import randint
+import myhdl
 from myhdl import Signal, intbv, always_seq, always_comb, bin, now
 from .prbs_table import prbs_feedback_taps
 
@@ -26,7 +27,8 @@ def get_feedback_taps(order, feedback_taps):
     
     return taps_const, taps 
     
-    
+
+@myhdl.block
 def lfsr_feedback(lfsr, lfsrfb, prbscm, taps_const):
     """ determine the feedback logic for the LFSR 
     """
@@ -56,7 +58,7 @@ def lfsr_feedback(lfsr, lfsrfb, prbscm, taps_const):
         
     return beh
     
-
+@myhdl.block
 def prbs_generate(glbl, prbs, enable=None, inject_error=None,
                   order=4, feedback_taps=None, initval=None):
     """ Galois (one-to-many) LFSR PRBS generater
@@ -109,6 +111,7 @@ def prbs_generate(glbl, prbs, enable=None, inject_error=None,
     return lfsr_inst, beh_lfsr
 
 
+@myhdl.block
 def prbs_check(glbl, prbs, locked, word_count, error_count,
                order=4, feedback_taps=None):
     """ 

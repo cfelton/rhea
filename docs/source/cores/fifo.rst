@@ -1,8 +1,37 @@
 
+################################
+First In, First Out (FIFO) cores
+################################
 
-FIFO
-----
 Various synchronous and asynchronous FIFO implementations.
 
-.. @todo mixed size FIFOs, need to infer 1-bit primitives
-.. and use these to be the mixed-size FIFO.
+
+fifo_sync
+=========
+
+.. autofunction:: rhea.cores.fifo.fifo_sync
+
+fifo_async
+==========
+
+.. autofunction:: rhea.cores.fifo.fifo_async
+
+fifo_fast
+=========
+
+.. autofunction:: rhea.cores.fifo.fifo_fast
+
+fifo_ramp
+=========
+
+.. autofunction:: rhea.cores.fifo.fifo_ramp
+
+fifo_tester
+===========
+WIP
+
+.. autofunction:: rhea.cores.fifo.fifo_tester
+
+
+Examples
+========

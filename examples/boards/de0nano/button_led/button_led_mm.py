@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import argparse
 
-from myhdl import *
+import myhdl
 
 import rhea.build as build
 
@@ -17,8 +17,9 @@ from rhea.system import AvalonMM
 from rhea.system import AXI4Lite
 
 
+@myhdl.block
 def button_led_mm(clock, reset, leds, btns, bus_type='wishbone'):
-    """ A toy example to demostrate bus agnosticism
+    """ A toy example to demonstrate bus agnosticism
     This example instantiates a memory-map controller and a
     memory-map peripheral.  This example shows how the 
     controllers and peripherals can be passed the memmap
@@ -41,7 +42,7 @@ def button_led_mm(clock, reset, leds, btns, bus_type='wishbone'):
         regbus = Wishbone(glbl, data_width=8, address_width=16)
     elif bus_type == 'avalon':
         regbus = AvalonMM(glbl, data_width=8, address_width=16)
-    #elif bus_type == 'X':
+    #elif bus_type == 'axi4':
     #    regbus = AXI4Lite(glbl, data_wdith=8, address_width=16)
     else:
         raise Exception("Invalid bus type {}".format(bus_type))

@@ -1,9 +1,11 @@
 
+import myhdl
 from myhdl import (Signal, intbv, concat, always, always_comb)
 
 from . import SERDESInterface
 
 
+@myhdl.block
 def device_serdes_output_prim(serdes):
     assert isinstance(serdes, SERDESInterface)
     clockser, clockpar = (serdes.clock_serial,
@@ -42,6 +44,7 @@ def device_serdes_output_prim(serdes):
     return rtl_par, rtl_tic, rtl_toc, rtl_ser
 
 
+@myhdl.block
 def device_serdes_input_prim(serdes):
     """
     """

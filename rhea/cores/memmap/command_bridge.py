@@ -1,6 +1,7 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import (Signal, intbv, enum, always_seq, always_comb,
                    ConcatSignal)
 
@@ -8,6 +9,7 @@ from rhea.system import MemoryMapped, Barebone, FIFOBus
 from . import controller_basic
 
 
+@myhdl.block
 def command_bridge(glbl, fifobus, mmbus):
     """ Convert a command packet to a memory-mapped bus transaction
     

@@ -1,6 +1,5 @@
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import print_function, division
 
 import pytest
 
@@ -34,6 +33,7 @@ def test_emesh_fifo(args=None):
     def tbclkb():
         clock_b.next = not clock_b
 
+    @myhdl.block
     def bench_emesh_fifo():
         tbdut = emesh_fifo(reset, emesh_a, emesh_b)
 

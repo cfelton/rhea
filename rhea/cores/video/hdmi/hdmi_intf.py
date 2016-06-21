@@ -1,6 +1,7 @@
 
-from myhdl import *
+from myhdl import Signal, intbv
 
-class HDMI(object):
+
+class HDMIExtInterface(object):
     def __init__(self):
         pass

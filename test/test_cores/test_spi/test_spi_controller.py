@@ -1,5 +1,6 @@
 #
 # Copyright (c) 2013-2015 Christopher L. Felton
+# See the licence file in the top directory
 #
 
 import traceback
@@ -34,6 +35,7 @@ portmap = dict(
 )
 
 
+@myhdl.block
 def spi_controller_top(clock, reset, sck, mosi, miso, ss):
     """SPI top-level for conversion testing"""
     glbl = Global(clock, reset)
@@ -42,7 +44,7 @@ def spi_controller_top(clock, reset, sck, mosi, miso, ss):
 
     cso = spi_controller.cso()
     cso.isstatic = True
-    cfg_inst = cso.get_generators()
+    cfg_inst = cso.instances()
 
     spi_controller.debug = False
     spi_inst = spi_controller(glbl, spibus, fifobus, cso=cso)
@@ -61,7 +63,8 @@ def convert():
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
     sck, mosi, miso, ss = Signals(bool(0), 4)
-    tb_convert(spi_controller_top, clock, reset, sck, mosi, miso, ss)
+    inst = spi_controller_top(clock, reset, sck, mosi, miso, ss)
+    tb_convert(inst)
 
 
 def test_spi_controller_cso(args=None):
@@ -71,18 +74,20 @@ def test_spi_controller_cso(args=None):
     reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
     spibus = SPIBus()
+
     # a FIFOBus to push-pull data from the SPI controller
-    fifobus = FIFOBus(size=16)
+    fifobus = FIFOBus(width=8)
     # control-status object for the SPI controller
     cso = spi_controller.cso()
 
     spiee = SPIEEPROM()
     asserr = Signal(bool(0))
 
+    @myhdl.block
     def bench_spi_cso():
         spi_controller.debug = True    # enable debug monitors
         tbdut = spi_controller(glbl, spibus, fifobus, cso=cso)
-        tbeep = spiee.gen(clock, reset, spibus)
+        tbeep = spiee.process(clock, reset, spibus)
         tbclk = clock.gen(hticks=5)
 
         @instance
@@ -169,7 +174,8 @@ def test_spi_memory_mapped(args=None):
     spiee = SPIEEPROM()
     spibus = SPIBus()
     asserr = Signal(bool(0))
-    
+
+    @myhdl.block
     def bench_spi():
         tbdut = spi_controller(glbl, spibus, fifobus=fifobus, mmbus=regbus)
         tbeep = spiee.gen(clock, reset, spibus)

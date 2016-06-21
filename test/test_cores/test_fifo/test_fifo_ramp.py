@@ -2,14 +2,13 @@
 # Copyright (c) 2006-2013 Christopher L. Felton
 #
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import print_function, division
 
 from argparse import Namespace
 
-import pytest
-from myhdl import (Signal, instance, delay, now, StopSimulation,
-                   modbv, always)
+import myhdl
+from myhdl import Signal, modbv, always
+from myhdl import instance, delay, now, StopSimulation
 
 from rhea.cores.fifo import fifo_ramp
 
@@ -17,26 +16,22 @@ from rhea.system import Global, Clock, Reset
 from rhea.system import Wishbone
 from rhea.system import FIFOBus
 
-from rhea.utils.test import run_testbench, tb_args
+from rhea.utils.test import run_testbench, tb_args, tb_default_args
 from rhea.utils.test import skip_long_sim_test
 
 
 @skip_long_sim_test
-def test_fifo_ramp():
-    tb_fifo_ramp(Namespace(trace=False))
-
-
-def tb_fifo_ramp(args):
-
+def test_fifo_ramp(args=None):
+    args = tb_default_args(args)
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl)
     fifobus = FIFOBus()
 
-    def _bench_fifo_ramp():
-        tbdut = fifo_ramp(clock, reset, regbus, fifobus,
-                          base_address=0x0000)
+    @myhdl.block
+    def bench_fifo_ramp():
+        tbdut = fifo_ramp(glbl, regbus, fifobus, base_address=0x0000)
         tbrbor = regbus.interconnect()
         tbclk = clock.gen()
         
@@ -96,8 +91,8 @@ def tb_fifo_ramp(args):
 
         return tbclk, tbdut, tbstim, tbmon, tbrbor
 
-    run_testbench(_bench_fifo_ramp, args=args)
+    run_testbench(bench_fifo_ramp, args=args)
 
 
 if __name__ == '__main__':
-    tb_fifo_ramp(tb_args())
+    test_fifo_ramp(tb_args())

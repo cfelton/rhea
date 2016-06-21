@@ -1,17 +1,17 @@
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import division, print_function, absolute_import
 
-from myhdl import (Signal, always_comb, always)
+import myhdl
+from myhdl import always_comb, always
 
-from rhea.cores.fifo import fifo_async
 from rhea.system import FIFOBus
-
-from . import EMeshPacket
-from . import epkt_from_bits
+from rhea.cores.fifo import fifo_async
 
 
+from . import EMeshPacket, epkt_from_bits
+
+
+@myhdl.block
 def emesh_fifo(reset, emesh_i, emesh_o):
     """ EMesh transmit FIFO
     """
@@ -19,22 +19,20 @@ def emesh_fifo(reset, emesh_i, emesh_o):
     # @todo: add rx channels ...
 
     nbits = len(emesh_i.txwr.bits)
-    fbus_wr, fbus_rd, fbus_rr = [FIFOBus(size=16, width=nbits)
-                                 for _ in range(3)]
+    fbus_wr, fbus_rd, fbus_rr = [FIFOBus(width=nbits) for _ in range(3)]
 
+    @myhdl.block
     def emesh_to_fifo(epkt, fbus):
         """ assign the EMesh inputs to the FIFO bus """
         @always_comb
-        def rtl_assign():
+        def beh_assign():
             fbus.write_data.next = epkt.bits
             print(epkt)
             if epkt.access:
-                #fbus.write.next = True
                 fbus.write.next = True
             else:
-                #fbus.write.next = False
                 fbus.write.next = False
-        return rtl_assign,
+        return beh_assign,
 
     def fifo_to_emesh(fbus, epkt, clock):
         """ assign FIFO bus to emesh output """
@@ -53,16 +51,14 @@ def emesh_fifo(reset, emesh_i, emesh_o):
         #   will be stuck on the bus, need to make sure the EMesh
         #   ignores the packet when wait is set
         @always_comb
-        def rtl_read():
+        def beh_read():
             if not fbus.empty and not epkt.wait:
-                #fbus.read.next = True
                 fbus.read.next = True
             else:
-                #fbus.read.next = False
                 fbus.read.next = False
 
         @always(clock.posedge)
-        def rtl_assign():
+        def beh_assign():
             # @todo: check and see if this will convert fine
             # @todo: epkt.assign(fpkt)
             if fbus.read_valid:
@@ -77,22 +73,22 @@ def emesh_fifo(reset, emesh_i, emesh_o):
             else:
                 epkt.access.next = False
 
-        return map_inst, rtl_read, rtl_assign
+        return map_inst, beh_read, beh_assign
 
     # create a FIFO foreach channel: write, read, read-response
     fifo_insts = []
     for epkt, fifobus in zip((emesh_i.txwr, emesh_i.txrd, emesh_i.txrr,),
                              (fbus_wr, fbus_rd, fbus_rr,)):
-        g = emesh_to_fifo(epkt, fifobus)
-        fifo_insts.append(g)
-        g = fifo_async(reset, emesh_i.clock, emesh_o.clock, fifobus)
-        fifo_insts.append(g)
+        fifo_insts += emesh_to_fifo(epkt, fifobus)
+        fifo_insts += fifo_async(
+            write_clock=emesh_i.clock, read_clock=emesh_o.clock,
+            fifobus=fifobus, reset=reset, size=16
+        )
 
     # assign the output of the FIFO
     for epkt, fifobus in zip((emesh_o.txwr, emesh_o.txrd, emesh_o.txrr,),
                              (fbus_wr, fbus_rd, fbus_rr,)):
-        g = fifo_to_emesh(fifobus, epkt, emesh_o.clock)
-        fifo_insts.append(g)
+        fifo_insts += fifo_to_emesh(fifobus, epkt, emesh_o.clock)
 
     return fifo_insts
 

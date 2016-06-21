@@ -1,10 +1,13 @@
 
 from __future__ import absolute_import
 
+import myhdl
+
 from . import SERDESInterface
 from . import altera, xilinx
 
 
+@myhdl.block
 def device_serdes_input(serdes):
     assert isinstance(serdes, SERDESInterface)
 
@@ -16,6 +19,7 @@ def device_serdes_input(serdes):
     return device_inst
 
 
+@myhdl.block
 def device_serdes_output(serdes):
     assert isinstance(serdes, SERDESInterface)
 
@@ -27,6 +31,7 @@ def device_serdes_output(serdes):
     return device_inst
 
 
+@myhdl.block
 def serdes_output_bank(serdes_intf_list):
     assert isinstance(serdes_intf_list, (list, tuple,))
 
@@ -38,6 +43,7 @@ def serdes_output_bank(serdes_intf_list):
     return mods
 
 
+@myhdl.block
 def serdes_input_bank(serdes_intf_list):
     assert isinstance(serdes_intf_list, (list, tuple,))
 

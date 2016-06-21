@@ -1,13 +1,13 @@
 
-from __future__ import absolute_import
-from __future__ import division
+from __future__ import division, absolute_import
 
 from random import randint
 
-from myhdl import *
+import myhdl
+from myhdl import Signal, intbv, instance, concat
 
 
-def _b(s):
+def b2int(s):
     s = s.replace('_', '')
     s = s.replace('x', '0')
     return int(s, 2)
@@ -30,18 +30,19 @@ class SPIEEPROM(object):
         self.status = Signal(intbv("0000_0000"))
 
         # eeprom instructions
-        self.instr = {'WREN': _b("0000_x110"),  # set write enable latch
-                      'WRDI': _b("0000_x100"),  # reset write enable latch
-                      'RDSR': _b("0000_x101"),  # read status register
-                      'WRSR': _b("0000_x001"),  # write status register
-                      'READ': _b("0000_x011"),  # read data from memory array
-                      'WRITE': _b("0000_x010"), # write data to memory array
+        self.instr = {'WREN': b2int("0000_x110"),   # set write enable latch
+                      'WRDI': b2int("0000_x100"),   # reset write enable latch
+                      'RDSR': b2int("0000_x101"),   # read status register
+                      'WRSR': b2int("0000_x001"),   # write status register
+                      'READ': b2int("0000_x011"),   # read data from memory array
+                      'WRITE': b2int("0000_x010"),  # write data to memory array
                       }         
         
     def get_init(self):
         return map(int,self.mem)
-    
-    def gen(self,clock,reset,spibus):
+
+    @myhdl.block
+    def process(self, clock, reset, spibus):
         """
         this is modeled after the AT25 series SPI eeprom.
         """
@@ -66,7 +67,7 @@ class SPIEEPROM(object):
                     shiftin.next = concat(shiftin[23:0],spibus.mosi)
                     count += 1
                     
-                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     # Instruction
                     if count == 8:
                         instr = concat(shiftin[7:0],spibus.mosi)
@@ -92,7 +93,7 @@ class SPIEEPROM(object):
                             instr != self.instr['READ']):
                             break
                         
-                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     # Address
                     elif count == 24+8:
                         addr = concat(shiftin[23:0],spibus.mosi)
@@ -105,7 +106,7 @@ class SPIEEPROM(object):
                         elif instr == self.instr['RDSR']:
                             break  # break out of the transaction loop
                         
-                    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                     # Data
                     elif count == 24+8+8:
                         data = concat(shiftin[7:0],spibus.mosi)

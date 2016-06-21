@@ -1,4 +1,5 @@
 
+import myhdl
 from myhdl import instance, delay, StopSimulation
 import rhea.cores.spi as spi
 from rhea.cores.spi import spi_controller
@@ -19,14 +20,18 @@ def test_spi_cso_config(args=None):
     cso.slave_select.initial_value = 0x10
     cso.isstatic = True
 
-    def bench():
-        tbdut = cso.get_generators()
+    @myhdl.block
+    def bench_spi_cso_config():
+        tbdut = cso.instances()
 
         @instance
         def tbstim():
             yield delay(10)
+            assert cso.enable
+            assert not cso.freeze
             assert not cso.loopback
-            assert cso.clock_polarity
+            assert cso.clock_polarity, \
+                "{} != True".format(bool(cso.clock_polarity))
             assert cso.clock_phase
             assert cso.clock_divisor == 2
             assert cso.slave_select == 0x10
@@ -36,14 +41,14 @@ def test_spi_cso_config(args=None):
 
         return tbdut, tbstim
 
-    run_testbench(bench, args)
+    run_testbench(bench_spi_cso_config, args)
 
 
-# @todo: this needs to become a decorator
 def test_spi_cso(args=None):
     args = tb_default_args(args)
 
-    def bench():
+    @myhdl.block
+    def bench_spi_cso():
         @instance
         def tbstim():
             # @todo: add test stimulus
@@ -51,7 +56,7 @@ def test_spi_cso(args=None):
             raise StopSimulation
         return tbstim
 
-    run_testbench(bench, args)
+    run_testbench(bench_spi_cso, args)
 
 
 if __name__ == '__main__':

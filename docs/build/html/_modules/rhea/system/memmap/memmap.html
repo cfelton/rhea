@@ -1,0 +1,346 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rhea.system.memmap.memmap &mdash; rhea 0.1pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.1pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="rhea 0.1pre documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">rhea 0.1pre documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rhea.system.memmap.memmap</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">MemorySpace</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">ControlStatus</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">RegisterFile</span><span class="p">,</span> <span class="n">Register</span>
+<span class="kn">from</span> <span class="nn">..clock</span> <span class="kn">import</span> <span class="n">Clock</span>
+<span class="kn">from</span> <span class="nn">..reset</span> <span class="kn">import</span> <span class="n">Reset</span>
+
+
+<span class="c"># a count of the number of memory-map peripherals</span>
+<span class="n">_mm_per</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">_mm_list</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">class</span> <span class="nc">MemoryMap</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
+<div class="viewcode-block" id="MemoryMap"><a class="viewcode-back" href="../../../../system/memmap.html#rhea.system.MemoryMap">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Contains a collection of MemoryMapped objects</span>
+<span class="sd">        When a system is defined with numerous modules connect via a</span>
+<span class="sd">        memory-mapped bus this object is used to manage the complete</span>
+<span class="sd">        collection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">MemoryMapped</span><span class="p">(</span><span class="n">MemorySpace</span><span class="p">):</span></div>
+<div class="viewcode-block" id="MemoryMapped"><a class="viewcode-back" href="../../../../system/memmap.html#rhea.system.MemoryMapped">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">glbl</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">data_width</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">address_width</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Base class for the different memory-map interfaces.</span>
+<span class="sd">        This is a base class for the various memory-mapped (control and </span>
+<span class="sd">        status (CSR)) interfaces.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MemoryMapped</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_width</span> <span class="o">=</span> <span class="n">data_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">address_width</span> <span class="o">=</span> <span class="n">address_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regfiles</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">glbl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clock</span> <span class="o">=</span> <span class="n">Clock</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span> <span class="o">=</span> <span class="n">Reset</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">async</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset</span> <span class="o">=</span> <span class="n">glbl</span><span class="o">.</span><span class="n">clock</span><span class="p">,</span> <span class="n">glbl</span><span class="o">.</span><span class="n">reset</span>
+
+        <span class="c"># transaction information (simulation only)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write</span> <span class="o">=</span> <span class="bp">False</span>    <span class="c"># write command in progress</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read</span> <span class="o">=</span> <span class="bp">False</span>     <span class="c"># read command in progress</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_address</span> <span class="o">=</span> <span class="mi">0</span>      <span class="c"># address of current/last transaction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="mi">0</span>         <span class="c"># ??? @todo: is this used ???</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_data</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c"># holds the data written</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_data</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>   <span class="c"># holds the data read</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_peripherals</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_controllers</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c"># bus transaction timeout in clock ticks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="mi">100</span>
+
+        <span class="c"># the generic shadow of this bus, each</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generic</span> <span class="o">=</span> <span class="bp">None</span>
+        
+        <span class="c"># _debug is used to enable bus tracing prints etc.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read</span>
+
+    <span class="k">def</span> <span class="nf">get_read_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_data</span>
+
+    <span class="k">def</span> <span class="nf">get_write_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_data</span>
+
+    <span class="k">def</span> <span class="nf">get_address</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_address</span>
+
+    <span class="k">def</span> <span class="nf">_start_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">write</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write</span> <span class="o">=</span> <span class="n">write</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">write</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_address</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="k">if</span> <span class="n">write</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_read_data</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">_end_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read</span> <span class="ow">and</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_read_data</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="c"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c"># public transactor API</span>
+    <span class="c"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="k">def</span> <span class="nf">writetrans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Write transaction &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">readtrans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Read transaction &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">acktrans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Acknowledge transaction &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="c"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c"># keep track of all the components on the bus</span>
+    <span class="c"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="k">def</span> <span class="nf">_add_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; globally keep track of all per bus</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">global</span> <span class="n">_mm_per</span><span class="p">,</span> <span class="n">_mm_list</span>
+        <span class="n">nkey</span> <span class="o">=</span> <span class="s">&quot;{:04d}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_mm_per</span><span class="p">)</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">name</span>
+        <span class="n">_mm_list</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">_mm_per</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memspace</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; add a peripheral register-file to the bus</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">memspace</span><span class="p">,</span> <span class="n">MemorySpace</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_peripherals</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">base_address</span> <span class="o">=</span> <span class="n">memspace</span><span class="o">.</span><span class="n">base_address</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">memspace</span><span class="p">,</span> <span class="n">RegisterFile</span><span class="p">):</span>
+            <span class="n">regfile</span> <span class="o">=</span> <span class="n">memspace</span>
+            <span class="c"># want a copy of the register-file so that the</span>
+            <span class="c"># address can be adjusted.</span>
+            <span class="n">arf</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">regfile</span><span class="p">)</span>
+
+            <span class="c"># @todo: revisit the base_address assignment, the bus width needs</span>
+            <span class="c"># @todo: to be taken into account.</span>
+            <span class="k">if</span> <span class="n">base_address</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">maxaddr</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">regfiles</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">maxaddr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">maxaddr</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">base_address</span><span class="p">)</span>
+                <span class="n">base_address</span> <span class="o">=</span> <span class="n">maxaddr</span> <span class="o">+</span> <span class="mh">0x100000</span>
+
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">regfiles</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">base_address</span> <span class="o">==</span> <span class="n">v</span><span class="o">.</span><span class="n">base_address</span><span class="p">:</span>
+                    <span class="k">print</span><span class="p">(</span><span class="s">&quot;@E: Register file address collision&quot;</span><span class="p">)</span>
+                    <span class="c"># @todo: raise an exception</span>
+
+            <span class="c"># automatically assigning an empty base_address</span>
+            <span class="n">memspace</span><span class="o">.</span><span class="n">base_address</span> <span class="o">=</span> <span class="n">base_address</span>
+
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">arf</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Register</span><span class="p">):</span>
+                    <span class="n">v</span><span class="o">.</span><span class="n">addr</span> <span class="o">+=</span> <span class="n">base_address</span>
+
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">regfiles</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot;_{:03d}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s">&quot;_000&quot;</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">regfiles</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">arf</span>
+
+            <span class="c"># return the peripheral generators for this bus</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peripheral_regfile</span><span class="p">(</span><span class="n">regfile</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">base_address</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">memspace</span><span class="o">.</span><span class="n">base_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_peripherals</span>
+            <span class="c"># @todo: complete, add the non-regfile to the bus</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="p">[]</span>
+    
+        <span class="k">return</span> <span class="n">g</span>
+
+    <span class="c"># @todo: remove `add_csr` and replace with</span>
+    <span class="c"># @todo:     rf = cso.build_register_file()</span>
+    <span class="c"># @todo:     mmbus.add(rf)</span>
+    <span class="k">def</span> <span class="nf">add_csr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csr</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">csr</span><span class="p">,</span> <span class="n">ControlStatus</span><span class="p">)</span>
+
+        <span class="c"># the `csr` objects are void of any memory-map specific information</span>
+        <span class="c"># the &quot;mapping&quot; all occurs here.</span>
+        <span class="c"># @todo: refactor, shares code with above ???</span>
+        <span class="n">maxaddr</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">regfiles</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">maxaddr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">maxaddr</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">base_address</span><span class="p">)</span>
+        <span class="n">base_address</span> <span class="o">=</span> <span class="n">maxaddr</span> <span class="o">+</span> <span class="mh">0x100000</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">regfiles</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">base_address</span> <span class="o">==</span> <span class="n">v</span><span class="o">.</span><span class="n">base_address</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&quot;@E: Register file address collision&quot;</span><span class="p">)</span>
+                <span class="c"># @todo: raise an exception</span>
+
+        <span class="c"># create a memspace / register file for this csr</span>
+        <span class="n">dw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_width</span>
+        <span class="n">memspace</span> <span class="o">=</span> <span class="n">RegisterFile</span><span class="p">()</span>
+
+
+    <span class="c"># @todo: add `add_master` (`add_controller`), adds master/controller</span>
+    <span class="c"># @todo: to the bus.</span>
+
+    <span class="c"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c"># module (component) implementations</span>
+    <span class="c"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="k">def</span> <span class="nf">get_generic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the generic bus interface</span>
+<span class="sd">        Return the object that map_to_generic maps to.</span>
+<span class="sd">        :return: generic bus interface</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">map_to_generic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generic</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Map this bus to the generic (Barebone) bus</span>
+<span class="sd">        This is a bus adapter, it will adapt the</span>
+<span class="sd">        :return: generic bus, myhdl generators</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">map_from_generic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generic</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Map the generic bus (Barebone) to this bus</span>
+<span class="sd">        This is a bus adapter that will adapt the generic bus to this</span>
+<span class="sd">        bus.  This is a module and returns myhdl generators</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        generic: The generic memory-mapped bus, all the memory-mapped</span>
+<span class="sd">        supported modules use the *generic* bus internally.  This provides</span>
+<span class="sd">        an agnostic bus interface to all the modules.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        myhdl generators</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">peripheral_regfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regfile</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">base_address</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; override</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        glbl: global signals, clock and reset</span>
+<span class="sd">        regfile: register file interfacing to</span>
+
+<span class="sd">        :param glbl: global signals, clock and reset</span>
+<span class="sd">        :param regfile: register file interfacing to.</span>
+<span class="sd">        :param name: name of this interface</span>
+<span class="sd">        :param base_address: base address for this register file</span>
+<span class="sd">        :return: myhdl generators</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">interconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Connect all the components</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">rhea 0.1pre documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Christopher L. Felton.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

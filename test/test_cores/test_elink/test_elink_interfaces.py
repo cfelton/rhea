@@ -1,9 +1,9 @@
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import print_function, division
 
 from random import randint
 
+import myhdl
 from myhdl import (Signal, always, instance, delay, StopSimulation)
 
 from rhea.cores.elink import ELink   # ELink interface
@@ -24,13 +24,14 @@ def test_elink_interfaces(args=None):
     elink = ELink()       # links the two components (models)
     emesh = EMesh(clock)  # interface into the Elink external component
 
-    @always(delay(2500))
-    def tbclk():
-        clock.next = not clock
-
-    def _bench_elink_interface():
+    @myhdl.block
+    def bench_elink_interface():
         tbnorth = elink_external_model(elink, emesh)
         tbsouth = elink_asic_model(elink)
+
+        @always(delay(2500))
+        def tbclk():
+            clock.next = not clock
 
         @instance
         def tbstim():
@@ -71,7 +72,7 @@ def test_elink_interfaces(args=None):
 
         return tbclk, tbnorth, tbsouth, tbstim
 
-    run_testbench(_bench_elink_interface, timescale='1ps', args=args)
+    run_testbench(bench_elink_interface, timescale='1ps', args=args)
 
 
 if __name__ == '__main__':

@@ -1,28 +1,29 @@
 
 import argparse
 
-from myhdl import (Signal, intbv, always, always_comb, instances,
-                   concat, instance, delay, StopSimulation)
+import myhdl
+from myhdl import Signal, intbv, always, always_comb, instances, concat
 
-from rhea.system import Global, Clock, Reset
 from rhea.vendor import ClockManagement
 from rhea.vendor import device_clock_mgmt
-from rhea.utils.test import run_testbench, tb_args, tb_default_args
-import rhea.build as build
 from rhea.build.boards import get_board
 
 flow = None
 
 
+@myhdl.block
 def zybo_device_prim(clock, led, reset=None):
     """      
     """
 
     print("Zybo external clock frequency {:.3f} MHz".format(
         clock.frequency/1e6))
-    clkmgmt = ClockManagement(clock, reset,
-                              output_frequencies=(100e6, 125e6, 500e6),
-                              vendor='xilinx')
+
+    clkmgmt = ClockManagement(
+        clock, reset,
+        output_frequencies=(100e6, 125e6, 500e6),
+        vendor='xilinx'
+    )
 
     pll_inst = device_clock_mgmt(clkmgmt)
     maxcnt0 = int(clock.frequency)
@@ -33,7 +34,7 @@ def zybo_device_prim(clock, led, reset=None):
                         for mx in (maxcnt0, maxcnt1, maxcnt2)]
     led0, led1, led2 = [Signal(bool(0)) for _ in range(3)]
 
-    #clock1, clock2, clock3 = clkmgmt.clocks
+    # clock1, clock2, clock3 = clkmgmt.clocks
     clock1 = clkmgmt.clocksout(0)
     clock2 = clkmgmt.clocksout(1)
     clock3 = clkmgmt.clocksout(2)
@@ -68,31 +69,6 @@ def zybo_device_prim(clock, led, reset=None):
         led.next = concat(clkmgmt.locked, led2, led1, led0)
 
     return instances()
-        
-
-def test_devprim(args=None):
-    args = tb_default_args(args)
-    clock = Clock(0, frequency=125e6)
-    reset = Reset(0, active=0, async=True)
-    leds = Signal(intbv(0)[4:])
-
-    def _bench_devprim():
-        tbdut = zybo_device_prim(clock, leds, reset)
-        tbclk = clock.gen(hticks=10000)
-        
-        @instance
-        def tbstim():
-            print("start simulation")
-            yield reset.pulse(36)
-            yield clock.posedge
-            for ii in range(40):
-                yield delay(11111)
-            print("end simulation")
-            raise StopSimulation
-
-        return tbdut, tbclk, tbstim
-
-    run_testbench(_bench_devprim, args=args)
 
     
 def build_bitfile():
@@ -122,9 +98,6 @@ def main():
     parser.add_argument("--trace", action='store_true', default=False)
     args = parser.parse_args()
 
-    # run a simple tests to check all is ok
-    test_devprim(args=args)
-
     if args.build:
         build_bitfile()
 
@@ -134,5 +107,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-    

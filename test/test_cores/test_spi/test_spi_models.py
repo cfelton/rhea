@@ -1,9 +1,8 @@
 
+import myhdl
+from myhdl import instance, delay, StopSimulation
 
-from myhdl import (Signal, ResetSignal, always, instance, delay,
-                   StopSimulation)
-
-from rhea.system import Global, Clock, Reset, Barebone
+from rhea.system import Global, Clock, Barebone
 from rhea.utils.test import run_testbench, tb_default_args
 
 from rhea.cores.spi import SPIBus
@@ -18,7 +17,8 @@ def test_spi_models(args=None):
     ibus = Barebone(glbl)
     spibus = SPIBus()
 
-    def bench():
+    @myhdl.block
+    def bench_spi_models():
 
         tbdut = spi_controller_model(clock, ibus, spibus)
         tbspi = SPISlave().process(spibus)
@@ -36,7 +36,7 @@ def test_spi_models(args=None):
 
         return tbdut, tbspi, tbclk, tbstim
 
-    run_testbench(bench, args=args)
+    run_testbench(bench_spi_models, args=args)
 
 
 if __name__ == '__main__':

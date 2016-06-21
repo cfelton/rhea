@@ -1,0 +1,347 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>System &mdash; rhea 0.1pre documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="rhea 0.1pre documentation" href="../index.html" />
+    <link rel="next" title="Cores" href="../cores/index.html" />
+    <link rel="prev" title="Introduction" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../cores/index.html" title="Cores"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">rhea 0.1pre documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="system">
+<h1>System<a class="headerlink" href="#system" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal"><span class="pre">rhea</span></code> package provides frameworks for building complex digital
+circuits.  These include modular and scalable <a class="reference external" href="http://docs.myhdl.org/en/stable/whatsnew/0.9.html#interfaces-conversion-of-attribute-accesses">interfaces</a> and
+<a class="reference external" href="http://docs.myhdl.org/en/stable/manual/structure.html#structural-modeling">modules</a>.  The following describes the specification for the
+frameworks being developed into the <cite>rhea</cite> package.</p>
+<div class="section" id="control-and-status">
+<h2>Control and status<a class="headerlink" href="#control-and-status" title="Permalink to this headline">¶</a></h2>
+<p>One of the goals of the <code class="docutils literal"><span class="pre">rhea</span></code> package is to simplify the assembly
+of systems.  In a complex digital system majority of the blocks will
+have two interfaces.  One being the streaming data in and out of the
+module and the other a control and status interface.  The control
+and status provides a lower-bandwidth interface into the component
+(module).</p>
+<p>Defining a peripheral specific control-status object (CSO).</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">rhea.system</span> <span class="kn">import</span> <span class="n">ControlAndStatus</span>
+
+<span class="c"># define the control and status signals for a peripheral</span>
+<span class="k">class</span> <span class="nc">LEDBlinkerControlStatus</span><span class="p">(</span><span class="n">ControlStatus</span><span class="p">):</span>
+    <span class="n">modes</span> <span class="o">=</span> <span class="n">enum</span><span class="p">(</span><span class="s">&quot;counting&quot;</span><span class="p">,</span> <span class="s">&quot;walking&quot;</span><span class="p">,</span> <span class="s">&quot;strobing&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pause</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modes</span><span class="o">.</span><span class="n">counting</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In a peripheral either the default (defined) control-status object
+CSO can be used and added to the control-status interface.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@myhdl.module</span>
+<span class="k">def</span> <span class="nf">led_blinker</span><span class="p">(</span><span class="n">glbl</span><span class="p">,</span> <span class="n">led</span><span class="p">,</span> <span class="n">cso</span><span class="p">):</span>
+    <span class="c"># the cso interface provides the control and status for</span>
+    <span class="c"># this module</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">LEDBlinkerControlStatus</span><span class="p">)</span>
+    <span class="n">clock</span><span class="p">,</span> <span class="n">reset</span> <span class="o">=</span> <span class="n">glbl</span><span class="o">.</span><span class="n">clock</span><span class="p">,</span> <span class="n">glbl</span><span class="o">.</span><span class="n">reset</span>
+    <span class="n">modes</span> <span class="o">=</span> <span class="n">LEDBlinkerControlStatus</span><span class="o">.</span><span class="n">modes</span>
+    <span class="n">enabled</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="nd">@always_comb</span>
+    <span class="k">def</span> <span class="nf">beh_enabled</span><span class="p">():</span>
+        <span class="n">enabled</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">glbl</span><span class="o">.</span><span class="n">enable</span> <span class="ow">and</span> <span class="n">cso</span><span class="o">.</span><span class="n">enable</span>
+
+    <span class="nd">@always_seq</span><span class="p">(</span><span class="n">clock</span><span class="o">.</span><span class="n">posedge</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="n">reset</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">beh_blink</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">enabled</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">cso</span><span class="o">.</span><span class="n">pause</span><span class="p">:</span>
+            <span class="n">nextled</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="n">cso</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">modes</span><span class="o">.</span><span class="n">counting</span><span class="p">:</span>
+                <span class="c"># counting logic</span>
+            <span class="k">elif</span> <span class="n">cso</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">modes</span><span class="o">.</span><span class="n">walking</span><span class="p">:</span>
+                <span class="c"># walking logic</span>
+            <span class="k">elif</span> <span class="n">cso</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">modes</span><span class="o">.</span><span class="n">strobing</span>
+                <span class="c"># strobing logic</span>
+
+            <span class="n">led</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">nextled</span>
+
+    <span class="k">return</span> <span class="n">beh_enable</span><span class="p">,</span> <span class="n">beh_blink</span>
+
+<span class="n">led_blinker</span><span class="o">.</span><span class="n">cso</span> <span class="o">=</span> <span class="n">LEDBlinkerControlStatus</span>
+</pre></div>
+</div>
+<p>The non-global control and status, i.e. the module specific
+control-status is accessed via the <code class="docutils literal"><span class="pre">cso</span></code>.  This provides
+a clean encapsulation to the module.  The <code class="docutils literal"><span class="pre">cso</span></code> can also
+include transactors to assist testing and verification.</p>
+<div class="section" id="creating-control-status-objects">
+<h3>Creating control status objects<a class="headerlink" href="#creating-control-status-objects" title="Permalink to this headline">¶</a></h3>
+<p>The above example shows how a collections of control and status signals
+are defined in a class.  To help guide the the tools, some additional
+information can be defined:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">driven</span></code>: set the signal driven attribute to true to indicate a
+read-only (status) attribute.</li>
+<li>Use the hardware-types <code class="xref py py-class docutils literal"><span class="pre">Bit</span></code> and <code class="xref py py-class docutils literal"><span class="pre">Byte</span></code> to
+help drive the how the attributes are organized in a register-file.</li>
+<li>Use <code class="docutils literal"><span class="pre">initial_value</span></code> property to overwrite the signals initial
+value, this is useful is static configurations.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="register-files">
+<h2>Register files<a class="headerlink" href="#register-files" title="Permalink to this headline">¶</a></h2>
+<p>When creating components for a design often a register file is included
+The register file is used for the control and status access (CSR) of
+the component.
+A register file is simply a collection of <a href="#id3"><span class="problematic" id="id4">`registers`_</span></a> that are used to
+control the component and read status. The register file is accessed by
+a memory-mapped bus.  The register file provides dynamic control and
+status of the component.</p>
+<p>The objects to create a register file encapsulate much of the detail
+required for typical register-file definition.  In addition provides
+a mechanism for static definition (no bus present).</p>
+<p>The following is a short example building a simple register file.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">rhea.system</span> <span class="kn">import</span> <span class="n">RegisterFile</span><span class="p">,</span> <span class="n">Register</span>
+
+<span class="c"># create a register file</span>
+<span class="n">regfile</span> <span class="o">=</span> <span class="n">RegisterFile</span><span class="p">()</span>
+
+<span class="c"># create a status register and add it to the register file</span>
+<span class="n">reg</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="s">&#39;status&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="s">&#39;ro&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">regfile</span><span class="o">.</span><span class="n">add_register</span><span class="p">(</span><span class="n">reg</span><span class="p">)</span>
+
+<span class="c"># create a control register with named bits and add</span>
+<span class="n">reg</span> <span class="o">=</span> <span class="n">Register</span><span class="p">(</span><span class="s">&#39;control&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">access</span><span class="o">=</span><span class="s">&#39;rw&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">reg</span><span class="o">.</span><span class="n">add_named_bits</span><span class="p">(</span><span class="s">&#39;enable&#39;</span><span class="p">,</span> <span class="n">bits</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s">&quot;enable the component&quot;</span><span class="p">)</span>
+<span class="n">reg</span><span class="o">.</span><span class="n">add_named_bits</span><span class="p">(</span><span class="s">&#39;pause&#39;</span><span class="p">,</span> <span class="n">bits</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s">&quot;pause current operation&quot;</span><span class="p">)</span>
+<span class="n">reg</span><span class="o">.</span><span class="n">add_named_bits</span><span class="p">(</span><span class="s">&#39;mode&#39;</span><span class="p">,</span> <span class="n">bits</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">comment</span><span class="o">=</span><span class="s">&quot;select mode&quot;</span><span class="p">)</span>
+<span class="n">regfile</span><span class="o">.</span><span class="n">add_register</span><span class="p">(</span><span class="n">reg</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The current implementation requires all the register in a
+register file to be the same width.</p>
+</div>
+<p>The above example defines a register file to be used.  This can be
+used in a new component/peripheral.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@myhdl.module</span>
+<span class="k">def</span> <span class="nf">led_blinker</span><span class="p">(</span><span class="n">glbl</span><span class="p">,</span> <span class="n">membus</span><span class="p">,</span> <span class="n">leds</span><span class="p">):</span>
+    <span class="n">clock</span> <span class="o">=</span> <span class="n">glbl</span><span class="o">.</span><span class="n">clock</span>
+    <span class="c"># instantiate the register interface module and add the</span>
+    <span class="c"># register file to the list of memory-spaces</span>
+    <span class="n">regfile</span><span class="o">.</span><span class="n">base_address</span> <span class="o">=</span> <span class="mh">0x8240</span>
+    <span class="n">regfile_inst</span> <span class="o">=</span> <span class="n">membus</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">glbl</span><span class="p">,</span> <span class="n">regfile</span><span class="p">)</span>
+
+    <span class="c"># instantiate different LED blinking modules</span>
+    <span class="n">led_modules</span> <span class="o">=</span> <span class="p">(</span><span class="n">led_stroby</span><span class="p">,</span> <span class="n">led_dance</span><span class="p">,</span> <span class="n">led_count</span><span class="p">,)</span>
+    <span class="n">led_drivers</span> <span class="o">=</span> <span class="p">[</span><span class="n">Signal</span><span class="p">(</span><span class="n">leds</span><span class="o">.</span><span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">led_modules</span><span class="p">]</span>
+    <span class="n">mod_inst</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">ledmod</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">led_modules</span><span class="p">):</span>
+        <span class="n">mod_inst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ledmod</span><span class="p">(</span><span class="n">glbl</span><span class="p">,</span> <span class="n">led_drivers</span><span class="p">[</span><span class="n">ii</span><span class="p">]))</span>
+
+    <span class="nd">@always</span><span class="p">(</span><span class="n">clock</span><span class="o">.</span><span class="n">posedge</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">beh_led_assign</span><span class="p">():</span>
+        <span class="n">leds</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">led_drivers</span><span class="p">[</span><span class="n">regfile</span><span class="o">.</span><span class="n">mode</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">regfile_inst</span><span class="p">,</span> <span class="n">mod_inst</span><span class="p">,</span> <span class="n">beh_led_assign</span>
+</pre></div>
+</div>
+<p>The <code class="xref py py-func docutils literal"><span class="pre">led_blinker()</span></code> module demonstrates how to add the created
+<code class="xref py py-class docutils literal"><span class="pre">RegisterFile</span></code> to
+the memory-mapped bus and get a myhdl instance that provides the logic
+to read and write the register file from the bus interface passed to the
+module.</p>
+<p>Note, in the above example a <code class="docutils literal"><span class="pre">base_address</span></code> was set.  If the <code class="docutils literal"><span class="pre">base_address</span></code>
+attribute is not present the :py:class:<a href="#id1"><span class="problematic" id="id2">`</span></a>MemoryMapped</p>
+</div>
+<div class="section" id="memory-map-interfaces">
+<h2>Memory map interfaces<a class="headerlink" href="#memory-map-interfaces" title="Permalink to this headline">¶</a></h2>
+<p>The :Register Files: section examples eluded to the memory-map (or CSR)
+interfaces and how they can be connected to register file.  The <code class="docutils literal"><span class="pre">rhea</span></code>
+project contains the following memory-map interfaces:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="xref py py-class docutils literal"><span class="pre">Barebone</span></code></li>
+<li><code class="xref py py-class docutils literal"><span class="pre">Wishbone</span></code></li>
+<li><code class="xref py py-class docutils literal"><span class="pre">AvalonMM</span></code></li>
+<li><code class="xref py py-class docutils literal"><span class="pre">AXI4Lite</span></code></li>
+</ul>
+</div></blockquote>
+<p>Each of these implement a memory-map bus type/specification and each
+can be passed as and interface to a module.  Each of the specific
+memory-mapped bus classes inherit the <code class="xref py py-class docutils literal"><span class="pre">MemoryMapped</span></code> class.
+The <code class="xref py py-class docutils literal"><span class="pre">MemoryMapped</span></code> defines the attributes and methods the
+memory-mapped buses have in common.</p>
+<p>When interfacing to a register file, the register file is added to the
+bus as shown in the previous example with the <code class="xref py py-func docutils literal"><span class="pre">MemoryMapped.add()</span></code>
+function.  The register file covers many use cases for adding control
+and status interfaces to different components.  Each interface also
+contains a module to adapt the memory-map interface to a <em>generic</em>
+interface.  In this case each bus is mapped to the <code class="xref py py-class docutils literal"><span class="pre">Barebone</span></code>
+bus with the <code class="xref py py-func docutils literal"><span class="pre">MemoryMapped.map_to_generic()</span></code>
+function / <a class="reference external" href="http://www.myhdl.org">myhdl</a> <a class="reference external" href="http://docs.myhdl.org/en/stable/manual/structure.html#structural-modeling">module</a>.</p>
+<p>The next section outlines how the <code class="xref py py-class docutils literal"><span class="pre">RegisterFile</span></code> and the
+corresponding registers is typically not used as defined above.  Rather,
+an automated mapping of the control-status object is mapped to the
+memory-space.  Software is used to encapsulate all the memory-based
+accesses.</p>
+</div>
+<div class="section" id="from-attributes-to-bus-cycles">
+<h2>From attributes to bus cycles<a class="headerlink" href="#from-attributes-to-bus-cycles" title="Permalink to this headline">¶</a></h2>
+<p>When designing a complex digital system with the <code class="docutils literal"><span class="pre">rhea</span></code> components
+we don&#8217;t want to deal with creating explict memory-maps.  We want to
+interface with various modules through their control-status attributes.</p>
+<p>As defined in the above first example, for our simple LED blinker
+module there are a couple control signals defined.  The module can
+be stimulated and controlled via this interface.  We might have some
+external logic, or simply tie the module controls to physical inputs.</p>
+<p>If we want to tie the controls to a register-file accessed by a
+memory-mapped this</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="nd">@myhdl.module</span>
+<span class="k">def</span> <span class="nf">led_blinker</span><span class="p">(</span><span class="n">glbl</span><span class="p">,</span> <span class="n">leds</span><span class="p">,</span> <span class="n">membus</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cso</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">cso</span> <span class="ow">is</span> <span class="bp">None</span>
+        <span class="n">cso</span> <span class="o">=</span> <span class="n">led_blinker</span><span class="o">.</span><span class="n">cso</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">membus</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">rf</span> <span class="o">=</span> <span class="n">cso</span><span class="o">.</span><span class="n">get_register_file</span><span class="p">()</span>
+        <span class="n">membus</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">rf</span><span class="p">)</span>
+
+    <span class="c"># get any cso specific logic (if any)</span>
+    <span class="n">cso_inst</span> <span class="o">=</span> <span class="n">cso</span><span class="o">.</span><span class="n">get_generators</span><span class="p">()</span>
+
+    <span class="c"># ...</span>
+</pre></div>
+</div>
+<p>This gives a flexible mechanism to connect the module to a memory-mapped
+bus or simply control the module through some other mechanism (e.g.
+directly driven by the logic).</p>
+<p>In the previous example all the explict addresses are hidden.  The
+control-status attributes are accessed via the attributes (in simulation
+and host software) and all the memory-mapped bus accesses are hidden.
+The <code class="xref py py-class docutils literal"><span class="pre">MemoryMap</span></code> has utilities to export the memory-map.</p>
+<div class="section" id="static-configuration">
+<h3>Static configuration<a class="headerlink" href="#static-configuration" title="Permalink to this headline">¶</a></h3>
+<p>The previous example demonstrated how the module can select to use the
+external <code class="docutils literal"><span class="pre">cso</span></code> object, default <code class="docutils literal"><span class="pre">cso</span></code></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">System</a><ul>
+<li><a class="reference internal" href="#control-and-status">Control and status</a><ul>
+<li><a class="reference internal" href="#creating-control-status-objects">Creating control status objects</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#register-files">Register files</a></li>
+<li><a class="reference internal" href="#memory-map-interfaces">Memory map interfaces</a></li>
+<li><a class="reference internal" href="#from-attributes-to-bus-cycles">From attributes to bus cycles</a><ul>
+<li><a class="reference internal" href="#static-configuration">Static configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../index.html"
+                        title="previous chapter">Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../cores/index.html"
+                        title="next chapter">Cores</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/system/overview.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../cores/index.html" title="Cores"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Introduction"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">rhea 0.1pre documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Christopher L. Felton.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

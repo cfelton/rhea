@@ -1,10 +1,12 @@
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import print_function, division
 
 from math import ceil, floor
+import myhdl
+from myhdl import Signal, intbv, enum, instance, always_comb
 
-from myhdl import *
+from rhea import Signals
+from rhea.cores.sdram import SDRAMInterface
 
 
 class SDRAMModel(object):
@@ -24,6 +26,7 @@ class SDRAMModel(object):
 
         Not convertible.
         """
+        assert isinstance(intf, SDRAMInterface)
 
         # external interface to the controller, the SDRAM interface
         # also contains the SDRAM timing parameters.
@@ -36,6 +39,7 @@ class SDRAMModel(object):
         self.States = enum("IDLE", "ACTIVE")
         self.Commands = intf.Commands
 
+    @myhdl.block
     def process(self, skip_init=True):
         """
         @todo: documentation
@@ -72,9 +76,9 @@ class SDRAMModel(object):
 
                     # @todo: need to add the device specific states
                     if cmd == Commands.NOP:
-                        pass #print("[SDRAM] nop commands")
+                        pass  # print("[SDRAM] nop commands")
                     elif cmd == Commands.ACT:
-                        pass #print("[SDRAM] ack commands")
+                        pass  # print("[SDRAM] ack commands")
                     elif cmd == Commands.WR:
                         # @todo look at the intf.dq bus and only get if valid
                         data = 0
@@ -95,11 +99,10 @@ class SDRAMModel(object):
                 # @todo: if 'ddr' in intf.ver yield intf.clk.posedge, intf.clk.negedge
                 yield intf.clk.posedge
 
-        # in the model case the following signals are not used in
-        # a generator.  The traceSignals will skip over these signals
-        # because it doesnt' think it is used.  Mirror the signals here
-        # so they are traced.
-        cs, ras, cas, we = [Signal(bool(0 )) for _ in range(4)]
+        # in the model the following signals are not used in a generator.
+        # The traceSignals will skip over these signals because it doesn't
+        # think it is used.  Mirror the signals here so they are traced.
+        cs, ras, cas, we = Signals(bool(0), 4)
 
         @always_comb
         def mon():

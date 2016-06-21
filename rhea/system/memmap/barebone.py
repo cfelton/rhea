@@ -2,16 +2,17 @@
 # Copyright (c) 2014-2015 Christopher L. Felton
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 from math import log, ceil
+import myhdl
 from myhdl import Signal, intbv
 from .memmap import MemoryMapped
 
 
 class Barebone(MemoryMapped):
     name = 'barebone'
+
     def __init__(self, glbl, data_width=8, address_width=8,
                  name=None, num_peripherals=16):
         """ Generic memory-mapped interface.
@@ -57,11 +58,13 @@ class Barebone(MemoryMapped):
 
         * currently not implemented but envisioned it will be added
 
-        :param glbl: system clock and reset
-        :param data_width: data bus width
-        :param address_width: address bus width
-        :param name: name for the bus
-        :param num_peripherals: the number of peripherals targetted
+        (arguments == ports)
+        Arguments:
+            glbl: system clock and reset
+            data_width: data bus width
+            address_width: address bus width
+            name: name for the bus
+            num_peripherals: the number of peripherals targetted
         """        
         super(Barebone, self).__init__(glbl,
                                        data_width=data_width,
@@ -142,7 +145,6 @@ class Barebone(MemoryMapped):
         """
         In this case *this* is the generic bus, there is no mapping that
         needs to be done.  Simply return ourself and all is good.
-        :return:
         """
         return []
 
@@ -150,8 +152,9 @@ class Barebone(MemoryMapped):
         """
         In this case the *this* is the generic bus, use the signals
         passed, that is the expected behavior.
-        :param generic: the generic bus to map from
-        :return:
+
+        Arguments:
+            generic: the generic bus to map from
         """
         self.write = generic.write
         self.read = generic.read
@@ -165,11 +168,12 @@ class Barebone(MemoryMapped):
 
     def peripheral_regfile(self, glbl, regfile, name, base_address=0):
         """
-        :param glbl:
-        :param regfile:
-        :param name:
-        :param base_address:
-        :return:
+        (arguments == ports)
+        Arguments:
+            glbl: global signals, clock, reset, enable, etc.
+            regfile: register file
+            name:
+            base_address:
         """
         return []
 

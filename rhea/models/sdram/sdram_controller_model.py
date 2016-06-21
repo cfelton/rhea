@@ -1,15 +1,14 @@
 
 from __future__ import print_function
-from __future__ import absolute_import
 
 import myhdl
 from myhdl import instance
 
 from rhea.cores.sdram import SDRAMInterface
 from rhea.system import MemoryMapped
-from rhea.system import FIFOBus
 
 
+@myhdl.block
 def sdram_controller_model(sdram_intf, internal_intf):
     """ Model the transaction between the internal bus and external SDRAM
 

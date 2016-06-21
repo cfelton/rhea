@@ -1,12 +1,14 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import always_comb
 
 from rhea.system import Reset
 from ..device_clock_mgmt_prim import device_clock_mgmt_prim
 
 
+@myhdl.block
 def device_clock_mgmt(clkmgmt):
 
     # assign the individual clocks in the pll_intf to the

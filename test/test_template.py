@@ -1,14 +1,14 @@
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import print_function, division
 
 # standard library imports
 import math
 from random import randint
 import argparse 
 
-# myhdl import (following is not a comlete list of possible
+# myhdl import (following is not a complete list of possible
 # imports needed)
+import myhdl
 from myhdl import (Signal, intbv, instance, delay, always_seq, 
                    StopSimulation, Simulation)
 
@@ -45,8 +45,9 @@ def testbench_nameofwhatsbeingtested(args=None):
     
     # create  a test/stimulus function, this function is passed
     # to the `run_testbench` function.  A single function is used
-    # so the signals in the stimulus can be traced. 
-    def _bench_nameofwhatsbeingtested():
+    # so the signals in the stimulus can be traced.
+    @myhdl.block
+    def bench_nameofwhatsbeingtested():
         """  """
         # instantiate design under test, etc. 
         tbdut = some_module(glbl, sigin, sigout)
@@ -70,18 +71,19 @@ def testbench_nameofwhatsbeingtested(args=None):
         # return the generators (instances() could be used)
         return tbdut, tbclk, tbstim
         
-    run_testbench(_bench_nameofwhatsbeingtested, args=args)
-        
+    run_testbench(bench_nameofwhatsbeingtested, args=args)
 
+
+@myhdl.block
 def some_module(glbl, sigin, sigout):
     """ example module to be tested """
     clock, reset = glbl.clock, glbl.reset
     
     @always_seq(clock.posedge, reset=reset)
-    def rtl():
+    def beh():
         sigout.next = sigin
         
-    return rtl
+    return beh
     
     
 # include the "test_*" functions that invoke the above testbench.

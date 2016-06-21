@@ -1,50 +1,92 @@
 #
 # Copyright (c) 2006-2014 Christopher L. Felton
+# See the licence file in the top directory
 #
 
-from math import ceil, log
-from myhdl import Signal, intbv, always_comb, always
+
+import myhdl
+from myhdl import Signal, ResetSignal, modbv, intbv
+from myhdl import always_comb, always, always_seq
+from myhdl import instance, delay, StopSimulation
+from myhdl.conversion import analyze, verify
+from rhea.system import Signals
 
 
-def fifo_mem_generic(wclk, wr, din, addr_w,
-                     rclk, dout, addr_r,
-                     mem_size=9):
+@myhdl.block
+def fifo_mem(clock_w, write, write_data, write_addr,
+             clock_r, read, read_data, read_addr, write_addr_delayed):
     """ Memory module used by FIFOs
-    Ports
-    =====
+    The write data takes two `clock_w` clock cycles to be latched 
+    into the memory array and one `clock_r` clock cycle to be latched
+    into `read_data`.
 
-    Parameters
-    ==========
-      mem_size: number of item entries in the memory
+    Arguments:
+       clock_w: write clock
+       write: write enable
+       write_data: write data bus
+       write_addr: write address bus
+       clock_r: read clock
+       read: read strobe, loads the next address into the output reg
+       read_data: read data bus
+       read_addr: read address bus
+       write_addr_delayed: the write data takes multiple clock cycles
+           before it is available in the memory (pipelines before and
+           and after the memory array).  This is a delayed version of
+           the write_addr that matches the write_data delay.
+
+    Parameters:
+        mem_size (int): number of item entries in the memory.
     """
+    
+    assert len(write_addr) == len(read_addr)
+    addrsize = len(write_addr)
+    memsize = 2**len(write_addr)
+    assert len(write_data) == len(read_data)
+    datasize = len(write_data)
+    # print("FIFO memory size {}, data width {}, address width {}".format(
+    #     memsize, datasize, addrsize
+    # ))
 
-    Asz = int(ceil(log(mem_size, 2)))
-    assert len(din) == len(dout)
-    Dsz = len(din)
+    # create the list-of-signals to represent the memory array
+    memarray = Signals(intbv(0)[datasize:0], memsize)
 
-    mem = [Signal(intbv(0)[Dsz:]) for ii in range(2**Asz)]
-    _addr_w = Signal(intbv(0)[Asz:])
-    _din = Signal(intbv(0)[Dsz:])
-    _dout = Signal(intbv(0)[Dsz:])
-    _wr = Signal(bool(0))
+    addr_w, addr_wd, addr_r = Signals(modbv(0)[addrsize:], 3)
+    din, dout = Signals(intbv(0)[datasize:], 2)
+    wr = Signal(bool(0))
+
+    @always(clock_w.posedge)
+    def beh_write_capture():
+        # inputs are registered
+        wr.next = write
+        addr_w.next = write_addr
+        din.next = write_data
+
+    @always(clock_w.posedge)
+    def beh_mem_write():
+        if wr:
+            memarray[addr_w].next = din
+
+    @always(clock_r.posedge)
+    def beh_write_address_delayed():
+        addr_wd.next = write_addr
+        write_addr_delayed.next = addr_wd
 
     @always_comb
-    def rtl_dout():
-        dout.next = _dout
+    def beh_read_next():
+        # output is registered, this block (fifo_mem) is used as
+        # memory for various FIFOs, on read assume incrementing
+        # to the next address, get the next address.
+        if read:
+            addr_r.next = read_addr+1
+        else:
+            addr_r.next = read_addr
 
-    @always(rclk.posedge)
-    def rtl_rd():
-        _dout.next = mem[int(addr_r)]
+    @always(clock_r.posedge)
+    def beh_mem_read():
+        dout.next = memarray[addr_r]
 
-    @always(wclk.posedge)
-    def rtl_wr():
-        _wr.next = wr
-        _addr_w.next = addr_w
-        _din.next = din
+    @always_comb
+    def beh_dataout():
+        read_data.next = dout
 
-    @always(wclk.posedge)
-    def rtl_mem():
-        if _wr:
-            mem[int(_addr_w)].next = _din
-
-    return rtl_dout, rtl_rd, rtl_wr, rtl_mem
+    return myhdl.instances()

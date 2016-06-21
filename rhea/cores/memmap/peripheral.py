@@ -1,20 +1,20 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import Signal, intbv, always, always_comb
 from rhea.system.memmap import MemoryMapped, MemorySpace
 
 
-def peripheral_memory(memmap, depth=128):
+@myhdl.block
+def peripheral_memory(memmap, depth=32):
     """
     Example mapping a memory-mapped (csr) bus to an internal memory
     buffer.
 
-    Ports:
-    :param memmap:
-    :return:
-
-    Parameters:
+    (arguments == ports)
+    Arguments:
+        memmap: memory-mapped interface
 
     """
     width = 32
@@ -66,6 +66,7 @@ def peripheral_memory(memmap, depth=128):
     return conv_inst, beh_write, beh_read, beh_newtrans, beh_done
 
 
+@myhdl.block
 def peripheral(memmap):
     # @todo: move regfilesys to here!
     memspace = MemorySpace()

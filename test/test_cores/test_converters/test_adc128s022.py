@@ -1,4 +1,5 @@
 
+import myhdl
 from myhdl import (Signal, intbv, instance, delay, StopSimulation)
 
 from rhea.cores.converters import adc128s022
@@ -16,7 +17,7 @@ def test_adc128s022():
     clock = Clock(0, frequency=50e6)
     reset = Reset(0, active=0, async=False)
     glbl = Global(clock, reset)
-    fifobus = FIFOBus(width=16, size=16)
+    fifobus = FIFOBus(width=16)
     spibus = SPIBus()
     channel = Signal(intbv(0, min=0, max=8))
     step = 3.3/7
@@ -29,7 +30,8 @@ def test_adc128s022():
             if not fifo.empty:
                 break
             yield clock.posedge
-            
+
+    @myhdl.block
     def bench_adc128s022():
         tbdut = adc128s022(glbl, fifobus, spibus, channel)
         tbmdl = adc128s022_model(spibus, analog_channels,
@@ -42,7 +44,7 @@ def test_adc128s022():
             yield reset.pulse(33)
             yield clock.posedge
             
-            # check the cocversion value for each channel, should  get 
+            # check the conversion value for each channel, should  get
             # smaller and smaller 
             for ch in range(0, 8):
                 channel.next = (ch+1) % 8  # next channel

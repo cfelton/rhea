@@ -7,7 +7,6 @@ import argparse
 
 import pytest
 import myhdl
-from myhdl import traceSignals, Simulation
 
 
 skip_long_sim_test = pytest.mark.skipif(reason="long running tests")
@@ -18,38 +17,48 @@ if hasattr(sys, '_called_from_test'):
     )
 
 
-def run_testbench(bench, timescale='1ns', args=None):
+def run_testbench(bench, timescale=None, args=None):
     """ run (simulate) a testbench
-    The args need to be retrieved outside the testbench
-    else the test will fail with the pytest runner, if 
-    no args are passed a default will be used
+    The args need to be retrieved outside the testbench else the test
+    will fail with the pytest runner, if no args are passed a default
+    will be used.
+
+    Arguments:
+        bench (func): The testbench stimulus function, this is the
+            top-level myhdl block in the simulation.
+        timescale (str): The timescale to use in the simulation, this
+            is set in the VCD file.  If this argument is not set no
+            timescale is used and the fast clock is set to a period
+            of 10 simulation step.
+        args (Namespace): Additional configuration arguments
+            .trace: enable VCD tracing
     """
     if args is None:
         args = argparse.Namespace(trace=False)
-    vcd = tb_clean_vcd(bench.__name__)
+    dr, nm = tb_clean_vcd(bench.__name__)
+
+    inst = bench()
     if args.trace:
-        traceSignals.timescale = timescale
-        traceSignals.name = vcd
-        gens = traceSignals(bench)
-    else:
-        gens = bench()
+        timescale = '' if timescale is None else timescale
+        # the myhdl.Block.config_sim is incomplete need to
+        # use a mix of the config_sim and old func attributes
+        myhdl.traceSignals.name = nm
+        myhdl.traceSignals.directory = dr
+        myhdl.traceSignals.timescale = timescale
+        inst.config_sim(trace=True)
 
-    sim = Simulation(gens)
-    sim.run()
-    del gens
-    del sim
+    inst.run_sim()
+    del inst
 
 
-def tb_convert(toplevel, *ports, **params):
+def tb_convert(inst):
     if not os.path.isdir('output/ver/'):
         os.makedirs('output/ver/')
-    myhdl.toVerilog.directory = 'output/ver/'
-    myhdl.toVerilog(toplevel, *ports, **params)
+    inst.convert(hdl='Verilog', directory='output/ver')
 
     if not os.path.isdir('output/vhd/'):
         os.makedirs('output/vhd/')
-    myhdl.toVHDL.directory = 'output/vhd/'
-    myhdl.toVHDL(toplevel, *ports, **params)
+    inst.convert(hdl='VHDL', directory='output/vhd')
 
 
 def _tb_argparser(tests=None, parser=None):
@@ -138,12 +147,13 @@ def tb_clean_vcd(name):
     for vv in glob(os.path.join(vcdpath, '*.vcd.*')):
         os.remove(vv)
 
-    nmpth = os.path.join(vcdpath, '{}.vcd'.format(name))
+    name = '{}.vcd'.format(name)
+    nmpth = os.path.join(vcdpath, name)
     if os.path.isfile(nmpth):
         os.remove(nmpth)
 
     # return the VCD path+name minus extension
-    return nmpth[:-4]
+    return vcdpath, name[:-4]
     
     
 def tb_mon_():

@@ -4,6 +4,7 @@ from random import randint
 import argparse
 
 import pytest
+import myhdl
 from myhdl import (instance, delay, StopSimulation)
 
 from rhea.system import Clock, Reset, Global
@@ -48,6 +49,7 @@ def testbench_to_generic(args=None):
         membus = Barebone(glbl, data_width=width,
                           address_width=address_width)
 
+    @myhdl.block
     def bench_to_generic():
         tbdut = peripheral_memory(membus, depth=depth)
         tbitx = membus.interconnect()

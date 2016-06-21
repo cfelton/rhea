@@ -1,8 +1,9 @@
 
-
+import myhdl
 from myhdl import Signal, intbv, always_seq, always_comb, concat
 
 
+@myhdl.block
 def io_stub(clock, reset, sdi, sdo, port_inputs, port_outputs, valid):
     """ Port emulators, serial to parallel input / output
 
@@ -16,32 +17,24 @@ def io_stub(clock, reset, sdi, sdo, port_inputs, port_outputs, valid):
     and timing valid implementation to determine a rough number
     of resources required for a design.
 
-    Ports
-    -----
-    clock:
-    reset:
-    sdi: serial-data in, this should be assigned to a pin on
-        the device
-    sdo: serial-data out, this should be assigned to a pin on
-        the device
-    port_inputs: number of inputs desired, list of same type Signals,
-        output of this module
-    port_outputs: number of outputs desired, list of same type Signals,
-        input to this module
-    valid: load new inputs, outputs valid
-
-    Parameters
-    ----------
-    None
+    Arguments:
+        clock: system clock
+        reset: system reset
+        sdi: serial-data in, this should be assigned to a pin on
+            the device
+        sdo: serial-data out, this should be assigned to a pin on
+            the device
+        port_inputs: number of inputs desired, list of same type Signals,
+            output of this module
+        port_outputs: number of outputs desired, list of same type Signals,
+            input to this module
+        valid: load new inputs, outputs valid
 
     Limitations
     -----------
     Each member in the `pin` and `pout` lists need to be
     the same type.
 
-    Return
-    ------
-    myhdl generators
 
     This module is myhdl convertible
     """

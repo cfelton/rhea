@@ -190,7 +190,7 @@ class SDRAMInterface(object):
 
     def read(self, row_addr, col_addr, bankid=0, burst=1):
         """ Controller side read
-        This is a transaction generator, this genertor is used to
+        This is a transaction generator, this generator is used to
         emulate a host read to an SDRAM device.
 
         @todo: complete burst transaction

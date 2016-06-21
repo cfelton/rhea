@@ -1,11 +1,13 @@
 
 
-from myhdl import (Signal, intbv, always, always_comb, concat)
+import myhdl
+from myhdl import Signal, intbv, always, always_comb, concat
 
 
-def fifo_srl(clock, D, ce, addr, Q, Qn=None):
+@myhdl.block
+def fifo_srl(clock, din, ce, addr, dout, dlast=None):
     """
-    Infer a shift-register-LUT without explicilty instatiating a device
+    Infer a shift-register-LUT without explicitly instantiating a device
     specific primitive.  This is typical in most FPGAs and works for std
     cell as well (nothing special happens in std cell).
 
@@ -13,28 +15,26 @@ def fifo_srl(clock, D, ce, addr, Q, Qn=None):
     http://www.xilinx.com/support/documentation/application_notes/xapp465.pdf
     http://www.xilinx.com/support/documentation/sw_manuals/xilinx14_5/xst_v6s6.pdf, page 154
     """
-    W = 16
+    w = 16
     assert len(addr) == 4, "this is fixed to a length of 16"
-    srl = Signal(intbv(0)[W:])
+    srl = Signal(intbv(0)[w:])
 
     @always(clock.posedge)
-    def rtl():
+    def beh_input():
         if ce:
-            srl.next = concat(srl[W-2:0], D)
-            #srl.next[0] = D
-            #slr.next[W-1:1] = slr[W-2:0]
+            srl.next = concat(srl[w-2:0], din)
 
     @always_comb
-    def rtl_out():
-        Q.next = srl[addr]
+    def beh_out():
+        dout.next = srl[addr]
         
-    if Qn is not None:
+    if dlast is not None:
         @always_comb
-        def rtl_outn():
-            Qn.next = srl[W-1]
+        def beh_outn():
+            dlast.next = srl[w-1]
 
-        g = (rtl, rtl_out, rtl_outn)
+        g = (beh_input, beh_out, beh_outn)
     else:
-        g = (rtl, rtl_out,)
+        g = (beh_input, beh_out,)
 
     return g

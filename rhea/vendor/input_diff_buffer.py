@@ -1,7 +1,9 @@
 
+import myhdl
 from myhdl import Signal, always_comb
 
 
+@myhdl.block
 def device_input_diff_buffer(in_p, in_n, sig):
     """
 

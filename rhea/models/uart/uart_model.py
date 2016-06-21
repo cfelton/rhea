@@ -1,12 +1,11 @@
 
-
 try:
     import queue
 except ImportError:
     import Queue as queue
 
-from myhdl import (Signal, intbv, enum, always_seq, always,
-                   always_comb, instances)
+import myhdl
+from myhdl import Signal, intbv, enum, always_seq, always, always_comb
 
 
 class UARTModel(object):
@@ -31,6 +30,7 @@ class UARTModel(object):
             self._rxbyte = self._rxq.get()
         return self._rxbyte
 
+    @myhdl.block
     def process(self, glbl, serin, serout):
         """ """
 
@@ -45,9 +45,9 @@ class UARTModel(object):
         @always_seq(clock.posedge, reset=reset)
         def mdlbaud():
             # @todo: need separate tx and rx baud strobes, the rx
-            # @todo: syncs the count to the start of a byte frame
-            # @todo: can't share a counter if rx and tx at the same
-            # @todo: time. 
+            #        syncs the count to the start of a byte frame
+            #        can't share a counter if rx and tx are at the
+            #        same time.
             # this will not work if currently transmitting
             if syncbaud:
                 baudcnt.next = 0
@@ -157,4 +157,4 @@ class UARTModel(object):
                 self._rxq.put(int(rxbyte))
                 rxstate.next = states.wait
 
-        return instances()
+        return myhdl.instances()

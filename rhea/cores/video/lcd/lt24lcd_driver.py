@@ -1,8 +1,9 @@
 
-
+import myhdl
 from myhdl import Signal, intbv, enum, always_seq, concat, now
 
 
+@myhdl.block
 def lt24lcd_driver(glbl, lcd, cmd, datalen, data, 
                    datasent, datalast, cmd_in_progress, maxlen=76800):
     """
@@ -57,7 +58,7 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
     lcd.reset_complete = Signal(bool(0))
 
     @always_seq(clock.posedge, reset=reset)
-    def rtl_state_machine():
+    def beh_state_machine():
         # @todo: debug only, remov
         last_state.next = state
         
@@ -153,4 +154,4 @@ def lt24lcd_driver(glbl, lcd, cmd, datalen, data,
         else:
             assert False, "Invalid state %s" % (state,)
             
-    return rtl_state_machine
+    return beh_state_machine

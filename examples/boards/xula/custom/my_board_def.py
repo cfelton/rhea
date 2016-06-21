@@ -10,4 +10,3 @@ class MyCustomBoard(Xula2):
         'leds': dict(pins=('R7', 'R15', 'R16', 'M15',)),
         'btns': dict(pins=('F1', 'F2', 'E1', 'E2',))
     }
-    

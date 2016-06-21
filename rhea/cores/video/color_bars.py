@@ -1,12 +1,13 @@
 
 from __future__ import division
 
+import myhdl
 from myhdl import Signal, intbv, always_comb, always_seq
 
 
 # color bar template
 COLOR_BARS = (
-#    r, g, b
+    # r, g, b
     (1, 1, 1,),  # white
     (1, 1, 0,),  # yellow
     (0, 1, 1,),  # cyan
@@ -47,6 +48,7 @@ def _update_cbars_with_max(color_depth):
     return cbarvals
     
 
+@myhdl.block
 def color_bars(glbl, vmem, resolution=(640, 480), color_depth=(10, 10, 10)):
     """ generate a color bar pattern
     """
@@ -67,7 +69,7 @@ def color_bars(glbl, vmem, resolution=(640, 480), color_depth=(10, 10, 10)):
     # get the pixel value for the current pixel address,
     # only the horizontal pixel address is needed.
     @always_comb
-    def rtl_pval():
+    def beh_pval():
         sel = 0
         for ii in range(num_colors):
             if vmem.hpxl > (ii*pw):
@@ -85,10 +87,10 @@ def color_bars(glbl, vmem, resolution=(640, 480), color_depth=(10, 10, 10)):
         assert width == len(slc)
 
     @always_seq(clock.posedge, reset=reset)
-    def rtl_rgb():
+    def beh_rgb():
         # unpack the RGB value
         vmem.red.next = red
         vmem.green.next = green
         vmem.blue.next = blue
 
-    return rtl_pval, rtl_rgb
+    return beh_pval, beh_rgb

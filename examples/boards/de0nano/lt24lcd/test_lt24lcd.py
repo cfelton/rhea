@@ -1,11 +1,10 @@
 
-from __future__ import print_function
+from __future__ import print_function, division
 from __future__ import division
 
-from myhdl import *
-
-from rhea.system import Clock, Reset
-from rhea.utils.test import tb_clean_vcd
+import myhdl
+from myhdl import instance, StopSimulation
+from rhea.utils.test import run_testbench
 from de0nano_lt24lcd import de0nano_lt24lcd
 
 
@@ -14,7 +13,8 @@ def test_de0nano_lt24lcd():
     clock = portmap['clock']
     reset = portmap['reset']
 
-    def _bench():
+    @myhdl.block
+    def bench():
         tbdut = de0nano_lt24lcd(**portmap)
         tbclk = clock.gen()
 
@@ -28,12 +28,8 @@ def test_de0nano_lt24lcd():
 
         return tbdut, tbclk, tbstim
 
-    vcd = tb_clean_vcd(_bench.__name__)
-    traceSignals.name = vcd
-    traceSignals.timescale = '1ns'
-    Simulation(traceSignals(_bench)).run()
+    run_testbench(bench)
 
 
 if __name__ == '__main__':
     test_de0nano_lt24lcd()
-        

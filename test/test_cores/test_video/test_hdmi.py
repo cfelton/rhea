@@ -1,48 +1,37 @@
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import print_function, division
 
-"""
-"""
+import pytest
 
-import sys
-import os
-import argparse
-from argparse import Namespace
-from array import array
-
-from myhdl import *
+import myhdl
+from myhdl import always, delay, instance, now, StopSimulation
 
 import rhea
 from rhea.system import Global
-from rhea.cores.video import HDMI
-from rhea.cores.video import hdmi
+from rhea.cores.video import VideoStream, HDMIExtInterface
+from rhea.cores.video import hdmi_xcvr
 
 # a video desplay model to check the timings
 from rhea.models.video import VideoDisplay
 from rhea.utils.test import run_testbench
 
 # @todo move cosimulation to cosimulation directory
-#from _hdmi_prep_cosim import prep_cosim
-#from interfaces import HDMI
+# from _hdmi_prep_cosim import prep_cosim
+# from interfaces import HDMI
 
 
 def test_hdmi():
     """ simple test to demonstrate test framework
     """
 
-    clock = Signal(bool(0))
-    reset = ResetSignal(0, active=0, async=True)
+    @myhdl.block
+    def bench_hdmi():
+        glbl = Global()
+        clock, reset = glbl.clock, glbl.reset
+        vid = VideoStream()
+        ext = HDMIExtInterface()
 
-    # this currently tests a Verilog version
-    #tbdut = prep_cosim(clock, reset, args=args)
-    tbdut = hdmi()
-    
-    def _bench_hdmi():
-
-        #tbdut = mm_hdmisys(glbl, vselect, hdmi,
-        #                   resolution=res,
-        #                   line_rate=line_rate)
+        tbdut = hdmi_xcvr(glbl, vid, ext)
 
         # clock for the design
         @always(delay(5))
@@ -78,6 +67,4 @@ def test_hdmi():
         return tbclk, tbstim
 
     # run the above test
-    run_testbench(_bench_hdmi)
-
-
+    run_testbench(bench_hdmi)

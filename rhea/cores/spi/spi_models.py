@@ -1,16 +1,20 @@
+
 from __future__ import division, print_function
 
-from myhdl import *
+import myhdl
+from myhdl import intbv, instance, delay
 
 from rhea.system import Barebone
 from . import SPIBus
 
 
+@myhdl.block
 def spi_controller_model(clock, ibus, spibus):
-    """
+    """A model of an SPI controller
 
-      ibus   : internal bus
-      spibus : SPI interface (SPIBus)
+    Arguments:
+      ibus (Barebone): internal bus
+      spibus (SPIBus): SPI interface (SPIBus)
     """
     assert isinstance(ibus, Barebone)
     assert isinstance(spibus, SPIBus)
@@ -19,7 +23,6 @@ def spi_controller_model(clock, ibus, spibus):
     def decode_ibus():
         while True:
             yield clock.posedge
-
             if ibus.write:
                 yield spibus.writeread(ibus.get_write_data())
                 yield ibus.acktrans(spibus.get_read_data())
@@ -34,11 +37,9 @@ class SPISlave(object):
     def __init__(self):
         self.reg = intbv(0)[8:]
 
+    @myhdl.block
     def process(self, spibus):
-        mosi = spibus.mosi
-        miso = spibus.miso
-        sck = spibus.sck
-        csn = spibus.csn
+        sck, mosi, miso, csn = spibus()
 
         @instance
         def gproc():

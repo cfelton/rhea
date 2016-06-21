@@ -1,0 +1,437 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rhea.system.memmap.wishbone &mdash; rhea 0.1pre documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.1pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="rhea 0.1pre documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">rhea 0.1pre documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rhea.system.memmap.wishbone</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c"># Copyright (c) 2014-2015 Christopher L. Felton</span>
+<span class="c">#</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span>
+
+<span class="kn">from</span> <span class="nn">myhdl</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Signal</span><span class="p">,</span> <span class="n">intbv</span><span class="p">,</span> <span class="n">always</span><span class="p">,</span> <span class="n">always_seq</span><span class="p">,</span> <span class="n">always_comb</span><span class="p">,</span>
+                   <span class="n">instance</span><span class="p">,</span> <span class="n">instances</span><span class="p">,</span> <span class="n">concat</span><span class="p">,</span> <span class="n">enum</span><span class="p">,</span> <span class="n">now</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">..glbl</span> <span class="kn">import</span> <span class="n">Global</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">MemoryMapped</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Barebone</span>
+
+
+<div class="viewcode-block" id="Wishbone"><a class="viewcode-back" href="../../../../system/memmap.html#rhea.system.Wishbone">[docs]</a><span class="k">class</span> <span class="nc">Wishbone</span><span class="p">(</span><span class="n">MemoryMapped</span><span class="p">):</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;wishbone&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">glbl</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">data_width</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">address_width</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Wishbose bus object</span>
+<span class="sd">        Parameters (kwargs):</span>
+<span class="sd">        --------------------</span>
+<span class="sd">          :param glbl: system clock and reset</span>
+<span class="sd">          :param data_width: data bus width</span>
+<span class="sd">          :param address_width: address bus width</span>
+<span class="sd">          :param name: name for the bus</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># @todo: ?? not sure if this how the arguments should</span>
+        <span class="c">#        should be handled.  Passing args is simple but a</span>
+        <span class="c">#        little obscure ??</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Wishbone</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">data_width</span><span class="o">=</span><span class="n">data_width</span><span class="p">,</span>
+                                       <span class="n">address_width</span><span class="o">=</span><span class="n">address_width</span><span class="p">)</span> 
+
+        <span class="c"># note on Wishbone signal names, since the signals</span>
+        <span class="c"># are not passed to the controller and peripherals</span>
+        <span class="c"># (the interface is passed) there isn&#39;t a need for </span>
+        <span class="c"># _o and _i on many of the signals.  </span>
+        <span class="c"># Preserved the peripheral (slave) point of view names.</span>
+        <span class="k">if</span> <span class="n">glbl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clock</span> <span class="o">=</span> <span class="n">glbl</span><span class="o">.</span><span class="n">clock</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clk_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clock</span>
+
+        <span class="k">if</span> <span class="n">glbl</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">glbl</span><span class="o">.</span><span class="n">reset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span> <span class="o">=</span> <span class="n">glbl</span><span class="o">.</span><span class="n">reset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rst_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">cyc_i</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stb_i</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adr_i</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">intbv</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="n">address_width</span><span class="p">:])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">we_i</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sel_i</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dat_i</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">intbv</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="n">data_width</span><span class="p">:])</span>
+
+        <span class="c"># outputs from the peripherals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dat_o</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">intbv</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="n">data_width</span><span class="p">:])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ack_o</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="c"># peripheral outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pdat_o</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pack_o</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="mi">1111</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_bus</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">add_output_bus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dat</span><span class="p">,</span> <span class="n">ack</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pdat_o</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pack_o</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ack</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">interconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; combine all the peripheral outputs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pdat_o</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pack_o</span><span class="p">)</span>
+        <span class="n">ndevs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pdat_o</span><span class="p">)</span>
+        <span class="n">wb</span> <span class="o">=</span> <span class="bp">self</span>
+        
+        <span class="nd">@always_seq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clk_i</span><span class="o">.</span><span class="n">posedge</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rst_i</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">rtl_or_combine</span><span class="p">():</span>
+            <span class="n">dats</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">acks</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndevs</span><span class="p">):</span>
+                <span class="n">dats</span> <span class="o">=</span> <span class="n">dats</span> <span class="o">|</span> <span class="n">wb</span><span class="o">.</span><span class="n">_pdat_o</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+                <span class="n">acks</span> <span class="o">=</span> <span class="n">acks</span> <span class="o">|</span> <span class="n">wb</span><span class="o">.</span><span class="n">_pack_o</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+            <span class="n">wb</span><span class="o">.</span><span class="n">dat_o</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">dats</span>
+            <span class="n">wb</span><span class="o">.</span><span class="n">ack_o</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">acks</span>
+            
+        <span class="k">return</span> <span class="n">rtl_or_combine</span>
+
+    <span class="k">def</span> <span class="nf">peripheral_regfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regfile</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; memory-mapped wishbone peripheral interface</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># local alias</span>
+        <span class="n">wb</span> <span class="o">=</span> <span class="bp">self</span>     <span class="c"># register bus</span>
+        <span class="n">rf</span> <span class="o">=</span> <span class="n">regfile</span>  <span class="c"># register file definition</span>
+        <span class="n">clock</span><span class="p">,</span> <span class="n">reset</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">clk_i</span><span class="p">,</span> <span class="n">wb</span><span class="o">.</span><span class="n">rst_i</span>
+
+        <span class="c"># @todo: base address default needs to be revisited</span>
+        <span class="c"># if the base_address is not set, simply set to 0 for now ...</span>
+        <span class="n">base_address</span> <span class="o">=</span> <span class="n">regfile</span><span class="o">.</span><span class="n">base_address</span> 
+        <span class="k">if</span> <span class="n">base_address</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">base_address</span> <span class="o">=</span> <span class="mi">0</span> 
+        
+        <span class="c"># get the address list (al), register list (rl), read-only list (rol),</span>
+        <span class="c"># and the default list (dl).</span>
+        <span class="n">al</span><span class="p">,</span> <span class="n">rl</span><span class="p">,</span> <span class="n">rol</span><span class="p">,</span> <span class="n">dl</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">get_reglist</span><span class="p">()</span>
+        <span class="n">addr_list</span><span class="p">,</span> <span class="n">regs_list</span> <span class="o">=</span> <span class="n">al</span><span class="p">,</span> <span class="n">rl</span>
+        <span class="n">pwr</span><span class="p">,</span> <span class="n">prd</span> <span class="o">=</span> <span class="n">rf</span><span class="o">.</span><span class="n">get_strobelist</span><span class="p">()</span>
+
+        <span class="n">nregs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">regs_list</span><span class="p">)</span>
+        <span class="n">max_address</span> <span class="o">=</span> <span class="n">base_address</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="n">addr_list</span><span class="p">)</span>
+
+        <span class="n">lwb_do</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">intbv</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_width</span><span class="p">:])</span>
+        <span class="p">(</span><span class="n">lwb_sel</span><span class="p">,</span> <span class="n">lwb_acc</span><span class="p">,</span> <span class="n">lwb_wr</span><span class="p">,</span>
+         <span class="n">lwb_wrd</span><span class="p">,</span> <span class="n">lwb_ack</span><span class="p">,)</span> <span class="o">=</span> <span class="p">[</span><span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)]</span>
+        <span class="n">wb</span><span class="o">.</span><span class="n">add_output_bus</span><span class="p">(</span><span class="n">lwb_do</span><span class="p">,</span> <span class="n">lwb_ack</span><span class="p">)</span>
+
+        <span class="n">num_ackcyc</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c"># the number of cycle delays after cyc_i</span>
+        <span class="n">ackcnt</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">intbv</span><span class="p">(</span><span class="n">num_ackcyc</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">num_ackcyc</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">newcyc</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">:</span>
+            <span class="nd">@instance</span> 
+            <span class="k">def</span> <span class="nf">debug_check</span><span class="p">():</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&quot;base address {:4X}, max address {:4X}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>                
+                    <span class="nb">int</span><span class="p">(</span><span class="n">base_address</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_address</span><span class="p">)))</span>
+                <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="n">clock</span> <span class="ow">is</span> <span class="n">wb</span><span class="o">.</span><span class="n">clk_i</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">clock</span>
+                    <span class="k">assert</span> <span class="n">reset</span> <span class="ow">is</span> <span class="n">wb</span><span class="o">.</span><span class="n">rst_i</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset</span>
+                    <span class="k">yield</span> <span class="n">clock</span><span class="o">.</span><span class="n">posedge</span>
+                    <span class="k">print</span><span class="p">(</span><span class="s">&quot;{:8d}: c:{}, r:{}, {} {} {} sel:{}, wr:{} n:{} &quot;</span>
+                          <span class="s">&quot;acnt {}, @{:04X}, i:{:02X} o:{:02X} ({:02X})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                           <span class="n">now</span><span class="p">(),</span> <span class="nb">int</span><span class="p">(</span><span class="n">clock</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">reset</span><span class="p">),</span>
+                           <span class="nb">int</span><span class="p">(</span><span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">wb</span><span class="o">.</span><span class="n">we_i</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">wb</span><span class="o">.</span><span class="n">ack_o</span><span class="p">),</span>
+                           <span class="nb">int</span><span class="p">(</span><span class="n">lwb_sel</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">lwb_wr</span><span class="p">),</span>
+                           <span class="nb">int</span><span class="p">(</span><span class="n">newcyc</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">ackcnt</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">wb</span><span class="o">.</span><span class="n">adr_i</span><span class="p">),</span>
+                           <span class="nb">int</span><span class="p">(</span><span class="n">wb</span><span class="o">.</span><span class="n">dat_i</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">wb</span><span class="o">.</span><span class="n">dat_o</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">lwb_do</span><span class="p">),</span> <span class="p">))</span>
+
+        <span class="nd">@always_comb</span>
+        <span class="k">def</span> <span class="nf">rtl_assign</span><span class="p">():</span>
+            <span class="n">lwb_acc</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span> <span class="ow">and</span> <span class="n">wb</span><span class="o">.</span><span class="n">stb_i</span>
+            <span class="n">lwb_wr</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span> <span class="ow">and</span> <span class="n">wb</span><span class="o">.</span><span class="n">stb_i</span> <span class="ow">and</span> <span class="n">wb</span><span class="o">.</span><span class="n">we_i</span>
+
+        <span class="nd">@always_seq</span><span class="p">(</span><span class="n">clock</span><span class="o">.</span><span class="n">posedge</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="n">reset</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">rtl_selected</span><span class="p">():</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span> <span class="ow">and</span> <span class="n">wb</span><span class="o">.</span><span class="n">adr_i</span> <span class="o">&gt;=</span> <span class="n">base_address</span> <span class="ow">and</span>
+                <span class="n">wb</span><span class="o">.</span><span class="n">adr_i</span> <span class="o">&lt;</span> <span class="n">max_address</span><span class="p">):</span>
+                <span class="n">lwb_sel</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lwb_sel</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+                
+        <span class="nd">@always_seq</span><span class="p">(</span><span class="n">clock</span><span class="o">.</span><span class="n">posedge</span><span class="p">,</span> <span class="n">reset</span><span class="o">=</span><span class="n">reset</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">rtl_bus_cycle</span><span class="p">():</span>
+            <span class="c"># set default, only active one cycle </span>
+            <span class="n">newcyc</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>     
+            <span class="k">if</span> <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ackcnt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">ackcnt</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">ackcnt</span> <span class="o">-</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">ackcnt</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">newcyc</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ackcnt</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">num_ackcyc</span>
+
+        <span class="nd">@always_comb</span>
+        <span class="k">def</span> <span class="nf">rtl_ack</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span> <span class="ow">and</span> <span class="n">newcyc</span><span class="p">:</span>
+                <span class="n">lwb_ack</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lwb_ack</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c"># @todo: scan the register list, if it is contiguous remove</span>
+        <span class="c">#        the base and use the offset directly to access the</span>
+        <span class="c">#        register list instead of the for loop</span>
+        <span class="c"># if rf.contiguous:</span>
+        <span class="c">#     @always_seq(rb.clk_i.posedge, reset=rb.rst_i)</span>
+        <span class="c">#     def rtl_read():</span>
+        <span class="c"># else:</span>
+
+        <span class="c"># Handle a bus read (transfer the addressed register to the</span>
+        <span class="c"># data bus) and generate the register read pulse (let the</span>
+        <span class="c"># peripheral know the register has been read).</span>
+        <span class="c"># @always_seq(clock.posedge, reset=reset)</span>
+        <span class="nd">@always_comb</span>
+        <span class="k">def</span> <span class="nf">rtl_read</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">lwb_sel</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">lwb_wr</span> <span class="ow">and</span> <span class="n">newcyc</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nregs</span><span class="p">):</span>
+                    <span class="n">aa</span> <span class="o">=</span> <span class="n">addr_list</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+                    <span class="n">aa</span> <span class="o">=</span> <span class="n">aa</span> <span class="o">+</span> <span class="n">base_address</span>
+                    <span class="k">if</span> <span class="n">wb</span><span class="o">.</span><span class="n">adr_i</span> <span class="o">==</span> <span class="n">aa</span><span class="p">:</span>
+                        <span class="n">lwb_do</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">regs_list</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+                        <span class="n">prd</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lwb_do</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nregs</span><span class="p">):</span>
+                    <span class="n">prd</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+                        
+        <span class="c"># Handle a bus write (transfer the data bus to the addressed</span>
+        <span class="c"># register) and generate a register write pulse (let the </span>
+        <span class="c"># peripheral know the register has been written).</span>
+        <span class="nd">@always</span><span class="p">(</span><span class="n">clock</span><span class="o">.</span><span class="n">posedge</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">rtl_write</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">reset</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">reset</span><span class="o">.</span><span class="n">active</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nregs</span><span class="p">):</span>
+                    <span class="n">ro</span> <span class="o">=</span> <span class="n">rol</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+                    <span class="n">dd</span> <span class="o">=</span> <span class="n">dl</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">ro</span><span class="p">:</span>
+                        <span class="n">regs_list</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">dd</span>
+                    <span class="n">pwr</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">lwb_wr</span> <span class="ow">and</span> <span class="n">lwb_sel</span> <span class="ow">and</span> <span class="n">newcyc</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nregs</span><span class="p">):</span>
+                        <span class="n">aa</span> <span class="o">=</span> <span class="n">addr_list</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+                        <span class="n">aa</span> <span class="o">=</span> <span class="n">aa</span> <span class="o">+</span> <span class="n">base_address</span>
+                        <span class="n">ro</span> <span class="o">=</span> <span class="n">rol</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">ro</span> <span class="ow">and</span> <span class="n">wb</span><span class="o">.</span><span class="n">adr_i</span> <span class="o">==</span> <span class="n">aa</span><span class="p">:</span>
+                            <span class="n">regs_list</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">dat_i</span>
+                            <span class="n">pwr</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nregs</span><span class="p">):</span>
+                        <span class="n">pwr</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c"># get the generators that assign the named bits</span>
+        <span class="n">gas</span> <span class="o">=</span> <span class="n">regfile</span><span class="o">.</span><span class="n">get_assigns</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">instances</span><span class="p">()</span>
+
+    <span class="c"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="k">def</span> <span class="nf">get_generic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">generic</span> <span class="o">=</span> <span class="n">Barebone</span><span class="p">(</span><span class="n">Global</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">clock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">),</span>
+                           <span class="n">data_width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_width</span><span class="p">,</span>
+                           <span class="n">address_width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">address_width</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">generic</span>
+
+    <span class="k">def</span> <span class="nf">map_to_generic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generic</span><span class="p">):</span>
+        <span class="n">clock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clock</span>
+        <span class="n">wb</span><span class="p">,</span> <span class="n">bb</span> <span class="o">=</span> <span class="bp">self</span><span class="p">,</span> <span class="n">generic</span>
+        <span class="n">inprog</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="c"># the output signals need to be local and then the &quot;interconnect&quot;</span>
+        <span class="c"># will combine all the outputs back to the master(s)</span>
+        <span class="n">lwb_do</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="n">intbv</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">data_width</span><span class="p">:])</span>
+        <span class="n">lwb_ack</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">wb</span><span class="o">.</span><span class="n">add_output_bus</span><span class="p">(</span><span class="n">lwb_do</span><span class="p">,</span> <span class="n">lwb_ack</span><span class="p">)</span>
+
+        <span class="nd">@always_comb</span>
+        <span class="k">def</span> <span class="nf">rtl_assign</span><span class="p">():</span>
+            <span class="n">bb</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span> <span class="ow">and</span> <span class="n">wb</span><span class="o">.</span><span class="n">we_i</span>
+            <span class="n">bb</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">wb</span><span class="o">.</span><span class="n">we_i</span>
+            <span class="n">bb</span><span class="o">.</span><span class="n">write_data</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">dat_i</span>
+            <span class="n">lwb_do</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">bb</span><span class="o">.</span><span class="n">read_data</span>
+            <span class="n">bb</span><span class="o">.</span><span class="n">per_addr</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">adr_i</span><span class="p">[:</span><span class="mi">16</span><span class="p">]</span>
+            <span class="n">bb</span><span class="o">.</span><span class="n">mem_addr</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">adr_i</span><span class="p">[</span><span class="mi">16</span><span class="p">:]</span>
+
+        <span class="nd">@always</span><span class="p">(</span><span class="n">clock</span><span class="o">.</span><span class="n">posedge</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">rtl_ack</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lwb_ack</span> <span class="ow">and</span> <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">inprog</span><span class="p">:</span>
+                <span class="n">lwb_ack</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">inprog</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">elif</span> <span class="n">lwb_ack</span> <span class="ow">and</span> <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span><span class="p">:</span>
+                <span class="n">lwb_ack</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span><span class="p">:</span>
+                <span class="n">inprog</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="k">return</span> <span class="n">rtl_assign</span><span class="p">,</span> <span class="n">rtl_ack</span>
+
+    <span class="k">def</span> <span class="nf">map_from_generic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generic</span><span class="p">):</span>
+        <span class="n">clock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clock</span>
+        <span class="n">wb</span><span class="p">,</span> <span class="n">bb</span> <span class="o">=</span> <span class="bp">self</span><span class="p">,</span> <span class="n">generic</span>
+        <span class="n">inprog</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">iswrite</span> <span class="o">=</span> <span class="n">Signal</span><span class="p">(</span><span class="nb">bool</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="nd">@always_comb</span>
+        <span class="k">def</span> <span class="nf">rtl_assign</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">bb</span><span class="o">.</span><span class="n">write</span> <span class="ow">or</span> <span class="n">bb</span><span class="o">.</span><span class="n">read</span><span class="p">:</span>
+                <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">wb</span><span class="o">.</span><span class="n">we_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">bb</span><span class="o">.</span><span class="n">write</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="k">elif</span> <span class="n">inprog</span><span class="p">:</span>
+                <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">wb</span><span class="o">.</span><span class="n">we_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span> <span class="k">if</span> <span class="n">iswrite</span> <span class="k">else</span> <span class="bp">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">wb</span><span class="o">.</span><span class="n">cyc_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">wb</span><span class="o">.</span><span class="n">we_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+
+            <span class="n">wb</span><span class="o">.</span><span class="n">adr_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">concat</span><span class="p">(</span><span class="n">bb</span><span class="o">.</span><span class="n">per_addr</span><span class="p">,</span> <span class="n">bb</span><span class="o">.</span><span class="n">mem_addr</span><span class="p">)</span>
+            <span class="n">wb</span><span class="o">.</span><span class="n">dat_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">bb</span><span class="o">.</span><span class="n">write_data</span>
+            <span class="n">bb</span><span class="o">.</span><span class="n">read_data</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">wb</span><span class="o">.</span><span class="n">dat_o</span>
+
+        <span class="nd">@always</span><span class="p">(</span><span class="n">clock</span><span class="o">.</span><span class="n">posedge</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">rtl_delay</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">inprog</span> <span class="ow">and</span> <span class="p">(</span><span class="n">bb</span><span class="o">.</span><span class="n">read</span> <span class="ow">or</span> <span class="n">bb</span><span class="o">.</span><span class="n">write</span><span class="p">):</span>
+                <span class="n">inprog</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">iswrite</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">bb</span><span class="o">.</span><span class="n">write</span>
+            <span class="k">if</span> <span class="n">inprog</span> <span class="ow">and</span> <span class="n">wb</span><span class="o">.</span><span class="n">ack_o</span><span class="p">:</span>
+                <span class="n">inprog</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+                <span class="n">iswrite</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="nd">@always_comb</span>
+        <span class="k">def</span> <span class="nf">rtl_done</span><span class="p">():</span>
+            <span class="n">bb</span><span class="o">.</span><span class="n">done</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">inprog</span>
+
+        <span class="k">return</span> <span class="n">rtl_assign</span>
+
+    <span class="c"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="k">def</span> <span class="nf">writetrans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; write accessor for testbenches</span>
+<span class="sd">        Not convertible.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_transaction</span><span class="p">(</span><span class="n">write</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="n">addr</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
+        <span class="c"># toggle the signals for the bus transaction</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">clk_i</span><span class="o">.</span><span class="n">posedge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adr_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">addr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dat_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">we_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cyc_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stb_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">to</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c"># wait for ack</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ack_o</span> <span class="ow">and</span> <span class="n">to</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">clk_i</span><span class="o">.</span><span class="n">posedge</span>
+            <span class="n">to</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">we_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cyc_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stb_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">clk_i</span><span class="o">.</span><span class="n">posedge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_transaction</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">readtrans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; read accessor for testbenches</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_transaction</span><span class="p">(</span><span class="n">write</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">address</span><span class="o">=</span><span class="n">addr</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">clk_i</span><span class="o">.</span><span class="n">posedge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adr_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">addr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cyc_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stb_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">to</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">ack_o</span> <span class="ow">and</span> <span class="n">to</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">clk_i</span><span class="o">.</span><span class="n">posedge</span>
+            <span class="n">to</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cyc_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stb_i</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_end_transaction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dat_o</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">acktrans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; acknowledge accessor for testbenches</span>
+<span class="sd">        :param data:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ack_o</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dat_o</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">clk_i</span><span class="o">.</span><span class="n">posedge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ack_o</span><span class="o">.</span><span class="n">next</span> <span class="o">=</span> <span class="bp">False</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">rhea 0.1pre documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Christopher L. Felton.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

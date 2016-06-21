@@ -1,4 +1,4 @@
 
-This directory (subpackage) constains common blocks for 
+This directory (subpackage) contains common blocks for 
 communication cores.  These include but not limited to: 
-prbs, crc, gearboxes, scrabmples, etc.
+prbs, crc, gearboxes, scrambles, etc.

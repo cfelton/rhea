@@ -1,9 +1,8 @@
 
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 from copy import deepcopy
-
+import myhdl
 from ..clock import Clock
 from ..reset import Reset
 from ..cso import ControlStatusBase
@@ -123,6 +122,7 @@ class MemoryMapped(MemorySpace):
         _mm_list[name] = self
         _mm_per += 1
 
+    @myhdl.block
     def add(self, memspace, name=''):
         """ add a peripheral register-file to the bus
         """

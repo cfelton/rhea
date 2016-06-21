@@ -1,23 +1,24 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import enum, Signal, intbv, always_seq
 
 from rhea.system.memmap import MemoryMapped
 from rhea.system.memmap import Barebone
 
 
+@myhdl.block
 def controller_basic(generic, memmap):
     """
+    (arguments == ports)
+    Arguments:
+        generic: barebone interface
+        memmap: any memory-map interface
 
-    Ports:
-    :param generic: barebone interface
-    :param memmap: any memory-map interface
-    :return:
-
-    Parameters:
-
-    This module contains a basic
+    This module contains a basic memory map controller, the
+    barebone bus can be used to start a bus transaction to
+    any of the other implemented memory-mapped buses.
 
     """
 

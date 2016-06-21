@@ -1,9 +1,7 @@
 
-from __future__ import print_function
-from __future__ import division
+from __future__ import print_function, division
 
-import argparse
-
+import myhdl
 from myhdl import instance, StopSimulation
 
 from rhea.system import Global, Clock, Reset
@@ -21,7 +19,8 @@ def testbench_memmap(args=None):
     reset = Reset(0, active=1, async=False)
     glbl = Global(clock, reset)
     csbus = Barebone(glbl, data_width=8, address_width=16)
-    
+
+    @myhdl.block
     def bench_memmap():
         tbdut = peripheral(csbus)
         tbclk = clock.gen()

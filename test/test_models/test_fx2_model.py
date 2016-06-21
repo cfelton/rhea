@@ -3,7 +3,8 @@ import os
 from random import randint
 import shutil
 
-from myhdl import *
+import myhdl
+from myhdl import delay, instance, StopSimulation
 
 from rhea.models.usbext import Fx2Model
 from rhea.models.usbext.fx2 import slave_fifo
@@ -36,6 +37,7 @@ def test_config1_host_write():
         fb.ADDR.next = 0
         yield delay(3*fm.IFCLK_TICK)
 
+    @myhdl.block
     def bench_host_write():
 
         tbdut = slave_fifo(fm, fb)
@@ -151,6 +153,8 @@ def test_config1_host_read():
     def readtrans(fm, num=1):
         pass
 
+
+    @myhdl.block
     def bench_host_read():
 
         tbdut = slave_fifo(fm, fb)

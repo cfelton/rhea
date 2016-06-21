@@ -1,12 +1,14 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from myhdl import intbv, enum, Signal, ResetSignal, always_seq
-from ...system import Clock
 
+from rhea import Clock
 from .sdram_intf import SDRAMInterface
 
-    
+
+@myhdl.block
 def sdram_sdr_controller(clock, reset, ibus, extram, refresh=True):
     """ SDRAM controller
     This module is an SDRAM controller to interface and control
@@ -28,6 +30,7 @@ def sdram_sdr_controller(clock, reset, ibus, extram, refresh=True):
     States = enum('INITWAIT', 'INITPCHG', 'INITSETMODE', 'INITRFSH', 
                   'RW', 'ACTIVATE', 'REFRESHROW', 'SELFREFRESH')
 
+    # @todo: changed to named constants
     Commands = enum('nop', 'active', 'read', 'write', 
                     'pchg', 'mode', 'rfsh',
                     encoding='binary')

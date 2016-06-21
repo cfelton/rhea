@@ -1,8 +1,9 @@
 
 from __future__ import absolute_import
 
-from myhdl import *
-#from ..misc import random_generator
+import myhdl
+from myhdl import Signal, enum, always_seq
+# from ..misc import random_generator
 
 
 def mem_test(glbl, memmap, progress, error, done,
@@ -22,10 +23,10 @@ def mem_test(glbl, memmap, progress, error, done,
     rglbl, randgen = random_generator.portmap.values()
     randgen.data = Signal(memmap.wdata.val)
     rglbl.clock, rglbl.reset = clock, reset
-    i_rand = random_generator(glbl, randgen)
+    rand_inst = random_generator(glbl, randgen)
 
     @always_seq(clock.posedge, reset=reset)
-    def rtl():
+    def beh():
 
         # defaults
         randgen.load.next = False
@@ -77,4 +78,4 @@ def mem_test(glbl, memmap, progress, error, done,
         else:
             assert False, "Invalid state %s" % (state,)
 
-    return i_rand, rtl
+    return myhdl.instances()

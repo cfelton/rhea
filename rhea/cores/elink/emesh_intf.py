@@ -1,13 +1,14 @@
 
-from __future__ import division
-from __future__ import print_function
+from __future__ import print_function, division
 
+import myhdl
 from myhdl import (Signal, SignalType, intbv, ConcatSignal,
                    always_comb, concat)
 
 from rhea.models import FIFO
 
 
+@myhdl.block
 def epkt_from_bits(epkt, bits):
     """ Map a bit-vector to an EMeshPacket interface
     :param epkt: EMeshPacket interface
@@ -17,7 +18,7 @@ def epkt_from_bits(epkt, bits):
     Convertible
     """
     @always_comb
-    def rtl_assign():
+    def beh_assign():
         epkt.access.next = bits[1:0]
         epkt.write.next = bits[2:1]
         epkt.datamode.next = bits[4:2]
@@ -25,7 +26,7 @@ def epkt_from_bits(epkt, bits):
         epkt.dstaddr.next = bits[40:8]
         epkt.data.next = bits[72:40]
         epkt.srcaddr.next = bits[104:72]
-    return rtl_assign
+    return beh_assign
 
 
 class EMeshPacket(object):
@@ -45,19 +46,19 @@ class EMeshPacket(object):
         srcaddr[31:0] | [103:72]| Return address for read-request, upper
                                   data for write
 
-        :param access: Indicates a valid transaction, initial value
-        :param write: Indicates a write transaction, initial value
-        :param datamode: Data size (0=8b, 1=16b, 2=32b, 3=64b),
-         initial value
-        :param ctrlmode: Various special modes for the Epiphany chip,
-         initial value
-        :param dstaddr: Address for write, read-request, or
-         read-response, initial value
-        :param data: Data for a write transaction, data for read
-         response, initial value
-        :param srcaddr: Return addres for read-request upper data for
-         write, initial value
-        :return:
+        Arguments:
+            access: Indicates a valid transaction, initial value
+            write: Indicates a write transaction, initial value
+            datamode: Data size (0=8b, 1=16b, 2=32b, 3=64b),
+                initial value
+            ctrlmode: Various special modes for the Epiphany chip,
+                initial value
+            dstaddr: Address for write, read-request, or
+                read-response, initial value
+            data: Data for a write transaction, data for read
+                response, initial value
+            srcaddr: Return addres for read-request upper data for
+                write, initial value
         """
 
         # set the packet fields
@@ -198,16 +199,16 @@ class EMesh(object):
     def write(self, dstaddr, data, datau=0):
         """ send a write packet
 
-        :param dstaddr: destination address for the write
-        :param data: 32bit data for the write
-        :param datau: upper 32bit data for the write (64bit write)
-        :return:
+        Arguments:
+            dstaddr: destination address for the write
+            data: 32bit data for the write
+            datau: upper 32bit data for the write (64bit write)
 
-        @todo: add explaination why a separate packet is used to push
-        @todo: onto the transaction FIFOs (needs copies on the FIFOs
-        @todo: and not actual bus interface).
+        @todo: add explanation why a separate packet is used to push
+               onto the transaction FIFOs (needs copies on the FIFOs
+               and not actual bus interface).
 
-        not convertible.
+        myhdl not convertible.
         """
         # get a new packet for the transaction emulation
         pkt = EMeshPacket(access=True, write=True,
@@ -223,12 +224,12 @@ class EMesh(object):
     def read(self, dstaddr, data, srcaddr):
         """ send a read packet
 
-        :param dstaddr:
-        :param data:
-        :param srcaddr:
-        :return:
+        Arguments:
+            dstaddr:
+            data:
+            srcaddr:
 
-        not convertible.
+        myhdl not convertible.
         """
         # sent a read packet through the txrd fifo
         pkt = EMeshPacket(access=True, write=False,
@@ -240,22 +241,24 @@ class EMesh(object):
 
     def read_response(self, read_packet):
         """ send a read response
-        :param read_packet:
-        :return:
+
+        Arguments:
+            read_packet:
 
         @todo: complete
-        not convertible.
+        myhdl not convertible.
         """
         pass
 
     def route_to_fifo(self, pkt):
-        """ take a freshly recieved packet from the ELink interface
+        """ take a freshly received packet from the ELink interface
         Take a freshly received packet from the ELink interface and route
         it to the correct RX fifo.
-        :param pkt:
-        :return:
 
-        not convertible
+        Arguments:
+            pkt:
+
+        myhdl not convertible
         """
         # if the write bit is set pass it to RX write FIFO
         # @todo: how to determine the other packets??

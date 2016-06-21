@@ -1,7 +1,9 @@
 
+import myhdl
 from myhdl import Signal, SignalType, intbv, always_comb, ConcatSignal
 
 
+@myhdl.block
 def keep_port_names(**ports):
     """ touch the top-level ports so they are persevered """
     gens, width, catsig = [], 0, None

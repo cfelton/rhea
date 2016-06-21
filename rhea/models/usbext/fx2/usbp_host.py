@@ -2,11 +2,9 @@
 # Copyright (c) 2011-2013 Christopher L. Felton
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
-
+from __future__ import print_function, absolute_import
+import myhdl
 from myhdl import delay, always, instances
-
 from .fx2_model import Fx2Model
 
 
@@ -84,7 +82,7 @@ class UsbpHost(Fx2Model):
             print(rbuf[8], rbuf[9], rbuf[10], rbuf[11])
     
 
-    #---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
     def HostReadRequest(self, DataInRdy48, BufferSize=4096):
         """ Emulated Host request
 
@@ -99,4 +97,4 @@ class UsbpHost(Fx2Model):
         def tm_host_request():
             pass
 
-        return intances()
+        return myhdl.intances()

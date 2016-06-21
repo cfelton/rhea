@@ -2,13 +2,11 @@
 # Copyright (c) 2011-2013 Christopher L. Felton
 #
 
-from __future__ import absolute_import
-from __future__ import print_function
+from __future__ import print_function, absolute_import
+
 
 import time
-
 from myhdl import now
-
 from .fx2_model import Fx2Model
 
     
@@ -71,7 +69,7 @@ class FpgaLinkHost(Fx2Model):
         wbuf = [0 for ii in range(5)]
         # 0 : chan,
         # 1,2,3,4 (MSB in 4, LSB in 1)
-        wbuf[0]  = 0x80 | chan
+        wbuf[0] = 0x80 | chan
         wbuf[1] = (count >> 24) & 0xFF
         wbuf[2] = (count >> 16) & 0xFF
         wbuf[3] = (count >> 8) & 0xFF
@@ -117,6 +115,7 @@ class FpgaLinkHost(Fx2Model):
     def clean_write_buffer(self):
         """ Clean the write buffer (if any)
         """
+        raise NotImplementedError("Not Implemented")
 
 
 def test_simple():
@@ -133,9 +132,9 @@ def test_simple():
     print('   reset')
     fl.reset()
     print('   write channel')
-    fl.write_channel(1, [1,2,3,4])
-    #print('   read channel')
-    #bb = fl.ReadChannel(1, 4)
+    fl.write_channel(1, [1, 2, 3, 4])
+    # print('   read channel')
+    # bb = fl.ReadChannel(1, 4)
 
     # stop the simulation
     fl.stop()

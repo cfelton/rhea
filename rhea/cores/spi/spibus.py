@@ -1,6 +1,11 @@
+#
+# Copyright (c) 2013-2015 Christopher L. Felton
+# See the licence file in the top directory
+#
 
 from myhdl import Signal, intbv, delay
 from rhea.system import Clock
+
 
 class SPIBus(object):
     def __init__(self, sck=None, mosi=None, miso=None, ss=None):
@@ -25,6 +30,10 @@ class SPIBus(object):
         # for simulation and modeling only
         self.outval = intbv(0)[8:]
         self.inval = intbv(0)[8:]
+
+    def __call__(self):
+        """Return the SPI bus signals"""
+        return self.sck, self.mosi, self.miso, self.csn
 
     def _set_ss(self):
         pass

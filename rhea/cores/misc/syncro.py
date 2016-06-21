@@ -3,6 +3,7 @@ import myhdl
 from myhdl import Signal, intbv, always, always_comb
 
 
+@myhdl.block
 def syncro(clock, sigin, sigout, posedge=None, negedge=None,
            num_sync_ff=3):
     """ signal synchronizer

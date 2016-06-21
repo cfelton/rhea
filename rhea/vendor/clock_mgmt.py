@@ -1,6 +1,5 @@
 
 from myhdl import Signal, intbv
-
 from rhea.system import Clock
 
 

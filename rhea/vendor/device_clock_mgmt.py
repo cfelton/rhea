@@ -1,9 +1,11 @@
 
 from __future__ import absolute_import
 
+import myhdl
 from . import altera, xilinx
 
 
+@myhdl.block
 def device_clock_mgmt(clkmgmt):
     """ This module will generate the clocks  """
 

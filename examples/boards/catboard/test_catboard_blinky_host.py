@@ -24,6 +24,7 @@ def test_ibh(args=None):
     uart_rx = Signal(bool(0))
     uartmdl = UARTModel()
 
+    @myhdl.block
     def bench_ibh():
         tbclk = clock.gen()
         tbmdl = uartmdl.process(glbl, uart_tx, uart_rx)
@@ -61,9 +62,8 @@ def test_ibh(args=None):
         return tbclk, tbmdl, tbdut, tbstim
 
     run_testbench(bench_ibh, args=args)
-    myhdl.toVerilog.directory = 'output'
-    myhdl.toVerilog(catboard_blinky_host, clock, led,
-                    uart_tx, uart_rx)
+    inst = catboard_blinky_host(clock, led, uart_tx, uart_rx)
+    inst.convert(hdl='Verilog', directory='output')
 
 
 if __name__ == '__main__':

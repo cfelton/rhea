@@ -1,12 +1,8 @@
 
-import os 
 from random import randint
-import pytest
 from rhea.models.video import VideoDisplay
-from rhea.utils.test import skip_long_sim_test
 
 
-@skip_long_sim_test
 def test_create_save():
     num_frames = 3
     resolution = res = (randint(32, 800), randint(32, 800),)

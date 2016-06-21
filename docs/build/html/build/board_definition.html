@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Board definitions &mdash; rhea 0.1pre documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1pre',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="rhea 0.1pre documentation" href="../index.html" />
+    <link rel="next" title="&lt;no title&gt;" href="../examples/index.html" />
+    <link rel="prev" title="Build" href="build.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../examples/index.html" title="&lt;no title&gt;"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="build.html" title="Build"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">rhea 0.1pre documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="board-definitions">
+<h1>Board definitions<a class="headerlink" href="#board-definitions" title="Permalink to this headline">¶</a></h1>
+<p>The <cite>rhea.build</cite> contains a large list of board definitions.  The
+board definitions define an FPGA and its configuration for a particular
+board.  The board definitions define the default port list for the
+FPGA on a particular board.  The following is a guideline on how to
+add a new board definition.</p>
+<p>The information needed to create a board definition comes from the
+boards datasheet and/or schematic.  To make it easy to trace back
+to the original documentation the port names should match the net
+names in the documentation / schematic with a few exceptions.  The
+port names should be lowercase (this will be one difference from
+the documentation / schematic).</p>
+<p>The board definitions are a subclass of the <cite>FPGA</cite> class.  The FPGA
+information is captured in the class attributes.</p>
+<div class="section" id="example-xess-cat-board">
+<h2>Example: XESS CAT board<a class="headerlink" href="#example-xess-cat-board" title="Permalink to this headline">¶</a></h2>
+<p>The following is a minimal example creating a board definition for
+the XESS CAT board.  From the <a class="reference external" href="https://github.com/xesscorp/CAT-Board">CAT board schematics</a> the port
+definitions can be defined.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">CATBoard</span><span class="p">(</span><span class="n">FPGA</span><span class="p">):</span>
+    <span class="n">vendor</span> <span class="o">=</span> <span class="s">&#39;lattice&#39;</span>
+    <span class="n">family</span> <span class="o">=</span> <span class="s">&#39;ice40&#39;</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s">&#39;HX8K&#39;</span>
+    <span class="n">packet</span> <span class="o">=</span> <span class="s">&#39;CT256&#39;</span>
+    <span class="n">_name</span> <span class="o">=</span> <span class="s">&#39;catboard&#39;</span>
+
+    <span class="n">default_clocks</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;clock&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">freqeuncy</span><span class="o">=</span><span class="mf">100e6</span><span class="p">,</span> <span class="n">pins</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;C8&#39;</span><span class="p">,))</span>
+    <span class="p">}</span>
+
+    <span class="n">default_ports</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;led&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pins</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;A9&#39;</span><span class="p">,</span> <span class="s">&#39;B8&#39;</span><span class="p">,</span> <span class="s">&#39;A7&#39;</span><span class="p">,</span> <span class="s">&#39;B7&#39;</span><span class="p">,)),</span>
+        <span class="s">&#39;sw&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pins</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;A16&#39;</span><span class="p">,</span> <span class="s">&#39;B9&#39;</span><span class="p">,)),</span>
+        <span class="s">&#39;dipsw&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pins</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;C6&#39;</span><span class="p">,</span> <span class="s">&#39;C5&#39;</span><span class="p">,</span> <span class="s">&#39;C4&#39;</span><span class="p">,</span> <span class="s">&#39;C3&#39;</span><span class="p">,)),</span>
+        <span class="s">&#39;hdr1&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pins</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;J1&#39;</span><span class="p">,</span> <span class="s">&#39;K1&#39;</span><span class="p">,</span> <span class="s">&#39;H1&#39;</span><span class="p">,</span> <span class="s">&#39;J2&#39;</span><span class="p">,</span> <span class="p">)),</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="extending-definitions">
+<h2>Extending definitions<a class="headerlink" href="#extending-definitions" title="Permalink to this headline">¶</a></h2>
+<p>In many situations the top-level module ports might not match the
+default ports in the board definition or the user might want to
+create a different board definition.</p>
+<div class="section" id="mapping-port-names">
+<h3>Mapping port names<a class="headerlink" href="#mapping-port-names" title="Permalink to this headline">¶</a></h3>
+<p>There are two functions available in a specific board definition
+object:  <code class="docutils literal"><span class="pre">add_port</span></code> and <code class="docutils literal"><span class="pre">add_port_name</span></code>.  When the pin is known
+use <code class="docutils literal"><span class="pre">add_port</span></code> and when the default port name is known but a
+different name is desired use <code class="docutils literal"><span class="pre">add_port_name</span></code> to add a new port
+name that maps to the properties of an existing port.  See the
+<code class="docutils literal"><span class="pre">pone</span></code> example for an <code class="docutils literal"><span class="pre">add_port_name</span></code> use.</p>
+</div>
+<div class="section" id="creating-a-custom-board-definition">
+<h3>Creating a custom board definition<a class="headerlink" href="#creating-a-custom-board-definition" title="Permalink to this headline">¶</a></h3>
+<p>Custom board defintions can be created from the standard board
+definitions contained in the <cite>rhea.build.boards</cite> collection.
+For example, a board might
+have many connectors or generic IO.  The user could have a boards
+with specific hardware attached.  In these cases the user many
+wish to create a new custom board definition.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">MyCustomBoard</span><span class="p">(</span><span class="n">Xula2</span><span class="p">):</span>
+    <span class="c"># overriding the default ports, inherit the default</span>
+    <span class="c"># clocks.  The default ports in this cause reprsent</span>
+    <span class="c"># the various widgets connected to the Xula2+stickit</span>
+    <span class="n">default_ports</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;leds&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pins</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;R7&#39;</span><span class="p">,</span> <span class="s">&#39;R15&#39;</span><span class="p">,</span> <span class="s">&#39;R16&#39;</span><span class="p">,</span> <span class="s">&#39;M15&#39;</span><span class="p">,)),</span>
+        <span class="s">&#39;btns&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pins</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;F1&#39;</span><span class="p">,</span> <span class="s">&#39;F2&#39;</span><span class="p">,</span> <span class="s">&#39;E1&#39;</span><span class="p">,</span> <span class="s">&#39;E2&#39;</span><span class="p">,))</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Board definitions</a><ul>
+<li><a class="reference internal" href="#example-xess-cat-board">Example: XESS CAT board</a></li>
+<li><a class="reference internal" href="#extending-definitions">Extending definitions</a><ul>
+<li><a class="reference internal" href="#mapping-port-names">Mapping port names</a></li>
+<li><a class="reference internal" href="#creating-a-custom-board-definition">Creating a custom board definition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="build.html"
+                        title="previous chapter">Build</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../examples/index.html"
+                        title="next chapter">&lt;no title&gt;</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/build/board_definition.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../examples/index.html" title="&lt;no title&gt;"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="build.html" title="Build"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">rhea 0.1pre documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, Christopher L. Felton.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

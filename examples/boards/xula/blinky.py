@@ -2,6 +2,7 @@
 import argparse
 from pprint import pprint 
 
+import myhdl
 from myhdl import (Signal, ResetSignal, intbv, always_seq, always,
                    always_comb)
 
@@ -13,7 +14,8 @@ led_port_pin_map = {
     'xula2': dict(name='led', pins=('R7',)),
 }
 
-                   
+
+@myhdl.block
 def xula_blinky(led, button, clock, reset=None):
     """ a simple LED blinks example.
     This is intended to be used with the Xula, Stickit motherboard
@@ -24,7 +26,7 @@ def xula_blinky(led, button, clock, reset=None):
     toggle = Signal(bool(0))
     
     @always_seq(clock.posedge, reset=None)
-    def rtl():
+    def beh():
         if cnt == maxcnt-1:
             toggle.next = not toggle
             cnt.next = 0 
@@ -32,13 +34,13 @@ def xula_blinky(led, button, clock, reset=None):
             cnt.next = cnt + 1 
             
     @always_comb
-    def rtl_assign():
+    def beh_assign():
         if not button:
             led.next = True
         else:
             led.next = toggle
         
-    return rtl, rtl_assign
+    return beh, beh_assign
     
         
 def build(args):
@@ -68,5 +70,3 @@ def main():
         
 if __name__ == '__main__':
     main()
-    
-            

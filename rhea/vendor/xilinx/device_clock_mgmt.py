@@ -1,16 +1,17 @@
 
-from __future__ import absolute_import
-from __future__ import division
+from __future__ import absolute_import, division
 
 from math import fmod
 from fractions import gcd
 
+import myhdl
 from myhdl import always_comb
 
 from rhea.system import Reset
 from ..device_clock_mgmt_prim import device_clock_mgmt_prim
 
 
+@myhdl.block
 def device_clock_mgmt(clkmgmt):
     
     # assign the individual clocks in th epll_intf to the 

@@ -9,13 +9,16 @@ import logging
 import threading
 import time
 
-from myhdl import *
+import myhdl
+from myhdl import Signal, ResetSignal, intbv, always, always_comb
+from myhdl import instance, delay, StopSimulation, Simulation, now
 
 
 class Bus(object):
     pass
 
 
+@myhdl.block
 def slave_fifo(fm, fx2_bus):
     """ Temp wrapper
     Interfaces are very powerful but not fully supported
@@ -118,15 +121,13 @@ class Fx2Model(threading.Thread):
         """
         gens = []
         # use the module/function wrapper for tracing
-        if self.trace:
-            tb_intf = traceSignals(slave_fifo, self, self.fx2_bus)
-        else:
-            tb_intf = slave_fifo(self, self.fx2_bus)
+        tb_intf = slave_fifo(self, self.fx2_bus)
 
         @always(self._stop.posedge)
         def tb_mon():
             raise StopSimulation
-        
+
+        tb_intf.config_sim(trace=self.trace)
         gens = [tb_intf, tb_mon, self.g]
         sim = Simulation(gens)
         sim.run()
@@ -186,6 +187,7 @@ class Fx2Model(threading.Thread):
             self.ulog.debug('%d ... ' % (now()) + str,)
 
     # ---------------------------------------------------------------------------
+    @myhdl.block
     def slave_fifo(self, fx2_bus):
         """
         This function will drive the FX2 Slave FIFO interface.  This is intended
@@ -259,7 +261,7 @@ class Fx2Model(threading.Thread):
                     fx.FLAGB.next = True   # (gotroom)
                     fx.FLAGC.next = False  # (gotdata)
             else:
-                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 # Do Read / Writes to FIFOs
                 # ?? How does the actual controller work ??
                 # ?? can a read occur the same time the
@@ -269,7 +271,7 @@ class Fx2Model(threading.Thread):
                 #    active does a read not occur till the
                 #    FLAG* signals are set or right away.
                 # ??   
-                #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 assert ((slwr and not slrd)
                         or (not slwr and slrd)
                         or (not slwr and not slrd)), \

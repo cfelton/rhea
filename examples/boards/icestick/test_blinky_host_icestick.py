@@ -6,7 +6,7 @@ from myhdl import (Signal, intbv, instance, delay, StopSimulation)
 
 from rhea.system import Global, Clock, Reset
 from rhea.models.uart import UARTModel
-from rhea.utils.test import run_testbench, tb_args, tb_default_args
+from rhea.utils.test import run_testbench, tb_args, tb_default_args, tb_convert
 from rhea.utils import CommandPacket
 from rhea.utils.command_packet import PACKET_LENGTH
 
@@ -27,7 +27,8 @@ def test_ibh(args=None):
     uart_rts = Signal(bool(0))
     uartmdl = UARTModel()
 
-    def _bench_ibh():
+    @myhdl.block
+    def bench_ibh():
         tbclk = clock.gen()
         tbmdl = uartmdl.process(glbl, uart_tx, uart_rx)
         tbdut = icestick_blinky_host(clock, led, pmod, 
@@ -64,10 +65,12 @@ def test_ibh(args=None):
 
         return tbclk, tbmdl, tbdut, tbstim
 
-    run_testbench(_bench_ibh, args=args)
-    myhdl.toVerilog.directory = 'output'
-    myhdl.toVerilog(icestick_blinky_host, clock, led, pmod,
-                    uart_tx, uart_rx, uart_dtr, uart_rts)
+    run_testbench(bench_ibh, args=args)
+    inst = icestick_blinky_host(
+        clock, led, pmod,
+        uart_tx, uart_rx, uart_dtr, uart_rts
+    )
+    tb_convert(inst)
 
 
 if __name__ == '__main__':

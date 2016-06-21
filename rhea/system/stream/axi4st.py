@@ -1,4 +1,5 @@
 
+import myhdl
 from myhdl import Signal, intbv, always_comb, always_seq
 from . import Streamers
 
@@ -12,6 +13,7 @@ class AXI4StreamChannel(Streamers):
         self.data = Signal(intbv(vmax-1)[data_width:])
         self.accept = Signal(bool(1))
 
+    @myhdl.block
     def register(self, upstream):
         """ register the upstream interface
         Register the upstream interface to this interface (this (self) is the
@@ -48,6 +50,7 @@ class AXI4StreamLite(Streamers):
         self.r = AXI4StreamChannel(glbl, data_width)      # read data channel
         self.b = AXI4StreamChannel(glbl, response_width)  # response channel
 
+    @myhdl.block
     def assign_upstream_port(self, pobj):
         """
         The need for the function should be removed in the future the
@@ -82,6 +85,7 @@ class AXI4StreamLite(Streamers):
     def assign_downstream_port(self, pobj):
         assert isinstance(pobj, AXI4StreamLitePort)
 
+    @myhdl.block
     def register(self, upstream):
         sti, gens = upstream, []
         for ch in ('aw', 'w', 'ar'):

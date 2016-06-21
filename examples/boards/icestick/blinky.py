@@ -1,11 +1,13 @@
 
 import argparse
 
+import myhdl
 from myhdl import (Signal, intbv, always_seq, always_comb)
 
 from rhea.build.boards import get_board
 
 
+@myhdl.block
 def icestick_blinky(led, clock, reset=None):
     """ simple icestick LED blink """
     assert len(led) == 5
@@ -15,7 +17,7 @@ def icestick_blinky(led, clock, reset=None):
     toggle = Signal(bool(0))
 
     @always_seq(clock.posedge, reset=None)
-    def rtl():
+    def beh():
         if cnt == maxcnt-1:
             toggle.next = not toggle
             cnt.next = 0
@@ -23,13 +25,13 @@ def icestick_blinky(led, clock, reset=None):
             cnt.next = cnt + 1
 
     @always_comb
-    def rtl_assign():
+    def beh_assign():
         led.next[0] = toggle
         led.next[1] = not toggle
         for ii in range(2, 5):
             led.next[ii] = 0
 
-    return rtl, rtl_assign
+    return myhdl.instances()
 
 
 def build(args):
