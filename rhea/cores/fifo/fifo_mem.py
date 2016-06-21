@@ -5,10 +5,8 @@
 
 
 import myhdl
-from myhdl import Signal, ResetSignal, modbv, intbv
-from myhdl import always_comb, always, always_seq
-from myhdl import instance, delay, StopSimulation
-from myhdl.conversion import analyze, verify
+from myhdl import Signal, modbv, intbv
+from myhdl import always_comb, always
 from rhea.system import Signals
 
 

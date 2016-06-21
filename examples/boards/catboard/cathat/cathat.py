@@ -3,7 +3,7 @@ from __future__ import print_function
 from __future__ import division
 
 import myhdl
-from myhdl import Signal, modbv
+from myhdl import Signal, modbv, always
 
 from rhea.cores.uart import uartlite
 from rhea.cores.misc import glbl_timer_ticks
@@ -30,4 +30,3 @@ def cathat(clock, reset, led):
     # @todo: SDRAM controller
 
     return myhdl.instances()
-            
