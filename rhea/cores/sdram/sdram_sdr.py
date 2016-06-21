@@ -66,7 +66,7 @@ def sdram_sdr_controller(clock, reset, ibus, extram, refresh=True):
 
         elif state == States.INITPCHG:
             sdram.cmd.next = Commands.PCHG
-            sdram.addr[CMDBITS] = Commands.ALL_BANKS
+            # sdram.addr[CMDBITS] = Commands.ALL_BANKS
             timer.next = sdram.cycles
 
     return rtl_sdram_controller

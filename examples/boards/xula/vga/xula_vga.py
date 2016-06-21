@@ -11,7 +11,7 @@ from rhea.utils.test import tb_convert
 
 
 @myhdl.block
-def mm_vgasys(
+def xula_vga(
     # ~~~[PORTS]~~~
     clock,  reset, vselect,
     hsync, vsync, 
@@ -65,7 +65,7 @@ def convert(color_depth=(10, 10, 10,)):
     pxlen = Signal(bool(0))
     active = Signal(bool(0))
 
-    inst = mm_vgasys(
+    inst = xula_vga(
         clock, reset, vselect,
         hsync, vsync, red, green, blue,
         pxlen, active

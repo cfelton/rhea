@@ -14,7 +14,8 @@ from rhea.system import Signals
 def fifo_mem(clock_w, write, write_data, write_addr,
              clock_r, read, read_data, read_addr, write_addr_delayed):
     """ Memory module used by FIFOs
-    The write data takes two `clock_w` clock cycles to be latched 
+
+    The write data takes two `clock_w` clock cycles to be latched
     into the memory array and one `clock_r` clock cycle to be latched
     into `read_data`.
 
@@ -32,8 +33,7 @@ def fifo_mem(clock_w, write, write_data, write_addr,
            and after the memory array).  This is a delayed version of
            the write_addr that matches the write_data delay.
 
-    Parameters:
-        mem_size (int): number of item entries in the memory.
+    The memory size is determine from the address width.
     """
     
     assert len(write_addr) == len(read_addr)

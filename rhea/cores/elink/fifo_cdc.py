@@ -35,7 +35,7 @@ def fifo_cdc(glbl, emesh_i, emesh_o):
 
     fifo_inst = cores.fifo.fifo_async(
         clock_write=emesh_i.clock, clock_read=emesh_o.clock,
-        fbus=fifo_intf, reset=glbl.reset, size=16
+        fifobus=fifo_intf, reset=glbl.reset, size=16
     )
 
     return beh_assign, beh_access, fifo_inst

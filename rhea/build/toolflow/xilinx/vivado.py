@@ -74,7 +74,7 @@ class Vivado(ToolFlow):
                             ustr += ["set_property IOSTANDARD {} [get_ports {}]".format(
                                 str(vp), pm)]
                         else:
-                           raise NotImplemented("additional constraints not supported yet")
+                            raise NotImplementedError("additional constraints not supported yet")
         ustr += ["#\n"]
 
         with open(self.xdc_file, 'w') as fid:

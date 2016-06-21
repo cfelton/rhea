@@ -2,14 +2,8 @@
 # Copyright (c) 2015 Christopher Felton
 #
 
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+from __future__ import print_function, division, absolute_import
 
-import sys
-import os
-
-import sys
 import os
 
 from .toolflow import ToolFlow
@@ -56,7 +50,7 @@ class Yosys(ToolFlow):
                     if len(_pins) == 1:
                         syn += "\"{}\" ".format(port_name)
                     else:
-                        syn += "\"{}\[{:d}\]\" ".format(port_name, ii)
+                        syn += "\"{}[{:d}]\" ".format(port_name, ii)
                     syn += "\n"
         syn += "#\n"
 

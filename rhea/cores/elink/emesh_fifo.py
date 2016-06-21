@@ -81,7 +81,7 @@ def emesh_fifo(reset, emesh_i, emesh_o):
                              (fbus_wr, fbus_rd, fbus_rr,)):
         fifo_insts += emesh_to_fifo(epkt, fifobus)
         fifo_insts += fifo_async(
-            write_clock=emesh_i.clock, read_clock=emesh_o.clock,
+            clock_write=emesh_i.clock, clock_read=emesh_o.clock,
             fifobus=fifobus, reset=reset, size=16
         )
 
