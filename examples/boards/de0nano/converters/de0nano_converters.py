@@ -24,7 +24,7 @@ import rhea.build as build
 from rhea.build.boards import get_board
 
 # board definition for the automated flow
-brd = None
+brd, flow = None, None
 
 
 @myhdl.block

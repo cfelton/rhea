@@ -20,12 +20,12 @@ ERROR: The $tool flow failed!
     
     Make sure the tool (quartus, ise, vivado, etc.) is installed
     and accessible from the command line.
-"""
-)
+""")
 
 
 class ToolFlow(object): 
     _name = "not specified (bug in code)"
+
     def __init__(self, brd, top=None, name=None, path='.'):
         """
         Provided a myhdl top-level module and board definition
@@ -47,7 +47,7 @@ class ToolFlow(object):
             brd.set_top(top) 
         self.brd = brd
 
-        # determing a name for this run, should be the brd def
+        # determining a name for this run, should be the brd def
         # name, or the top-level name, or user specified name.
         # This name should be applied to the file names, project
         # name, and the top-level (converted) module name.
@@ -99,7 +99,8 @@ class ToolFlow(object):
             if not all(isinstance(ff, str) for ff in fn):
                 raise ValueError("Individual filenames must be strings")
         else:
-            raise ValueError("Argument must be a string or a list/tuple/set of strings")
+            raise ValueError(
+                "Argument must be a string or a list/tuple/set of strings")
             
         self._hdl_file_list.update(set(fn))
 
@@ -113,7 +114,7 @@ class ToolFlow(object):
           use  : indicated if Verilog or VHDL should be used.
           name : user supplied name for project and top-level
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def _execute_flow(self, cmd, logfn=None, logmode='w'):
         logfn = os.path.join(self.path, logfn)
@@ -134,4 +135,4 @@ class ToolFlow(object):
     def program(self):
         """ Program the board with the bit-stream
         """
-        raise NotImplemented()
+        raise NotImplementedError()

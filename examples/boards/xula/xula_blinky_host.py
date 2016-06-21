@@ -78,9 +78,11 @@ def build(args):
 
 
 def program(args):
-    subprocess.check_call(["xsload", 
-                           "--fpga", "xilinx/xula2_stickit_mb.bit",
-                           "-b", "xula2-lx25"])
+    subprocess.check_call(
+        ["xsload",
+         "--fpga", "xilinx/xula2_stickit_mb.bit",
+         "-b", "xula2-lx25"]
+    )
 
 
 def cliparse():
@@ -99,8 +101,8 @@ def test_instance():
     xula2_blinky_host(
         clock=Clock(0, frequency=50e6),
         led=Signal(intbv(0)[8:]), 
-        uart_tx=Signal(bool(0)),
-        uart_rx=Signal(bool(0)), )
+        bcm14_txd=Signal(bool(0)),
+        bcm15_rxd=Signal(bool(0)), )
 
     
 def main():

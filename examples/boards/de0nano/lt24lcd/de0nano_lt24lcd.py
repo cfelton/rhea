@@ -19,8 +19,8 @@ from rhea.cores.misc import glbl_timer_ticks
 import rhea.build as build
 from rhea.build.boards import get_board
 
-# board defintion for the automated flow
-brd = None
+# board definition for the automated flow
+brd, flow = None, None
 
 
 @myhdl.block

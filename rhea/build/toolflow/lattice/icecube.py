@@ -34,4 +34,3 @@ class IceCube(ToolFlow):
 
     def create_project(self, use='verilog', **pattr):
         self.sbt_file = os.path.join(self.path, self.name+".project")
-        sbt 
