@@ -34,18 +34,21 @@ def fifo_sync(glbl, fbus, size=128):
         size (int): the size of the FIFO, the FIFO will have hold
             at maximum *size* elements.
 
-    Example write and read timing:
+    Examples: 
     
-        clock:           /-\_/-\_/-\_/-\_/-\_/-\_/-\_/-\_/-\_/
-        fbus.write:      _/---\_______/-----------\___________
-        fbus.wrtie_data: -|D1 |-------|D2 |D3 |D4 |-----------
-        fbus.read:       _____________/---\___________________
-        fbus.read_data:           |D1    |--------------------
-        fbus.empty:      ---------\______/--\_________________
+        Write and read timing::
+    
+            clock:           /-\_/-\_/-\_/-\_/-\_/-\_/-\_/-\_/-\_/
+            fbus.write:      _/---\_______/-----------\___________
+            fbus.wrtie_data: -|D1 |-------|D2 |D3 |D4 |-----------
+            fbus.read:       _____________/---\___________________
+            fbus.read_data:           |D1    |--------------------
+            fbus.empty:      ---------\______/--\_________________
 
-    Example usage:
-        fifobus = FIFOBus(width=16)
-        fifo_inst = fifo_sync(glbl, fbus, size=128)
+        Usage::
+    
+            fifobus = FIFOBus(width=16)
+            fifo_inst = fifo_sync(glbl, fifobus, size=128)
         
     """
     assert isinstance(glbl, Global)
