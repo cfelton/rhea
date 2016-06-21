@@ -75,6 +75,7 @@ def test_uart(args=None):
     uartmdl = UARTModel()
     fifobus = FIFOBus()
 
+    @myhdl.block
     def bench_uart():
         tbmdl = uartmdl.process(glbl, mdlsi, mdlso)
         tbdut = uartlite(glbl, fifobus, mdlso, mdlsi)
