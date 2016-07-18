@@ -1,8 +1,10 @@
 
+import myhdl
 from myhdl import (Signal, ResetSignal, intbv, always_seq, always,
                    always_comb)
 
 
+@myhdl.block
 def blinky(led, clock, reset=None):
 
     assert len(led) >= 2

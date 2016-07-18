@@ -7,6 +7,7 @@ import time
 import shutil
 
 import myhdl
+from myhdl._block import _Block as Block
 from myhdl import toVerilog
 from myhdl import toVHDL
 
@@ -29,19 +30,22 @@ def convert(brd, top=None, name=None, use='verilog', path='.'):
 
     name = brd.top_name if name is None else name
     pp = brd.get_portmap(top=top)
+    inst = brd.top(**pp)
 
     # convert with the ports and parameters        
     if use.lower() == 'verilog':
         if name is not None:
             myhdl.toVerilog.name = name
         myhdl.toVerilog.no_testbench = True
-        myhdl.toVerilog(brd.top, **pp)
+        # myhdl.toVerilog(brd.top, **pp)
+        inst.convert(hdl='Verilog', name=name, testbench=False)
         brd.name = name
         brd.vfn = "%s.v"%(name)
     elif use.lower() == 'vhdl':
         if name is not None:
             myhdl.toVHDL.name = name
-        myhdl.toVHDL(brd.top, **pp)
+        # myhdl.toVHDL(brd.top, **pp)
+        inst.convert(hdl='Verilog', name=name, testbench=False)
         brd.name = name
         brd.vfn = "%s.vhd"%(name)
     else:

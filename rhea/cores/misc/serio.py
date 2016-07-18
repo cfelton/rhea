@@ -108,12 +108,12 @@ def io_stub(clock, reset, sdi, sdo, port_inputs, port_outputs, valid):
             valid.next = False
             scnt.next = scnt + 1
             for oo in range(nout):
-                tmp1 = oreg[oo]
+                tmp2 = oreg[oo]
                 if oo == 0:
-                    oreg[oo].next = concat(tmp1[nby-1:0],  tmp1[nby-1])
+                    oreg[oo].next = concat(tmp2[nby-1:0],  tmp2[nby-1])
                 else:
-                    tmp0 = oreg[oo-1]
-                    oreg[oo].next = concat(tmp1[nby-1:0], tmp0[nby-1])
+                    tmp3 = oreg[oo-1]
+                    oreg[oo].next = concat(tmp2[nby-1:0], tmp3[nby-1])
 
     @always_comb
     def beh_assign():
