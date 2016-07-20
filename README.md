@@ -7,10 +7,10 @@ a merge of the `mn` and `gizflo` projects.
 
 <!-- badges -->
 
-[![Documentation Status](https://readthedocs.org/projects/rhearay/badge/?version=latest)](http://rhearay.readthedocs.org/en/latest/) 
 [![Build Status](https://travis-ci.org/cfelton/rhea.svg?branch=master)](https://travis-ci.org/cfelton/rhea)
 [![Code Health](https://landscape.io/github/cfelton/rhea/master/landscape.svg?style=flat)](https://landscape.io/github/cfelton/rhea/master)
 [![Coverage Status](https://coveralls.io/repos/github/cfelton/rhea/badge.svg?branch=master)](https://coveralls.io/github/cfelton/rhea?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/rhearay/badge/?version=latest)](http://rhearay.readthedocs.org/en/latest/) 
 [![Join the chat at https://gitter.im/cfelton/rhea](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/cfelton/rhea?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 <!-- banner -->
