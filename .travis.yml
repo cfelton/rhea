@@ -66,4 +66,4 @@ after_success:
   - coveralls
 
 notifications:
-  email: false
+  email: true
