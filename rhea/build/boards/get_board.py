@@ -16,7 +16,7 @@ from .lattice import (Icestick, CATBoard)
 xbrd = {'xula': Xula, 'xula2': Xula2, 'xula2_stickit_mb': Xula2StickItMB,
         'pone': Pone, 'anvyl': Anvyl,
         'mojo': Mojo, 'atlys': Atlys, 'nexys': Nexys, 'zybo': Zybo,
-        'nexys_video': NexysVideo,
+        # 'nexys_video': NexysVideo,
         'parallella': Parallella, 'sx1': SX1, 'ufo400': UFO400,
         'xupv2p': XUPV2P,}
 
