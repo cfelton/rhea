@@ -7,7 +7,7 @@ from ._papilio import Pone
 from ._anvyl import Anvyl
 from ._mojo import Mojo
 from ._nexys import Nexys 
-# from .nexys import NexysVideo
+from .nexys import NexysVideo
 from ._atlys import Atlys
 from ._zybo import Zybo
 from ._parallella import Parallella
