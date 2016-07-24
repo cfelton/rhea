@@ -56,46 +56,19 @@ class PapilioPro(FPGA):
         'tx': dict(pins=(105,), iostandard='LVTTL'),
         'rx': dict(pins=(101,), iostandard='LVTTL'),
         
-        #TODO: What about pins for SDRAM?
-        #~ NET SDRAM_ADDR(0)  LOC="P140" | IOSTANDARD=LVTTL;                                # SDRAM_ADDR0
-        #~ NET SDRAM_ADDR(1)  LOC="P139" | IOSTANDARD=LVTTL;                                # SDRAM_ADDR1
-        #~ NET SDRAM_ADDR(2)  LOC="P138" | IOSTANDARD=LVTTL;                                # SDRAM_ADDR2
-        #~ NET SDRAM_ADDR(3)  LOC="P137" | IOSTANDARD=LVTTL;                                # SDRAM_ADDR3
-        #~ NET SDRAM_ADDR(4)  LOC="P46"  | IOSTANDARD=LVTTL;                                # SDRAM_ADDR4
-        #~ NET SDRAM_ADDR(5)  LOC="P45"  | IOSTANDARD=LVTTL;                                # SDRAM_ADDR5
-        #~ NET SDRAM_ADDR(6)  LOC="P44"  | IOSTANDARD=LVTTL;                                # SDRAM_ADDR6
-        #~ NET SDRAM_ADDR(7)  LOC="P43"  | IOSTANDARD=LVTTL;                                # SDRAM_ADDR7
-        #~ NET SDRAM_ADDR(8)  LOC="P41"  | IOSTANDARD=LVTTL;                                # SDRAM_ADDR8
-        #~ NET SDRAM_ADDR(9)  LOC="P40"  | IOSTANDARD=LVTTL;                                # SDRAM_ADDR9
-        #~ NET SDRAM_ADDR(10) LOC="P141" | IOSTANDARD=LVTTL;                                # SDRAM_ADDR10
-        #~ NET SDRAM_ADDR(11) LOC="P35"  | IOSTANDARD=LVTTL;                                # SDRAM_ADDR11
-        #~ NET SDRAM_ADDR(12) LOC="P34"  | IOSTANDARD=LVTTL;                                # SDRAM_ADDR12
-        #~ NET SDRAM_DATA(0)  LOC="P9"   | IOSTANDARD=LVTTL;                                # SDRAM_DATA0
-        #~ NET SDRAM_DATA(1)  LOC="P10"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA1
-        #~ NET SDRAM_DATA(2)  LOC="P11"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA2
-        #~ NET SDRAM_DATA(3)  LOC="P12"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA3
-        #~ NET SDRAM_DATA(4)  LOC="P14"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA4
-        #~ NET SDRAM_DATA(5)  LOC="P15"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA5
-        #~ NET SDRAM_DATA(6)  LOC="P16"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA6
-        #~ NET SDRAM_DATA(7)  LOC="P8"   | IOSTANDARD=LVTTL;                                # SDRAM_DATA7
-        #~ NET SDRAM_DATA(8)  LOC="P21"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA8
-        #~ NET SDRAM_DATA(9)  LOC="P22"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA9
-        #~ NET SDRAM_DATA(10) LOC="P23"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA10
-        #~ NET SDRAM_DATA(11) LOC="P24"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA11
-        #~ NET SDRAM_DATA(12) LOC="P26"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA12
-        #~ NET SDRAM_DATA(13) LOC="P27"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA13
-        #~ NET SDRAM_DATA(14) LOC="P29"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA14
-        #~ NET SDRAM_DATA(15) LOC="P30"  | IOSTANDARD=LVTTL;                                # SDRAM_DATA15
-        #~ NET SDRAM_DQML     LOC="P7"   | IOSTANDARD=LVTTL;                                # SDRAM_DQML
-        #~ NET SDRAM_DQMH     LOC="P17"  | IOSTANDARD=LVTTL;                                # SDRAM_DQMH
-        #~ NET SDRAM_BA(0)    LOC="P143" | IOSTANDARD=LVTTL;                                # SDRAM_BA0
-        #~ NET SDRAM_BA(1)    LOC="P142" | IOSTANDARD=LVTTL;                                # SDRAM_BA1
-        #~ NET SDRAM_nWE      LOC="P6"   | IOSTANDARD=LVTTL;                                # SDRAM_nWE
-        #~ NET SDRAM_nCAS     LOC="P5"   | IOSTANDARD=LVTTL;                                # SDRAM_nCAS
-        #~ NET SDRAM_nRAS     LOC="P2"   | IOSTANDARD=LVTTL;                                # SDRAM_nRAS
-        #~ NET SDRAM_CS       LOC="P1"   | IOSTANDARD=LVTTL;                                # SDRAM_CS
-        #~ NET SDRAM_CLK      LOC="P32"  | IOSTANDARD=LVTTL;                                # SDRAM_CLK
-        #~ NET SDRAM_CKE      LOC="P33"  | IOSTANDARD=LVTTL;                                # SDRAM_CKE
+        'sdram_addr': dict(pins=(140, 139, 138, 137, 46, 45, 44, 43, 41,
+                    40, 141, 35, 34), iostandard='LVTTL'),
+        'sdram_data': dict(pins=(9, 10, 11, 12, 14, 15, 16, 8, 21, 22,
+                    23, 24, 26, 27, 29, 30), iostandard='LVTTL'),
+        'sdram_dqml': dict(pins=(7, ),  iostandard='LVTTL'),
+        'sdram_dqmh': dict(pins=(17, ),  iostandard='LVTTL'),
+        'sdram_ba': dict(pins=(143, 142),  iostandard='LVTTL'),
+        'sdram_nwe': dict(pins=(6, ),  iostandard='LVTTL'),
+        'sdram_ncas': dict(pins=(5, ),  iostandard='LVTTL'),
+        'sdram_nras': dict(pins=(2, ),  iostandard='LVTTL'),
+        'sdram_cs': dict(pins=(1, ),  iostandard='LVTTL'),
+        'sdram_clk': dict(pins=(32, ),  iostandard='LVTTL'),
+        'sdram_cke': dict(pins=(33, ),  iostandard='LVTTL'),
     }
 
     def get_flow(self, top=None):
