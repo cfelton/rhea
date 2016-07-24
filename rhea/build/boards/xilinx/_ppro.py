@@ -8,6 +8,7 @@ from rhea.build import FPGA
 from rhea.build.extintf import Port
 from rhea.build.toolflow import ISE
 
+VCCO = 'LVCMOS33'
 
 class PapilioPro(FPGA):
     vendor = 'xilinx'
@@ -52,8 +53,8 @@ class PapilioPro(FPGA):
         'flash_so': dict(pins=(65, ),  iostandard='LVTTL',
                     drive='8', slew='fast', pullup=True),
         
-        'tx': dict(pins=(P105,), iostandard='LVTTL'),
-        'rx': dict(pins=(P101,), iostandard='LVTTL'),
+        'tx': dict(pins=(105,), iostandard='LVTTL'),
+        'rx': dict(pins=(101,), iostandard='LVTTL'),
         
         #TODO: What about pins for SDRAM?
         #~ NET SDRAM_ADDR(0)  LOC="P140" | IOSTANDARD=LVTTL;                                # SDRAM_ADDR0
