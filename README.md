@@ -32,7 +32,7 @@ pronounced the same as the bird or moon.
  
 dependencies
 ------------
-   - [myhdl](http://www.myhdl.org) currently 0.9 (watch the 1.0 rhea branch)
+   - [myhdl](http://www.myhdl.org) currently 1.0dev (pre-release)
    - [pytest](http://www.pytest.org) for the test suite
    - [Pillow](https://pillow.readthedocs.org/en/3.0.x/) >= 2.9, some video tests utilize the imaging library
    - FPGA vendor tools, only for automated build tools.
@@ -61,7 +61,8 @@ need to clone it and install the source).  The first
 later).  
 
 Getting close to the fist minor release.  The first minor release 
-will contain a small collection of documented cores and frameworks.
+will contain a small collection of documented cores and frameworks
+(see below).
 
 This code/package is licensed under the MIT license.  This allows 
 anyone to use the package in their projects with no limitations.  
@@ -169,3 +170,28 @@ systems using the cores and various tools and target a particular FPGA
 development board.  The [examples/build](https://github.com/cfelton/rhea/examples/build)
 contains LED blinky examples for many different boards. 
 
+
+cores
+-----
+The following is a list of cores being developed for the 0.1 
+release, an [x] indicates the core has been completed and verified on
+an FPGA development board.  
+
+- [x] [sync FIFO](https://github.com/cfelton/rhea/blob/master/rhea/cores/fifo/fifo_fast.py)
+- [x] [async FIFO](https://github.com/cfelton/rhea/blob/master/rhea/cores/fifo/fifo_async.py)
+- [x] [UART lite](https://github.com/cfelton/rhea/blob/master/rhea/cores/uart/uartlite.py#L12)
+- [x] [byte-stream to bus-transaction](https://github.com/cfelton/rhea/blob/master/rhea/cores/memmap/command_bridge.py#L14)
+- [ ] [SPI controller](https://github.com/cfelton/rhea/blob/master/rhea/cores/spi/spi.py#L41)
+- [ ] SDRAM controller
+- [x] [VGA](https://github.com/cfelton/rhea/blob/master/rhea/cores/video/vga/vga_sync.py#L23)
+- [x] [LT24 LCD controller](https://github.com/cfelton/rhea/blob/master/rhea/cores/video/lcd/lt24lcd.py#L18)
+- [ ] HDMI
+- [ ] Ethernet MAC
+- [x] [PRBS tester (generator and checker)](https://github.com/cfelton/rhea/blob/master/rhea/cores/comm/prbs_tester.py#L33)
+- [x] [ADC 128x022 interface](https://github.com/cfelton/rhea/blob/master/rhea/cores/converters/adc128s022.py#L21)
+- [ ] ADXL345 interface
+- [ ] *USB: usbp FX2 interface
+- [ ] *USB: fpgalink FX2 interface 
+
+\* Complete but dysfunctional.  These are old cores that were working on 
+an FPGA, at one point in time, but have not been updated in ages.
