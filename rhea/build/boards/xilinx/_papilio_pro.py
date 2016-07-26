@@ -26,11 +26,11 @@ class PapilioPro(FPGA):
     }
     
     default_ports = {
-        'wingA': dict(pins=(48, 51, 56, 58, 61, 66, 67, 75, 79, 81, 83,
+        'winga': dict(pins=(48, 51, 56, 58, 61, 66, 67, 75, 79, 81, 83,
                     85, 88, 93, 98, 100), iostandard=VCCO),
-        'wingB': dict(pins=(99, 97, 92, 87, 84, 82, 80, 78, 74, 95, 62,
+        'wingb': dict(pins=(99, 97, 92, 87, 84, 82, 80, 78, 74, 95, 62,
                     59, 57, 55, 50, 47),  iostandard=VCCO),
-        'wingC': dict(pins=(114, 115, 116, 117, 118, 119, 120, 121, 123,
+        'wingc': dict(pins=(114, 115, 116, 117, 118, 119, 120, 121, 123,
                     124, 126, 127, 131, 132, 133, 134), 
                     iostandard=VCCO),
         
