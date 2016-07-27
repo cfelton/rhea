@@ -42,3 +42,7 @@ pip-log.txt
 .tox
 nosetests.xml
 
+# generated examples
+/examples/boards/ppro/xilinx
+/examples/build/xilinx
+
