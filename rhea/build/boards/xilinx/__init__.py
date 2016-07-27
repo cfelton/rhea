@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from ._xula import Xula, Xula2
 from ._xula import XulaStickItMB, Xula2StickItMB
-from ._papilio import Pone
+from ._papilio_one import PapilioOne
 from ._papilio_pro import PapilioPro
 from ._anvyl import Anvyl
 from ._mojo import Mojo
