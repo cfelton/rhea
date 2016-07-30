@@ -46,3 +46,6 @@ nosetests.xml
 /examples/boards/ppro/xilinx
 /examples/build/xilinx
 
+# OS metadata:
+.DS_Store
+thumbs.db
