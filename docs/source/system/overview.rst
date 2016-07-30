@@ -171,8 +171,8 @@ used in a new component/peripheral.
         return regfile_inst, mod_inst, beh_led_assign
 
 
-The :py:func:`led_blinker` module demonstrates how to add the created
-:py:class:`RegisterFile` to
+The :func:`led_blinker` module demonstrates how to add the created
+:class:`RegisterFile` to
 the memory-mapped bus and get a myhdl instance that provides the logic
 to read and write the register file from the bus interface passed to the 
 module. 
@@ -181,7 +181,7 @@ module.
 .. When instantiating the :py:func:`led_blinker` `module`_
 
 Note, in the above example a ``base_address`` was set.  If the ``base_address``
-attribute is not present the :py:class:`MemoryMapped
+attribute is not present the :class:`MemoryMapped
 
 .. _module : http://docs.myhdl.org/en/stable/manual/structure.html#structural-modeling
 
@@ -192,27 +192,27 @@ The :Register Files: section examples eluded to the memory-map (or CSR)
 interfaces and how they can be connected to register file.  The ``rhea``
 project contains the following memory-map interfaces:
 
-   * :py:class:`Barebone`
-   * :py:class:`Wishbone`
-   * :py:class:`AvalonMM`
-   * :py:class:`AXI4Lite`
+   * :class:`Barebone`
+   * :class:`Wishbone`
+   * :class:`AvalonMM`
+   * :class:`AXI4Lite`
 
 Each of these implement a memory-map bus type/specification and each
 can be passed as and interface to a module.  Each of the specific
-memory-mapped bus classes inherit the :py:class:`MemoryMapped` class.
-The :py:class:`MemoryMapped` defines the attributes and methods the
+memory-mapped bus classes inherit the :class:`MemoryMapped` class.
+The :class:`MemoryMapped` defines the attributes and methods the
 memory-mapped buses have in common.
 
 When interfacing to a register file, the register file is added to the
-bus as shown in the previous example with the :py:func:`MemoryMapped.add`
+bus as shown in the previous example with the :func:`MemoryMapped.add`
 function.  The register file covers many use cases for adding control
 and status interfaces to different components.  Each interface also
 contains a module to adapt the memory-map interface to a *generic*
-interface.  In this case each bus is mapped to the :py:class:`Barebone`
-bus with the :py:func:`MemoryMapped.map_to_generic`
+interface.  In this case each bus is mapped to the :class:`Barebone`
+bus with the :func:`MemoryMapped.map_to_generic`
 function / `myhdl`_ `module`_.
 
-The next section outlines how the :py:class:`RegisterFile` and the
+The next section outlines how the :class:`RegisterFile` and the
 corresponding registers is typically not used as defined above.  Rather,
 an automated mapping of the control-status object is mapped to the
 memory-space.  Software is used to encapsulate all the memory-based
@@ -258,10 +258,11 @@ directly driven by the logic).
 In the previous example all the explict addresses are hidden.  The
 control-status attributes are accessed via the attributes (in simulation
 and host software) and all the memory-mapped bus accesses are hidden.
-The :py:class:`MemoryMap` has utilities to export the memory-map.
+The :class:`MemoryMap` has utilities to export the memory-map.
 
 
 Static configuration
 ^^^^^^^^^^^^^^^^^^^^
 The previous example demonstrated how the module can select to use the
 external ``cso`` object, default ``cso``
+

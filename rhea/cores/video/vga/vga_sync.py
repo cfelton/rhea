@@ -37,6 +37,13 @@ def vga_sync(
        refresh_rate     - in Hz, default 60
        line_rate        - in Hz, default is 31,250
 
+
+    These parameters are attributes of the VGA monitor being
+    driven.  These can be extracted from the monitor.  This
+    driver is intended to drive a single monitor setting, i.e.
+    it cannot be dynamically changed.  The driver can be setup
+    to drive various monitor settings during elaboration/creation.
+
     (arguments == ports)
     Arguments:
       glbl.clock: system synchronous clock
@@ -58,24 +65,32 @@ def vga_sync(
       resolution: video resolution
       refresh_rate: vertical rate in Hz
       line_rate: horizontal rate in Hz
-    
+
+    @todo: compute the line rate based on 5% overhead and the refresh rate
+    @todo: add optional argument where the minimum subset of the timing
+           parameters can be provided (in a dictionary).
+
     VGA Timing
-    ----------
+
+    Examples:
+        @todo: add examples
     """
     res = resolution
     clock, reset = glbl.clock, glbl.reset
 
     # compute the limits (counter limits) for the vsync
     # and hsync timings.  Review the calc_timing function
-    # for definitions of A,B,C,D,E,F,P,Q,R,S, and Z
-    (A,B,C,D,E,F,
-     P,Q,R,S,X,Z,) = calc_timings(clock.frequency, resolution,
-                                  refresh_rate, line_rate)
+    # for definitions of A, B, C, D, E, F, P, Q, R, S, and Z
+    (A, B, C, D, E, F,
+     P, Q, R, S, X, Z,) = calc_timings(clock.frequency, resolution,
+                                       refresh_rate, line_rate)
     # full_screen pixels res[0]*res[1] (should be)
     full_screen = F
 
     # counters to count the pixel clock (clock)
     HPXL, VPXL = res
+
+    # counter variables used to detect the various time areas
     xcnt = intbv(0, min=-1, max=X+1)  # clock div
     hcnt = intbv(0, min=0, max=A+1)   # hor count in ticks
     vcnt = intbv(0, min=0, max=F+1)   # ver count in ticks
@@ -94,12 +109,10 @@ def vga_sync(
     def beh_sync():
         # horizontal and vertical counters
         hcnt[:] = hcnt + 1  # horizontal count only
-        vcnt[:] = vcnt + 1  # all pixel count, horizontal and veritical
+        vcnt[:] = vcnt + 1  # all pixel count, horizontal and vertical
         if vcnt == full_screen:
             vcnt[:] = 0
             hcnt[:] = 0
-        elif vcnt > R:
-            hcnt[:] = A-1
         elif hcnt >= A:
             hcnt[:] = 0
 
@@ -149,23 +162,23 @@ def vga_sync(
     @always_comb
     def beh_state():
         if not vga.hsync:
-            vga.state.next = vga.States.HSYNC
+            vga.state.next = vga.states.HSYNC
         elif not vga.vsync:
-            vga.state.next = vga.States.VSYNC
+            vga.state.next = vga.states.VSYNC
         elif hcd < D:
-            vga.state.next = vga.States.ACTIVE
+            vga.state.next = vga.states.ACTIVE
         elif vcd >= R and vcd < (R+S):
-            vga.state.next = vga.States.VER_FRONT_PORCH        
+            vga.state.next = vga.states.VER_FRONT_PORCH
         elif vcd >= (R+S) and vcd < (R+S+P):
             pass # should be handled by above
         elif vcd >= (R+S+P) and vcd < (full_screen):
-            vga.state.next = vga.States.VER_BACK_PORCH
+            vga.state.next = vga.states.VER_BACK_PORCH
         elif hcd >= D and hcd < (D+E):
-            vga.state.next = vga.States.HOR_FRONT_PORCH
+            vga.state.next = vga.states.HOR_FRONT_PORCH
         elif hcd >= (D+E) and hcd < (D+E+B):
             pass # should be handled by above
         elif hcd >= (D+E+B) and hcd < (D+E+B+C):
-            vga.state.next = vga.States.HOR_BACK_PORCH
+            vga.state.next = vga.states.HOR_BACK_PORCH
 
         if hcd < D:
             vga.active.next = True
@@ -175,8 +188,13 @@ def vga_sync(
     # map the video memory pixels to the VGA bus
     @always_comb
     def beh_map():
-        vga.red.next = vmem.red
-        vga.green.next = vmem.green
-        vga.blue.next = vmem.blue
+        if vga.active:
+            vga.red.next = vmem.red
+            vga.green.next = vmem.green
+            vga.blue.next = vmem.blue
+        else:
+            vga.red.next = 0
+            vga.green.next = 0
+            vga.blue.next = 0
 
     return myhdl.instances()

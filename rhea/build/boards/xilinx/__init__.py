@@ -10,7 +10,7 @@ from ._mojo import Mojo
 from ._nexys import Nexys 
 from .nexys import NexysVideo
 from ._atlys import Atlys
-from ._zybo import Zybo
+from .zybo import Zybo
 from ._parallella import Parallella
 from ._sx1 import SX1 
 from ._ufo400 import UFO400 

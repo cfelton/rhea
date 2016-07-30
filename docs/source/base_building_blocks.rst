@@ -3,7 +3,7 @@
 ``rhea`` common components
 ##########################
 
-In the ``rhea`` top-level namespace includes a small collection of
+The ``rhea`` top-level namespace includes a small collection of
 functions and objects that are commonly used in `building subblocks`_
 (cores).  This is a thin-layer in the software stack used to build
 complex digital systems.
@@ -37,6 +37,6 @@ top-level namespace.  See the information below for more details.
 .. autofunction:: rhea.syncro
 
 
-Example
-=======
+Examples
+========
 
