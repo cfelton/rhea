@@ -7,14 +7,14 @@ from __future__ import print_function
 
 # import all the board definitions
 from .xilinx import (Xula, Xula2, Xula2StickItMB, 
-                     Pone, PapilioPro, Anvyl, Mojo, Nexys, Atlys,
+                     PapilioOne, PapilioPro, Anvyl, Mojo, Nexys, Atlys,
                      NexysVideo, Zybo, Parallella, SX1, UFO400, XUPV2P)
 from .altera import (DE0Nano, DE0NanoSOC, DE0CV, DE1SOC)
 from .lattice import (Icestick, CATBoard)
 
 
 xbrd = {'xula': Xula, 'xula2': Xula2, 'xula2_stickit_mb': Xula2StickItMB,
-        'pone': Pone, 'ppro': PapilioPro, 'anvyl': Anvyl,
+        'pone': PapilioOne, 'ppro': PapilioPro, 'anvyl': Anvyl,
         'mojo': Mojo, 'atlys': Atlys, 'nexys': Nexys, 'zybo': Zybo,
         'nexys_video': NexysVideo,
         'parallella': Parallella, 'sx1': SX1, 'ufo400': UFO400,
