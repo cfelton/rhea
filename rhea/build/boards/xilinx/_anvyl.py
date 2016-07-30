@@ -98,7 +98,50 @@ class Anvyl(FPGA):
         'oled_vbat': dict(pins=('C7',), iostandard='LVCMOS33'),
         'oled_vdd': dict(pins=('A7',), iostandard='LVCMOS33'),
 
-        # touchscreen tft
+        # touchscreen tft ( INNOLUX AT043TN24 http://www.reachtech.com/userfiles/file/downloadcenter/reach_43_innolux_panel_specification.pdf )
+        'tft_vdden_o': dict(pins=('W20',), iostandard='LVCMOS33'),
+        'tft_b_o': dict(pins=('N22', 'P22', 'P21', 'R22', 'T22', 'T21', 'U22', 'V22',), iostandard='LVCMOS33'),
+        'tft_clk_o': dict(pins=('L20',), iostandard='LVCMOS33'),
+        'tft_de_o': dict(pins=('W22',), iostandard='LVCMOS33'),
+        'tft_disp_o': dict(pins=('V21',), iostandard='LVCMOS33'),
+        'tft_g_o': dict(pins=('C22', 'B22', 'B21', 'H22', 'K22', 'L22', 'M22', 'M21',), iostandard='LVCMOS33'),
+        'tft_blkt_o': dict(pins=('M16',), iostandard='LVCMOS33'),
+        'tft_r_o': dict(pins=('R20', 'N19', 'K19', 'K20', 'K18', 'J19', 'J17', 'C20',), iostandard='LVCMOS33'),
+        'tp_busy_i': dict(pins=('M19',), iostandard='LVCMOS33'),
+        'tp_cs_o': dict(pins=('M20',), iostandard='LVCMOS33'),
+        'tp_dclk_o': dict(pins=('K21',), iostandard='LVCMOS33'),
+        'tp_din_o': dict(pins=('U20',), iostandard='LVCMOS33'),
+        'tp_dout_i': dict(pins=('M18',), iostandard='LVCMOS33'),
+        'tp_peniro_i': dict(pins=('N20',), iostandard='LVCMOS33'),
+
+        # TODO: Timing groups can be set up in Rhea yea, but when then can:
+        # INST "TFT_R_O[7]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_R_O[0]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_R_O[1]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_R_O[2]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_R_O[3]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_R_O[4]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_R_O[5]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_R_O[6]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_B_O[0]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_B_O[1]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_B_O[2]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_B_O[3]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_B_O[4]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_B_O[5]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_B_O[6]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_B_O[7]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_CLK_O" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_DE_O" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_G_O[0]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_G_O[1]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_G_O[2]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_G_O[3]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_G_O[4]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_G_O[5]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_G_O[6]" TNM = "TFT_PIXEL_BUS";
+        # INST "TFT_G_O[7]" TNM = "TFT_PIXEL_BUS";
+        # TIMEGRP "TFT_PIXEL_BUS" OFFSET = OUT  AFTER "CLK_I" REFERENCE_PIN "TFT_CLK_O";
 
         # vga
         'red_o': dict(pins=('T3', 'B2', 'H3', 'H4',), iostandard='LVCMOS18'),
@@ -114,16 +157,16 @@ class Anvyl(FPGA):
         'hdmi_tx_n': dict(pins=('C10', 'A9', 'D8',), iostandard='TDMS_33'),
         'hdmi_tx_n_clk': dict(pins=('A10',), iostandard='TDMS_33'),
 
-        # ethernet
+        # ethernet ( SMSC LAN8720 https://adeetc.thothapp.com/classes/SE2/1415v/LI61D-LT61D-MI2D/resources/5377 )
 
-        # sram ( R1LV0816ASB - https://www.renesas.com/en-us/doc/products/memory/rej03c0387_r1lv0816asb_ds.pdf )
+        # sram ( R1LV0816ASB https://www.renesas.com/en-us/doc/products/memory/rej03c0387_r1lv0816asb_ds.pdf )
         'memory_address': dict(pins=('F22', 'F21', 'E22', 'D22', 'D21', 'D19', 'D20' 'E20'
                                      'G17', 'H18', 'H13', 'H12', 'K16', 'L15', 'G15', 'J16',
                                      'H17', 'H16', 'G16'), iostandard='LVCMOS33'),
 
         'memory_data': dict(pins=('H21', 'A20', 'A21', 'A19', 'B20', 'C18', 'C19', 'F15',
                                   'F18', 'F17', 'F14', 'F13', 'H14', 'H19', 'H20', 'G20',),
-                            iostandard='LVCMOS33'),  # TODO: This should be tri-state.
+                            iostandard='LVCMOS33'),  # TODO: Should be tri-state.
 
         'sram_cs1': dict(pins=('G22',), iostandard="LVCMOS33"),
         'sram_cs2': dict(pins=('G13',), iostandard="LVCMOS33"),
@@ -133,6 +176,31 @@ class Anvyl(FPGA):
         'sram_lower_b': dict(pins=('G19',), iostandard='LVCMOS33', drive=2, pulldown=True),
 
         # ddr2
+        'ddr_data': dict(pins=('N3', 'N1', 'M2', 'M1', 'J3', 'J1', 'K2', 'K1',
+                               'P2', 'P1', 'R3', 'R1', 'U3', 'U1', 'V2', 'V1',),
+                         iostandard='LVCMOS18'),  # TODO: Should be tri-state.
+
+        'ddr_addr': dict(pins=('M5', 'L4', 'K3', 'M4', 'K5', 'G3', 'G1', 'K4',
+                               'C3', 'C1', 'K6', 'B1', 'J4',),
+                         iostandard='LVCMOS18'),
+
+        'ddr_clk_en': dict(pins=('J6',), iostandard="LVCMOS18"),
+        'ddr_clk_p': dict(pins=('F2',), iostandard="LVCMOS18"),
+        'ddr_clk_n': dict(pins=('F1',), iostandard="LVCMOS18"),
+
+        'ddr_ba': dict(pins=('E3', 'E1', 'D1',), iostandard="LVCMOS18"),
+
+        'ddr_udm': dict(pins=('H2',), iostandard="LVCMOS18"),
+        'ddr_ldm': dict(pins=('H1',), iostandard="LVCMOS18"),
+        'ddr_odt': dict(pins=('M3',), iostandard="LVCMOS18"),
+
+        'ddr_udqs_p': dict(pins=('T2',), iostandard="LVCMOS18"),
+        'ddr_udqs_n': dict(pins=('T1',), iostandard="LVCMOS18"),
+        'ddr_ldqs_p': dict(pins=('L3',), iostandard="LVCMOS18"),
+        'ddr_ldqs_n': dict(pins=('L1',), iostandard="LVCMOS18"),
+
+        'ddr_ras': dict(pins=('N4',), iostandard="LVCMOS18"),
+        'ddr_cas': dict(pins=('P3',), iostandard="LVCMOS18"),
 
         # pmod connectors
         'ja': dict(pins=('AA18', 'AA16', 'Y15', 'V15', 'AB18', 'AB16', 'AB15', 'W15',), iostandard='LVCMOS33'),
