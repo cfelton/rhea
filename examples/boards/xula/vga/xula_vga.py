@@ -1,36 +1,58 @@
 
 import myhdl
-from myhdl import Signal, intbv
+from myhdl import Signal, intbv, ResetSignal, always
 
-from rhea import Clock, Reset, Global
-from rhea.cores.video import VGA
-from rhea.cores.video import VideoMemory
-from rhea.cores.video import vga_sync
-from rhea.cores.video import color_bars
+from rhea.system import Global, Clock, Reset
+from rhea.cores.video import VGA, VideoMemory
+from rhea.cores.video import vga_sync, color_bars
 from rhea.utils.test import tb_convert
 
 
 @myhdl.block
 def xula_vga(
     # ~~~[PORTS]~~~
-    clock,  reset, vselect,
+    vselect,
     hsync, vsync, 
     red, green, blue,
     pxlen, active,
+    clock,
+    reset=None,
 
     # ~~~~[PARAMETERS]~~~~
+    # @todo: replace these parameters with a single VGATimingParameter
     resolution=(640, 480,),
-    color_depth=(10, 10, 10,),
+    color_depth=(8, 8, 8,),
     refresh_rate=60,
     line_rate=31250
 ):
     """
+    (arguments == ports)
+    Arguments:
+        vselect:
+
+    Parameters:
+        resolution: the video resolution
+        color_depth: the color depth of a pixel, the number of bits
+            for each color component in a pixel.
+        refresh_rate: the refresh rate of the video
     """
+    # stub out reset if needed
+    if reset is None:
+        reset = ResetSignal(0, active=0, async=False)
+
+        @always(clock.posedge)
+        def reset_stub():
+            reset.next = not reset.active
+
+    else:
+        reset_stub = None
+
     # create the system-level signals, overwrite clock, reset
     glbl = Global(clock=clock, reset=reset)
 
     # VGA inteface
     vga = VGA()
+    # assign the top-level ports to the VGA interface
     vga.assign(
         hsync=hsync, vsync=vsync,
         red=red, green=green, blue=blue,
@@ -38,7 +60,7 @@ def xula_vga(
     )
 
     # video memory interface
-    vmem = VideoMemory()
+    vmem = VideoMemory(color_depth=color_depth)
         
     # color bar generation
     bar_inst = color_bars(glbl, vmem, resolution=resolution)
@@ -75,3 +97,4 @@ def convert(color_depth=(10, 10, 10,)):
 
 if __name__ == '__main__':
     convert()
+

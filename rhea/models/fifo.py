@@ -74,6 +74,6 @@ class FIFO(object):
         return len(self._fifo) >= self.depth
 
     def shuffle(self):
-        self.shuffle(self._fifo)
+        shuffle(self._fifo)
 
 

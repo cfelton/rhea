@@ -110,7 +110,7 @@ class VGADisplay(VideoDisplay):
         c = counters
         if c.hcnt < self.num_hpxl:
             yield vga.pxlen.posedge
-            if vga.state == vga.States.ACTIVE:
+            if vga.state == vga.states.ACTIVE:
                 pixel = list(map(int, (vga.red, vga.green, vga.blue,)))
                 # print(c.vcnt, c.hcnt)
                 #  determine if this is the last pixel for the display
