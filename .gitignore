@@ -43,8 +43,13 @@ pip-log.txt
 nosetests.xml
 
 # generated examples
-/examples/boards/ppro/xilinx
-/examples/build/xilinx
+/examples/**/xilinx
+
+# old gitignore version
+/.gitignore~
+
+# cloned myhdl repo
+/myhdl
 
 # OS metadata:
 .DS_Store

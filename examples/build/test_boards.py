@@ -19,6 +19,8 @@ led_port_pin_map = {
     'xula2_stickit_mb': dict(name='led', port='chan', slc=slice(0,4)),
     'pone': dict(name='led', port='winga', slc=slice(0,4)),
     'ppro': dict(name='led', port='winga', slc=slice(0,4)),
+    'waxwing45': dict(name='led', port='p1', slc=slice(0,4)),
+    'waxwing45carrier': dict(name='led', port='p7', slc=slice(0,4)),
     'de0cv': dict(name='led', port='ledr', slc=slice(0,4))
 }
 
@@ -27,7 +29,7 @@ led_port_pin_map = {
 def test_boards():
     for bn in get_all_board_names():
         brd = get_board(bn)
-        
+
         # map led port for boards without explicit led pins 
         if bn in led_port_pin_map:
             brd.add_port_name(**led_port_pin_map[bn])
