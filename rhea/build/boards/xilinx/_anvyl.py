@@ -158,6 +158,14 @@ class Anvyl(FPGA):
         'hdmi_tx_n_clk': dict(pins=('A10',), iostandard='TDMS_33'),
 
         # ethernet ( SMSC LAN8720 https://adeetc.thothapp.com/classes/SE2/1415v/LI61D-LT61D-MI2D/resources/5377 )
+        'eth_refclk': dict(pins=('C12',), iostandard='LVCMOS33'),
+        'eth_phy_mdc': dict(pins=('C15',), iostandard='LVCMOS33'),
+        'eth_phy_mdio': dict(pins=('A14',), iostandard='LVCMOS33'),
+        'eth_tx_en': dict(pins=('D15',), iostandard='LVCMOS33'),
+        'eth_txd': dict(pins=('E10', 'F10',), iostandard='LVCMOS33'),
+        'eth_crsdv': dict(pins=('B14',), iostandard='LVCMOS33'),
+        'eth_rxerr': dict(pins=('A13',), iostandard='LVCMOS33'),
+        'eth_rxd': dict(pins=('C13', 'C14',), iostandard='LVCMOS33'),
 
         # sram ( R1LV0816ASB https://www.renesas.com/en-us/doc/products/memory/rej03c0387_r1lv0816asb_ds.pdf )
         'memory_address': dict(pins=('F22', 'F21', 'E22', 'D22', 'D21', 'D19', 'D20' 'E20'
