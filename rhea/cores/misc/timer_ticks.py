@@ -13,7 +13,7 @@ def timer_counter(glbl, counter, increment, overflow):
     @always_seq(clock.posedge, reset=reset)
     def beh_count():
         if increment:
-            if counter == count_max-1:
+            if counter == count_max - 1:
                 counter.next = 0
             else:
                 counter.next = counter + 1

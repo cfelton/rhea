@@ -23,15 +23,15 @@ anvyl: #xilinx/anvyl.bit
 mojo: #xilinx/anvyl.bit
 	time $(PYTHON) ex_mojo.py
 
-#atlys: #xilinx/atlys.bit
-#	$(PYTHON) ex_atlys.py
+# atlys: #xilinx/atlys.bit
+# 	$(PYTHON) ex_atlys.py
 
-#zybo: #xilinx/zybo.bit
-#	$(PYTHON) ex_zybo.py
+zybo: #xilinx/zybo.bit
+	$(PYTHON) ex_zybo.py
 
 
-#parallela: #xilinx/parallela.bit
-#	$(PYTHON) ex_parallela.py
+# parallela: #xilinx/parallela.bit
+# 	$(PYTHON) ex_parallela.py
 
 
 #########################################################

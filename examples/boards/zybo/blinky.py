@@ -1,9 +1,11 @@
 
+import myhdl
 from myhdl import (Signal, intbv, always_seq, always_comb, concat)
 
 from rhea.build.boards import get_board
 
 
+@myhdl.block
 def zybo_blink(led, btn, clock):
     maxcnt = int(clock.frequency)
     cnt = Signal(intbv(0, min=0, max=maxcnt))

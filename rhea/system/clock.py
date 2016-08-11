@@ -46,6 +46,13 @@ class Clock(myhdl.SignalType):
     def period(self):
         return self._period
 
+    @property
+    def ticks(self):
+        """
+        Returns the number of simulation ticks that will elapse per clock tick.
+        """
+        return self._ticks
+
     def _set_hticks(self):
         # @todo: current limitation, the clock sim ticks are only
         #        valid for 1ns sim period.
@@ -54,6 +61,8 @@ class Clock(myhdl.SignalType):
 
         self._nts = 1e-9
         self._hticks = int(round((self._period/self._nts)/2))
+        assert self._hticks > 0
+        self._ticks = self._hticks * 2
 
     def _convert_timescale(self, ts):
         # @todo: need to complete this, ts is in the form
@@ -68,7 +77,10 @@ class Clock(myhdl.SignalType):
         if hticks is None:
             hticks = self._hticks
         else:
+            hticks = int(round(hticks))
+            assert hticks > 0
             self._hticks = hticks
+            self._ticks = hticks * 2
 
         @instance
         def gclock():

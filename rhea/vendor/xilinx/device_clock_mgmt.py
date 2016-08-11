@@ -44,8 +44,11 @@ def device_clock_mgmt(clkmgmt):
         else:
             reseti.next = reset
 
-    prim_inst = device_clock_mgmt_prim(clkmgmt)
+    # attach the intended Verilog code to the block, the
+    # Verilog code will be inserted instead of device_clock_mgmt_prim
+    # converted.        
     device_clock_mgmt_prim.verilog_code = clock_mgmt_verilog_code(clkmgmt)
+    prim_inst = device_clock_mgmt_prim(clkmgmt)
 
     return prim_inst
 

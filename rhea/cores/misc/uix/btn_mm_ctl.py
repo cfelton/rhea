@@ -9,7 +9,7 @@ from rhea.cores.memmap import controller_basic
 @myhdl.block
 def button_controller(glbl, regbus, btns, led_addr=0x240):
     """ Generate bus cycles from a button input
-    This is a non-sensicle module that creates memory-mapped
+    This is a nonsensical module that creates memory-mapped
     bus cycles from a button press.  It is used in simple
     examples and demonstrations.
     """

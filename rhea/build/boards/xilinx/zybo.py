@@ -45,6 +45,11 @@ class Zybo(FPGA):
                               'Y18', 'Y19', 'W18', 'W19',),
                         iostandard="LVDS_25"),
 
+        # je is the 'standard' pmod
+        'pmod_je': dict(pins=('V12', 'W16', 'J15', 'H15',
+                              'V13', 'U17', 'T17', 'Y17',),
+                        iostandard='LVCMOS33'),
+
         # VGA (names from the reference manual but lowercase and
         # with the "vga_" prefix)
         'vga_red': dict(pins=('M19', 'L20', 'J20', 'G20', 'F19',),

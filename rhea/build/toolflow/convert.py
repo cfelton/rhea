@@ -45,7 +45,7 @@ def convert(brd, top=None, name=None, use='verilog', path='.'):
         if name is not None:
             myhdl.toVHDL.name = name
         # myhdl.toVHDL(brd.top, **pp)
-        inst.convert(hdl='Verilog', name=name, testbench=False)
+        inst.convert(hdl='VHDL', name=name)
         brd.name = name
         brd.vfn = "%s.vhd"%(name)
     else:

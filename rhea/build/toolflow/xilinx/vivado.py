@@ -8,6 +8,7 @@ from __future__ import absolute_import
 
 import sys
 import os
+import platform
 import shutil
 from time import gmtime, strftime
 
@@ -82,7 +83,12 @@ class Vivado(ToolFlow):
                 fid.write(line + '\n')
 
 
+    def escape_path(self, path):
+        # Vivado needs to have backslashes in it's tcl files escaped.
+        return path.replace('\\', '\\\\')
+
     def create_flow_script(self):
+
         fn = os.path.join(self.path, self.name+'.tcl')
 
         # start with the text string for the TCL script
@@ -92,12 +98,13 @@ class Vivado(ToolFlow):
         tcl += ["# create: {}".format(date_time)]
         tcl += ["# by: {}".format(os.path.basename(sys.argv[0]))]
         tcl += ["#\n#\n"]
-        
-        tcl += ["# set compile directory:"]
-        tcl += ["set origin_dir {}".format(".")]
 
-        tcl += ["create_project -force {} {}".format(
-            self.name, os.path.join(self.path, self.name))]
+        tcl += ["# set compile directory:"]
+        tcl += ["set origin_dir \"{}\"".format(self.escape_path(self.path))]
+
+        project_directory = self.escape_path(os.path.join(self.path, self.name))
+        tcl += ["create_project -force {} \"{}\"".format(
+            self.name, project_directory)]
         tcl += ["set proj_dir [get_property directory [current_project]]"]
         tcl += ["set obj [get_projects {}]".format(self.name)]
         brd = self.brd
@@ -106,20 +113,24 @@ class Vivado(ToolFlow):
         tcl += ["set_property PART {} $obj".format(part)]
         
         # add HDL files
-        tcl += ["# create sources"]
+        tcl += [""]
+        tcl += ["# add sources"]
         for hdl_file in self._hdl_file_list:
-            tcl += ["add_files {}".format(os.path.join(self.path, hdl_file))]
+            tcl += ["add_files \"{}\"".format(self.escape_path(os.path.join(self.path, hdl_file)))]
 
-        tcl += ["read_xdc {}".format(self.xdc_file)]
+        tcl += ["read_xdc \"{}\"".format(self.escape_path(self.xdc_file))]
+
+        tcl += [""]
+        tcl += ["# build design"]
         synopts = ""
         tcl += ["synth_design -top {} {}".format(self.name, synopts)]
         tcl += ["opt_design"]
         tcl += ["place_design"]
         tcl += ["route_design"]
-        tcl += ["report_timing_summary -file {}".format(
-            os.path.join(self.path, self.name+'_timing.rpt'))]
-        tcl += ["write_bitstream -force {}".format(
-            os.path.join(self.path, self.name+'.bit'))]
+        tcl += ["report_timing_summary -file \"{}\"".format(
+            self.escape_path(os.path.join(self.path, self.name+'_timing.rpt')))]
+        tcl += ["write_bitstream -force \"{}\"".format(
+            self.escape_path(os.path.join(self.path, self.name+'.bit')))]
 
         tcl += ["quit"]
 
@@ -148,7 +159,11 @@ class Vivado(ToolFlow):
         self.add_files(cfiles)
         self.create_constraints()
         tcl_name = self.create_flow_script()
-        cmd = ['vivado', '-mode', 'batch', '-source', tcl_name]
+        binary_name = 'vivado'
+        if platform.system() == 'Windows':
+            binary_name += '.bat'
+
+        cmd = [binary_name, '-mode', 'batch', '-source', tcl_name]
         self.logfn = self._execute_flow(cmd, "build_vivado.log")
 
         # @todo: refactor into a cleanup function
