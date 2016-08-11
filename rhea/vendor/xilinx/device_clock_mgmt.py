@@ -80,9 +80,7 @@ def mmcm_parameters(cifreq=100e6, cofreqs=[100e6, 125e6, 180e6]):
         else:
             search = False
 
-    print(M)
     odiv = [int(round(fb/cf)) for cf in cofreqs]
-    print(odiv)
     return M, odiv
 
 
