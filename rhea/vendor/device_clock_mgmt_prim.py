@@ -29,12 +29,14 @@ def _clock_generate(clock, enable, ticks):
 
 @myhdl.block
 def device_clock_mgmt_prim(clkmgmt):
-    """ This is the generic device PLL module
+    """ This is the generic device PLL model
     The vendor specific implementations will set the v*_code attribute
     for this function to the specific template needed to instantiate
     the device primitive in the generated intermediate V*.  This
-    module also creates the clocks for MyHDL simulation when the device
-    primitives are not available
+    block also creates the clocks for MyHDL simulation when the device
+    primitives are not available.
+    
+    not convetible, simulation only.
     """
     pif = clkmgmt
     (clockin, reset, enable,
