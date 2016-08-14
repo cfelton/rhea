@@ -32,7 +32,7 @@ class CModA7(FPGA):
         'led0_r': dict(pins=('C17',), iostandard='LVCMOS33'),
 
         # buttons
-        'btn': dict(pins=('A18','B17',), iostandard='LVCMOS33'),
+        'btn': dict(pins=('A18','B18',), iostandard='LVCMOS33'),
 
         # pmod header ja
         'pmod_ja': dict(pins=('G17', 'G19', 'N18', 'L18',

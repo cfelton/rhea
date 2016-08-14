@@ -45,6 +45,9 @@ nosetests.xml
 # generated examples
 /examples/**/xilinx
 
+# vivado temporary files on windows
+.Xil/
+
 # old gitignore version
 /.gitignore~
 

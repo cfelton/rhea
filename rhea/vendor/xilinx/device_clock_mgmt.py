@@ -50,7 +50,7 @@ def device_clock_mgmt(clkmgmt):
     device_clock_mgmt_prim.verilog_code = clock_mgmt_verilog_code(clkmgmt)
     prim_inst = device_clock_mgmt_prim(clkmgmt)
 
-    return prim_inst
+    return prim_inst, beh_assign
 
 
 def mmcm_parameters(cifreq=100e6, cofreqs=[100e6, 125e6, 180e6]):
