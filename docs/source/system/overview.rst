@@ -1,6 +1,6 @@
 
-System
-======
+System overview
+===============
 
 The ``rhea`` package provides frameworks for building complex digital
 circuits.  These include modular and scalable `interfaces`_ and

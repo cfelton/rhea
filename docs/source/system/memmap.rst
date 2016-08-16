@@ -1,6 +1,10 @@
 
+
+Memory mapped interfaces
+========================
+
 Base classes
-============
+------------
 The following are the building blocks for defining a system with
 memory-mapped attributes.
 
@@ -15,19 +19,14 @@ memory-mapped attributes.
 
 
 Memory mapped buses
-===================
+-------------------
 The following are the memory-mapped bus interfaces available
 in rhea.
 
-.. autoclass:: rhea.system.Barebone
-    :members:
+.. toctree::
+   :maxdepth: 1
 
-.. autoclass:: rhea.system.Wishbone
-    :members:
-
-.. autoclass:: rhea.system.Avalon
-    :members:
-
-.. autoclass:: rhea.system.AXI4
-    :members:
-
+   barebone
+   wishbone
+   avalon
+   axi4

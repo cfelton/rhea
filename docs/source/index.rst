@@ -47,7 +47,7 @@ The ``rhea`` package is divided into the following subpackages:
    :maxdepth: 1
 
    base_building_blocks
-   system/overview
+   system/index
    cores/index
    models/index
    build/build
