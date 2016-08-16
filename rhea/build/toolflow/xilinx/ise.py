@@ -38,7 +38,7 @@ class ISE(ToolFlow):
         self.ucf_file = ''
 
     def create_constraints(self):
-        self.ucf_file = os.path.join(self.path, self.name+'.ucf')
+        self.ucf_file = self.escape_path(os.path.join(self.path, self.name+'.ucf'))
         ustr = ""
         ustr += "#\n"
         for port_name, port in self.brd.ports.items():
@@ -97,7 +97,7 @@ class ISE(ToolFlow):
                            os.path.basename(sys.argv[0])
         self.tcl_script += '#\n#\n'
         
-        fn = os.path.join(self.path, self.name+'.tcl')
+        fn = self.escape_path(os.path.join(self.path, self.name+'.tcl'))
             
         self.tcl_script += '# set compile directory:\n'
         self.tcl_script += 'set compile_directory %s\n' % '.'
@@ -112,7 +112,7 @@ class ISE(ToolFlow):
         # @note: because the directory is changed everything
         #        is relative to self.path
         self.tcl_script += '# change to the directory:\n'
-        self.tcl_script += 'cd %s\n' % self.path
+        self.tcl_script += 'cd %s\n' % self.escape_path(self.path)
 
         # @todo: verify UCF file exists
         bdir, ucffn = os.path.split(self.ucf_file)
@@ -133,7 +133,7 @@ class ISE(ToolFlow):
             os.remove(pjfull)
             #    self.tcl_script += 'project open %s \n' % (pj_fn)
         #else:
-        self.tcl_script += 'project new %s\n' % pj_fn
+        self.tcl_script += 'project new %s\n' % self.escape_path(pj_fn)
 
         if self.brd.family:
             self.tcl_script += 'project set family %s\n' % self.brd.family

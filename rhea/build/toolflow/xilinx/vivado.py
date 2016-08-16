@@ -83,9 +83,7 @@ class Vivado(ToolFlow):
                 fid.write(line + '\n')
 
 
-    def escape_path(self, path):
-        # Vivado needs to have backslashes in it's tcl files escaped.
-        return path.replace('\\', '\\\\')
+
 
     def create_flow_script(self):
 

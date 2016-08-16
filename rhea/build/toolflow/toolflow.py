@@ -136,3 +136,7 @@ class ToolFlow(object):
         """ Program the board with the bit-stream
         """
         raise NotImplementedError()
+
+    def escape_path(self, path):
+        # Vivado and ISE at least need to have backslashes in their tcl files escaped.
+        return path.replace('\\', '\\\\')
