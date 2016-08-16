@@ -24,6 +24,14 @@ def device_clock_mgmt(clkmgmt):
     # are handled external to this module
     reseti = Reset(0, active=1, async=True)
     reset = Reset(0, active=1, async=True)
+
+    # Prevent phantom conversion warnings about these signals not
+    # being driven or read.  (They escape via clock_management_verilog_code)
+    clkmgmt.clockin.read = True
+    reseti.read = True
+    reset.read = True
+    reset.driven = True
+
     stuck_reset = False
     if clkmgmt.reset is None:
         stuck_reset = True
