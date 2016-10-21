@@ -53,6 +53,7 @@ clean:
 	rm -f *.log
 	rm -Rf vcd/
 	rm -f *.o
+	find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf
 	rm -f *.pyc
 
 

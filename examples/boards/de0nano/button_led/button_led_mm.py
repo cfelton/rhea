@@ -4,7 +4,9 @@ from __future__ import print_function
 import argparse
 
 import myhdl
+from myhdl import Signal, ResetSignal, intbv
 
+from rhea import Clock, Reset
 import rhea.build as build
 
 from rhea.cores.misc import button_controller   # memmap controller
@@ -59,7 +61,12 @@ def button_led_mm(clock, reset, leds, btns, bus_type='wishbone'):
 def build(args):
     """ Run the FPGA tools
     """
-    pass
+    clock = Clock(0, frequency=50e6)
+    reset = Reset(0, active=0, async=True)
+    leds = Signal(intbv(0)[8:0])
+    btns = Signal(intbv(0)[4:0])
+
+    inst = button_led_mm(clock, reset, leds, btns)
 
 
 def getargs():
@@ -67,7 +74,7 @@ def getargs():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('--bus_type', 
-                        choice=('barebone', 'wishbone', 'avalon'),
+                        choices=('barebone', 'wishbone', 'avalon'),
                         help="define the memory-mapped bus type to use")
     args = parser.parse_args()
     return args 

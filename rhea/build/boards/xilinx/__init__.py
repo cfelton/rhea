@@ -17,3 +17,5 @@ from ._xula import XulaStickItMB, Xula2StickItMB
 from ._xupv2p import XUPV2P
 from .zybo import Zybo
 from .cmoda7 import CModA7_15T, CModA7_35T
+from .matrix_creator import MatrixCreator
+

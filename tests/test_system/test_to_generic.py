@@ -19,7 +19,7 @@ busmap = {'barebone': Barebone,
           'axi': AXI4Lite}
 
 
-pytest.skip(msg="simulator crashes, duplicate error, causes next to fail")
+pytest.mark.skip(msg="simulator crashes, duplicate error, causes next to fail")
 def testbench_to_generic(args=None):
     """ Test memory-mapped bus and the mapping to a generic bus
 
@@ -98,7 +98,7 @@ def test_barebone():
     testbench_to_generic(argparse.Namespace(bustype='barebone'))
 
 
-pytest.skip(msg="simulator crashes, duplicate error, causes next to fail")
+@pytest.mark.skip(msg="simulator crashes, duplicate error, causes next to fail")
 def test_wishbone():
     testbench_to_generic(argparse.Namespace(bustype='wishbone'))
 
