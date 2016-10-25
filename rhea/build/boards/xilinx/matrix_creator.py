@@ -50,3 +50,7 @@ class MatrixCreator(FPGA):
                              ))
 
     }
+
+    def get_flow(self, top=None):
+        return ISE(brd=self, top=top)
+

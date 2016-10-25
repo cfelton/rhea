@@ -34,3 +34,7 @@ def build():
     flow.run()
     info = flow.get_utilization()
     pprint(info)
+
+if __name__ == '__main__':
+    build()
+
