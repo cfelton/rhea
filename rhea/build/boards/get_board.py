@@ -22,7 +22,7 @@ xbrd = {
     'waxwing45carrier': Waxwing45carrier, 'xula': Xula,
     'xula2': Xula2, 'xula2_stickit_mb': Xula2StickItMB,
     'xupv2p': XUPV2P, 'zybo': Zybo, 'cmoda7_15t': CModA7_15T,
-    'cmoda7_35t': CModA7_35T, 'matric_creator': MatrixCreator,
+    'cmoda7_35t': CModA7_35T, 'matrix_creator': MatrixCreator,
     'mc': MatrixCreator,
 }
 

@@ -98,7 +98,7 @@ class Xula2(FPGA):
         # VGA:
         'vga': None,  
 
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # SDRAM: the Xula2 has a 256Mbit WINBond SDRAM,        
         # http://www.winbond.com/hq/enu/ProductAndSales/ProductLines/SpecialtyDRAM/SDRAM/W9825G6JH.htm
         # @todo: mege into rhea.syste/rhea.cores intefaces
@@ -148,7 +148,7 @@ class Xula2(FPGA):
         #
         #'microsd' : None,
 
-        #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         # 
     }
 
