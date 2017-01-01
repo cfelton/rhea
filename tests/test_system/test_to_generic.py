@@ -22,9 +22,6 @@ busmap = {'barebone': Barebone,
 pytest.mark.skip(msg="simulator crashes, duplicate error, causes next to fail")
 def testbench_to_generic(args=None):
     """ Test memory-mapped bus and the mapping to a generic bus
-
-    :param args:
-    :return:
     """
     depth = 16    # number of memory address
     width = 32    # memory-mapped bus data width
