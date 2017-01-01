@@ -32,7 +32,7 @@ def _update_cbars_with_max(color_depth):
                 cbars[cc][ii] = color_max_val[ii]
         
         # create a single value out of pixel tuple, note list index 
-        # the reverse diretion of bit-vectors (intbv) index.
+        # the reverse direction of bit-vectors (intbv) index.
         s1, s2 = sum(color_depth[1:]), color_depth[-1]
         val = (cbars[cc][0] << s1) + \
               (cbars[cc][1] << s2) + \

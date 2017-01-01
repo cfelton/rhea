@@ -1,10 +1,11 @@
 
 from __future__ import absolute_import
+
 from abc import ABCMeta, abstractmethod
 from myhdl import SignalType
 
 
-class ControlStatusBase(object):
+class ControlStatusObject(object):
     __metaclass__ = ABCMeta
 
     def __init__(self):
