@@ -16,7 +16,7 @@ def testbench_memmap(args=None):
     args = tb_default_args(args)
 
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     csbus = Barebone(glbl, data_width=8, address_width=16)
 

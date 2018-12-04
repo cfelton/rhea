@@ -22,7 +22,7 @@ class Global:
             self.clock = clock
         
         if reset is None:            
-            self.reset = Reset(0, active=1, async=False) 
+            self.reset = Reset(0, active=1, isasync=False)
         else:
             self.reset = reset
 

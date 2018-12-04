@@ -34,7 +34,7 @@ class AvalonMM(MemoryMapped):
             self.clk = glbl.clock
 
         if glbl.reset is None:
-            self.reset = Reset(0, active=1, async=False)
+            self.reset = Reset(0, active=1, isasync=False)
         else:
             self.reset = glbl.reset
 

@@ -75,8 +75,8 @@ def sdram_sdr_controller(clock, reset, ibus, extram, refresh=True):
 # default portmap
 clock = Clock(0, frequency=100e6)
 sdram_sdr_controller.portmap = {
-    'clock': clock, 
-    'reset': ResetSignal(0, active=0, async=False),
+    'clock': clock,
+    'reset': ResetSignal(0, active=0, isasync=False),
     'ibus': None,
     'extmem': SDRAMInterface(clock)
 }

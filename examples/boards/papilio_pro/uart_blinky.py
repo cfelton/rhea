@@ -26,7 +26,7 @@ def uart_blinky(clock, led, uart_tx, uart_rx):
     For details about the message format see
     /rhea/cores/memmap/command_bridge.py
     """
-    reset = ResetSignal(0, active=0, async=True)
+    reset = ResetSignal(0, active=0, isasync=True)
 
     glbl = Global(clock, reset)
     ledreg = Signal(intbv(0)[8:])

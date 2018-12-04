@@ -26,7 +26,7 @@ class ClockManagement(object):
 
         Example usage:
             clockext = Clock(0, frequency=50e6)
-            resetext = Reset(0, active=0, async=True)
+            resetext = Reset(0, active=0, isasync=True)
             clkmgmt = ClockManagement(clockext, resetext,
                                       output_frequencies=(150e6, 200e6))
             clkmgmt.model = brd.fpga

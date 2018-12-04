@@ -54,7 +54,7 @@ def test_memmap_command_bridge(args=None):
     nloops = 37
     args = tb_default_args(args)
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     fifobus = FIFOBus()
     memmap = Barebone(glbl, data_width=32, address_width=28)

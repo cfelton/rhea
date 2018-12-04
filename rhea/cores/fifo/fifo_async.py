@@ -50,8 +50,8 @@ def fifo_async(clock_write, clock_read, fifobus, reset, size=128):
 
     # sync'd resets, the input reset is more than likely sync'd to one
     # of the clock domains, sync both regardless ...
-    wrst = ResetSignal(reset.active, active=reset.active, async=reset.async)
-    rrst = ResetSignal(reset.active, active=reset.active, async=reset.async)
+    wrst = ResetSignal(reset.active, active=reset.active, isasync=reset.isasync)
+    rrst = ResetSignal(reset.active, active=reset.active, isasync=reset.isasync)
 
     # @todo: if ResetSignal use the active attribute to determine 
     #        if 'not reset' or 'reset'.  If the active==0 then 

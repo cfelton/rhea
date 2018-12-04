@@ -64,7 +64,7 @@ def test_device_clock_mgmt(args=None):
     if not hasattr(args, 'vendor'):
         args.vendor = 'altera'
     clockext = Clock(0, frequency=50e6)
-    resetext = ResetSignal(0, active=0, async=True)
+    resetext = ResetSignal(0, active=0, isasync=True)
     dripple = Signal(bool(0))
     status = Signal(intbv(0)[4:])
 

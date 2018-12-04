@@ -13,7 +13,7 @@ def get_interfaces():
     """ Single function to get the buses
     """
     clock = Signal(bool(1))
-    reset = ResetSignal(bool(1), active=0, async=False)
+    reset = ResetSignal(bool(1), active=0, isasync=False)
 
     # Get an object that can be used for the "interfaces"
     fx2bus = Bus()  # External to the FPGA

@@ -18,7 +18,7 @@ def test_parallella_serdes(args=None):
     args = tb_default_args(args)
 
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=True)
+    reset = Reset(0, active=1, isasync=True)
     txp = Signal(intbv(0)[6:])
     txn = Signal(intbv(0)[6:])
     rxp = Signal(intbv(0)[6:])

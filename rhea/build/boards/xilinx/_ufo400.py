@@ -16,7 +16,7 @@ class UFO400(FPGA):
     }
     
     default_resets = {
-        'reset': dict(active=0, async=True, pins=(8,)),    
+        'reset': dict(active=0, isasync=True, pins=(8,)),
     }
     
     default_ports = {

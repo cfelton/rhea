@@ -37,7 +37,7 @@ def testbench_nameofwhatsbeingtested(args=None):
     # create signals, models, etc. that are needed for the various
     # stimulus (a testbench may have multiple stimulus tests).
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     
     sigin = Signal(intbv(0)[8:])

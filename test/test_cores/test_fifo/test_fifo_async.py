@@ -87,7 +87,7 @@ def test_async_fifo(args=None):
     if args is None:
         args = Namespace(width=8, size=16, name='test')
     
-    reset = ResetSignal(0, active=1, async=True)
+    reset = ResetSignal(0, active=1, isasync=True)
     wclk = Clock(0, frequency=22e6)
     rclk = Clock(0, frequency=50e6)
     fbus = FIFOBus(width=args.width)
@@ -156,7 +156,7 @@ def test_(args=None):
     if args is None:
         args = Namespace(width=8, size=16, name='test')
 
-    reset = ResetSignal(0, active=1, async=True)
+    reset = ResetSignal(0, active=1, isasync=True)
     wclk = Clock(0, frequency=22e6)
     rclk = Clock(0, frequency=50e6)
     fbus = FIFOBus(width=args.width)
@@ -195,7 +195,7 @@ def bench_conversion_fifo_async():
     args = Namespace(width=8, size=32, fifosize=64, name='test')
 
     clock_write, clock_read = Signals(bool(0), 2)
-    reset = ResetSignal(0, active=1, async=False)
+    reset = ResetSignal(0, active=1, isasync=False)
 
     fbus = FIFOBus(width=args.width)
     fifosize = args.fifosize

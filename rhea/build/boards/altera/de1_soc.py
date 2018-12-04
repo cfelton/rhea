@@ -33,9 +33,9 @@ class DE1SOC(FPGA):
     default_resets = {
         # if an external reset is desired push button 0 (key0)
         # can be used.  Note this overlaps with "key[0]"
-        'reset': dict(active=0, async=True, pins=('AA14',))
+        'reset': dict(active=0, isasync=True, pins=('AA14',))
     }
-    
+
     default_ports = {
         'led': dict(pins=('V16', 'W16', 'V17', 'V18', 'W17',
                           'W19', 'Y19', 'W20', 'W21', 'Y21')),

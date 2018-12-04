@@ -21,7 +21,7 @@ def test_emesh_fifo(args=None):
     args = tb_default_args(args)
 
     clock_a, clock_b = Signal(bool(0)), Signal(bool(0))
-    reset = ResetSignal(0, active=1, async=False)
+    reset = ResetSignal(0, active=1, isasync=False)
     emesh_a, emesh_b = EMesh(clock_a), EMesh(clock_b)
     input_data, output_data = [], []
 

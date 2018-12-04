@@ -92,11 +92,11 @@ class FPGA(object):
         self._clocks[name] = p
         self._ports[name] = p
 
-    def add_reset(self, name, active, async, pins, **pattr):
-        assert isinstance(async, bool)
+    def add_reset(self, name, active, isasync, pins, **pattr):
+        assert isinstance(isasync, bool)
         assert active in (0,1,)
-        p = Port(name, pins, 
-                 sigtype=Reset(0, active=active, async=async), **pattr)
+        p = Port(name, pins,
+                 sigtype=Reset(0, active=active, isasync=isasync), **pattr)
         # add to the reset and port dicts
         self._resets[name] = p
         self._ports[name] = p

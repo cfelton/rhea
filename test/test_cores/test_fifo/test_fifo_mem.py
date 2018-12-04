@@ -203,7 +203,7 @@ def fifo_mem_wrapper(clock, reset, datain, div, dataout, dorq):
 @myhdl.block
 def bench_fifo_mem_wrapper():
     clock = Signal(bool(0))
-    reset = ResetSignal(0, active=0, async=True)
+    reset = ResetSignal(0, active=0, isasync=True)
     div, dorq = Signal(bool(0)), Signal(bool(0))
     datain, dataout = Signal(intbv(0)[8:0]), Signal(intbv(0)[8:0])
 

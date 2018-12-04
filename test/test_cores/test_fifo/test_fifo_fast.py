@@ -28,7 +28,7 @@ def test_fifo_fast(args=None):
     """ verify the synchronous FIFO
     """
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=True)
+    reset = Reset(0, active=0, isasync=True)
 
     if args is None:
         args = Namespace(width=8, size=16, name='test')
@@ -112,7 +112,7 @@ def test_fifo_fast(args=None):
 def test_overflow_ffifo(args=None):
     """ verify the synchronous FIFO
     """
-    reset = ResetSignal(0, active=1, async=True)
+    reset = ResetSignal(0, active=1, isasync=True)
     clock = Signal(bool(0))
 
     if args is None:
@@ -197,7 +197,7 @@ def test_overflow_ffifo(args=None):
 def test_underflow_fifo_fast(args=None):
     """ verify the synchronous FIFO
     """
-    reset = ResetSignal(0, active=1, async=True)
+    reset = ResetSignal(0, active=1, isasync=True)
     clock = Signal(bool(0))
 
     if args is None:
@@ -295,7 +295,7 @@ def test_rw_ffifo(args=None):
     unchanged.
     """
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=True)
+    reset = Reset(0, active=0, isasync=True)
 
     if args is None:
         args = Namespace(width=8, size=16, name='test')

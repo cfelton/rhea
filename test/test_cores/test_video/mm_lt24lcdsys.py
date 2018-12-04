@@ -41,7 +41,7 @@ def mm_lt24lcdsys(clock, reset,
 
 def convert():
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=True)
+    reset = Reset(0, active=0, isasync=True)
     lcd_on = Signal(bool(0))
     lcd_resetn = Signal(bool(0))
     lcd_csn = Signal(bool(0))

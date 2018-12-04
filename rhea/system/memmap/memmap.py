@@ -40,7 +40,7 @@ class MemoryMapped(MemorySpace):
 
         if glbl is None:
             self.clock = Clock(bool(0))
-            self.reset = Reset(0, active=1, async=False)
+            self.reset = Reset(0, active=1, isasync=False)
         else:
             self.clock, self.reset = glbl.clock, glbl.reset
 

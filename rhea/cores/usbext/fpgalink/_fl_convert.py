@@ -83,14 +83,14 @@ def comm_fpga_fx2_v1_stub(
             chanAddr_out.next = True
             h2fData_out.next = 3
             h2fValid_out.next = True
-            f2hReady_out.next = True            
+            f2hReady_out.next = True
 
     return hdl
 
 
 def convert(dir=None):
     clk_in = Signal(bool(0))
-    reset_in = ResetSignal(bool(0), active=0, async=True)
+    reset_in = ResetSignal(bool(0), active=0, isasync=True)
     fx2FifoSel_out = Signal(bool(0))
     #fxData_io
     fx2Data_in = Signal(intbv(0)[8:])

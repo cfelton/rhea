@@ -120,7 +120,7 @@ def convert(args=None):
     dst_rdy_i = Signal(bool(0))
     occupied = Signal(intbv(0)[16:])
 
-    reset = ResetSignal(0, active=1, async=True)
+    reset = ResetSignal(0, active=1, isasync=True)
 
     inst = fifo_2clock_cascade(
         wclk, datain, src_rdy_i, dst_rdy_o, space,

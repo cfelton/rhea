@@ -68,7 +68,7 @@ def de0nano_soc_device_prims(clock, reset, led):
 def test_devprim(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=True)
+    reset = Reset(0, active=0, isasync=True)
     led = Signal(intbv(0))
 
     @myhdl.block

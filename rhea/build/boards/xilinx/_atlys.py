@@ -17,7 +17,7 @@ class Atlys(FPGA):
     }
 
     default_resets = {
-        'reset': dict(active=0, async=True, pins=('T15',)),
+        'reset': dict(active=0, isasync=True, pins=('T15',)),
     }
     
     default_ports = {

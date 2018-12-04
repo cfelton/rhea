@@ -58,7 +58,7 @@ def convert(color_depth=(8, 8, 8,)):
     """ convert the vgasys to verilog
     """
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=False)
+    reset = Reset(0, active=0, isasync=False)
     vselect = Signal(bool(0))
 
     hsync = Signal(bool(0))

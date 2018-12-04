@@ -102,7 +102,7 @@ def de0nano_converters(clock, reset, led,
 #        portmap = brd.map_ports(de0nano_converters)
 de0nano_converters.portmap = {
     'clock': Clock(0, frequency=50e6),
-    'reset': Reset(0, active=0, async=True),
+    'reset': Reset(0, active=0, isasync=True),
     'led': Signal(intbv(0)[8:]),
     'adc_cs_n': Signal(bool(1)),
     'adc_saddr': Signal(bool(1)),

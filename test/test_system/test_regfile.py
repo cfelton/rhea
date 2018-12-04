@@ -128,7 +128,7 @@ def test_register_file(args=None):
 
     # top-level signals and interfaces
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl) 
 
@@ -190,7 +190,7 @@ def test_register_file_bits():
     global regfile
     # top-level signals and interfaces
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl) 
 
@@ -234,7 +234,7 @@ def test_register_file_bits():
 
 def test_convert():
     clock = Signal(bool(0))
-    reset = ResetSignal(0, active=0, async=True)
+    reset = ResetSignal(0, active=0, isasync=True)
     mon = Signal(intbv(0)[8:])
     inst = peripheral_top(clock, reset, mon)
     tb_convert(inst)
