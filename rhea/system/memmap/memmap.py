@@ -123,7 +123,7 @@ class MemoryMapped(MemorySpace):
         _mm_per += 1
 
     @myhdl.block
-    def add(self, memspace, name=''):
+    def add(self, memspace, peripheral_name=''):
         """ add a peripheral register-file to the bus
         """
         assert isinstance(memspace, MemorySpace)
@@ -156,17 +156,17 @@ class MemoryMapped(MemorySpace):
                 if isinstance(v, Register):
                     v.addr += base_address
 
-            if name in self.regfiles:
-                self.names[name] += 1
-                name = name.upper() + "_{:03d}".format(self.names[name])
+            if peripheral_name in self.regfiles:
+                self.names[peripheral_name] += 1
+                peripheral_name = peripheral_name.upper() + "_{:03d}".format(self.names[peripheral_name])
             else:
-                self.names = {name: 0}
-                name = name.upper() + "_000"
+                self.names = {peripheral_name: 0}
+                peripheral_name = peripheral_name.upper() + "_000"
 
-            self.regfiles[name] = arf
+            self.regfiles[peripheral_name] = arf
 
             # return the peripheral generators for this bus
-            g = self.peripheral_regfile(regfile, name)
+            g = self.peripheral_regfile(regfile, peripheral_name)
 
         else:
             if base_address is None:

@@ -81,7 +81,7 @@ def peripheral_top(clock, reset, mon):
 def memmap_peripheral(glbl, regbus, mon):
     global regfile
     regfile = create_regfile()
-    regfile_inst = regbus.add(regfile, name='test1')
+    regfile_inst = regbus.add(regfile, peripheral_name='test1')
 
     return regfile_inst
 
@@ -92,7 +92,7 @@ def memmap_peripheral_bits(glbl, regbus, mon):
 
     clock, reset = glbl.clock, glbl.reset
     regfile = create_regfile()
-    regfile_inst = regbus.add(regfile, name='test2')
+    regfile_inst = regbus.add(regfile, peripheral_name='test2')
     count = modbv(0, min=0, max=1)
 
     @always(clock.posedge)
