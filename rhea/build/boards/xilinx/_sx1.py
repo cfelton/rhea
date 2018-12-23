@@ -14,11 +14,11 @@ class SX1(FPGA):
     default_clocks = {
         'clock': dict(frequency=48e6, pins=(35,)),
     }
-    
+
     default_resets = {
-        'reset': dict(active=0, async=True, pins=(13,)),    
+        'reset': dict(active=0, isasync=True, pins=(13,)),
     }
-    
+
     default_ports = {
         'led': dict(pins=(90, 91, 92, 94, 95, 96, 99)),
                          

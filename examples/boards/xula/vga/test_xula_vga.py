@@ -22,7 +22,7 @@ def test_xula_vga(args=None):
     color_depth = (3, 4, 3,)
 
     clock = Clock(0, frequency=12e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     vga = VGA(color_depth=color_depth)
     vga_hsync, vga_vsync = Signals(bool(0), 2)

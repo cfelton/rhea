@@ -99,7 +99,7 @@ def convert():
     FLAGA,FLAGB,FLAGC,FLAGD = [Signal(bool(0)) for _ in range(4)]
     ADDR = Signal(intbv(0)[2:])
     IFCLK = Signal(bool(0))
-    RST = ResetSignal(bool(1), active=0, async=True)
+    RST = ResetSignal(bool(1), active=0, isasync=True)
     LEDS = Signal(intbv(0)[8:])
     PKTEND = Signal(bool(0))
 

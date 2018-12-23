@@ -17,7 +17,7 @@ def test_ticks(args=None):
     hticks = 5
 
     clock = Clock(0, frequency=10e3)
-    reset = Reset(0, active=0, async=True)
+    reset = Reset(0, active=0, isasync=True)
     glbl = Global(clock, reset)
 
     @myhdl.block

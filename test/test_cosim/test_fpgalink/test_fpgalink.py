@@ -82,9 +82,9 @@ def map_ext_int(clock, reset, fx2_ext, fx2_bus):
             sFDO.next = FDO
 
     return tb_assign, tb_monitor
-        
 
-@pytest.skip(msg="not working and not used")
+
+@pytest.mark.skip(msg="not working and not used")
 def test_fpgalink():
     args = argparse.Namespace(cosim=False)
     args.vcd = tb_clean_vcd('fpgalink_fx2')

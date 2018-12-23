@@ -19,8 +19,8 @@ def device_clock_mgmt(clkmgmt):
     # type attached to the interface.  If the interface does not
     # have a reset create a static "no reset".  Reset syncros
     # are handled external to this module
-    reseti = Reset(0, active=1, async=True)
-    reset = Reset(0, active=1, async=True)
+    reseti = Reset(0, active=1, isasync=True)
+    reset = Reset(0, active=1, isasync=True)
     stuck_reset = False
     if clkmgmt.reset is None:
         stuck_reset = True

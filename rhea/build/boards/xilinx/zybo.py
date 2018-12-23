@@ -17,7 +17,7 @@ class Zybo(FPGA):
     }
 
     # default_resets = {
-    #     'reset': dict(active=0, async=True, pins=('G14',),
+    #     'reset': dict(active=0, isasync=True, pins=('G14',),
     #                   iostandard='LVCMOS25'),  #  drive=4
     # }
     

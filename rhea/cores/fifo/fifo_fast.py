@@ -142,7 +142,7 @@ def fifo_fast(glbl, fifobus, size=16, use_srl_prim=False):
 
 # fifo_fast block attributes, these will affect all instances
 fifo_fast.portmap = dict(
-    reset=ResetSignal(0, active=1, async=False),
+    reset=ResetSignal(0, active=1, isasync=False),
     clock=Signal(bool(0)),
     fbus=FIFOBus()
 )

@@ -73,7 +73,7 @@ def de0nano_lt24lcd(clock, reset, led,
 #        portmap = brd.map_ports(de0nano_converters)
 de0nano_lt24lcd.portmap = {
     'clock': Clock(0, frequency=50e6),
-    'reset': Reset(0, active=0, async=True),
+    'reset': Reset(0, active=0, isasync=True),
     'led': Signal(intbv(0)[8:]),
     'lcd_on': Signal(bool(1)),
     'lcd_resetn': Signal(bool(1)),

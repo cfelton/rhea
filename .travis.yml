@@ -1,8 +1,10 @@
 # http://docs.travis-ci.com/user/workers/container-based-infrastructure/
 sudo: false
+dist: xenial
 
 language: python
 python:
+  - "3.7"
   - "3.5"
   - "3.4"
   - "2.7"

@@ -15,7 +15,7 @@ from rhea.utils.test import run_testbench, tb_args, tb_default_args
 def test_known_prbs5(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=125e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     prbs = Signal(intbv(0)[8:])
 
@@ -50,7 +50,7 @@ def test_known_prbs5(args=None):
 def test_known_prbs7(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=125e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     prbs = Signal(intbv(0)[8:])
 
@@ -83,7 +83,7 @@ def test_known_prbs7(args=None):
 def test_prbs_word_lengths(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=125e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     prbs = Signal(intbv(0)[8:])
 
@@ -119,7 +119,7 @@ def test_prbs_check(args=None):
     order = 9
 
     clock = Clock(0, frequency=125e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     prbs = Signal(intbv(0)[8:])
     locked = Signal(bool(0))
@@ -202,7 +202,7 @@ def test_prbs_check(args=None):
 def test_conversion(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=125e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     prbs = Signal(intbv(0)[8:])
 

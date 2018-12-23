@@ -16,7 +16,7 @@ from rhea.utils.test import run_testbench
 def test_btn_led():
 
     clock = Clock(0, frequency=500e3)
-    reset = Reset(0, active=0, async=False)
+    reset = Reset(0, active=0, isasync=False)
     leds = Signal(intbv(0)[8:])
     btns = Signal(intbv(0)[4:])
 

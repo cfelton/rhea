@@ -12,7 +12,7 @@ from zybo_device_primitives import zybo_device_prim
 def test_devprim(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=125e6)
-    reset = Reset(0, active=0, async=True)
+    reset = Reset(0, active=0, isasync=True)
     leds = Signal(intbv(0)[4:])
 
     @myhdl.block

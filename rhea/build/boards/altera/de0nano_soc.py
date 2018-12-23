@@ -26,9 +26,9 @@ class DE0NanoSOC(FPGA):
     }
 
     default_resets = {
-        'reset': dict(active=0, async=True, pins=('AH16',))
+        'reset': dict(active=0, isasync=True, pins=('AH16',))
     }
-    
+
     default_ports = {
         'led': dict(pins=('W15', 'AA24', 'V16', 'V15',
                           'AF26', 'AE26', 'Y16', 'AA23',)),

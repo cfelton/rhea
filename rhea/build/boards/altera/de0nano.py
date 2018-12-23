@@ -23,7 +23,7 @@ class DE0Nano(FPGA):
     }
 
     default_resets = {
-        'reset': dict(active=0, async=True, pins=('J15',))
+        'reset': dict(active=0, isasync=True, pins=('J15',))
     }
     
     default_ports = {

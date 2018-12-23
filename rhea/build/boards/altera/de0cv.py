@@ -26,7 +26,7 @@ class DE0CV(FPGA):
     }
 
     default_resets = {
-        'reset': dict(active=0, async=True, pins=('P22',))
+        'reset': dict(active=0, isasync=True, pins=('P22',))
     }
 
     default_ports = {

@@ -30,7 +30,7 @@ def blinky(led, clock, reset=None):
             led.next[ii] = 0
         
     if reset is None:
-        reset = ResetSignal(0, active=0, async=False)
+        reset = ResetSignal(0, active=0, isasync=False)
 
         @always(clock.posedge)
         def rtl_reset():

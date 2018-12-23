@@ -25,7 +25,7 @@ from rhea.utils.test import run_testbench, tb_convert, tb_args, tb_default_args
 
 # global signals used by many
 clock = Clock(0, frequency=100e6)
-reset = Reset(0, active=1, async=True)
+reset = Reset(0, active=1, isasync=True)
 glbl = Global(clock, reset)
 portmap = dict(
     glbl=glbl,
@@ -61,7 +61,7 @@ def spi_controller_top(clock, reset, sck, mosi, miso, ss):
 def convert():
     """convert the faux-top-level"""
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     sck, mosi, miso, ss = Signals(bool(0), 4)
     inst = spi_controller_top(clock, reset, sck, mosi, miso, ss)
     tb_convert(inst)
@@ -71,7 +71,7 @@ def test_spi_controller_cso(args=None):
     args = tb_default_args(args)
 
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     spibus = SPIBus()
 
@@ -167,7 +167,7 @@ def test_spi_memory_mapped(args=None):
     
     base_address = ba = 0x400
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     regbus = Wishbone(glbl)    
     fifobus = FIFOBus(size=16)

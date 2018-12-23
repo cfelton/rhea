@@ -20,7 +20,7 @@ def test_ibh(args=None):
     numbytes = 13
 
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=True)
+    reset = Reset(0, active=0, isasync=True)
     glbl = Global(clock, reset)
     led = Signal(intbv(0)[8:])
     sw = Signal(intbv(1)[8:])

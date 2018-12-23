@@ -15,7 +15,7 @@ def test(args=None):
         args = Namespace(trace=False)
 
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=False)
+    reset = Reset(0, active=0, isasync=False)
     sdi, sdo = Signals(bool(0), 2)
 
     pin = Signals(intbv(0)[16:0], 1)
@@ -65,7 +65,7 @@ def test(args=None):
 
 def test_conversion():
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=False)
+    reset = Reset(0, active=0, isasync=False)
     sdi, sdo = Signals(bool(0), 2)
 
     # a top-level conversion stub

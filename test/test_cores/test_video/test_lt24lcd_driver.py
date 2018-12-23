@@ -17,7 +17,7 @@ from rhea.utils.test import run_testbench, tb_default_args
 @myhdl.block
 def bench_lt24lcd_driver():
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     lcd = LT24Interface()
     display = LT24LCDDisplay()

@@ -21,7 +21,7 @@ def test_lt24lcd(args=None):
     args = tb_default_args(args)
 
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=True)
+    reset = Reset(0, active=0, isasync=True)
     glbl = Global(clock, reset)
 
     lcd_on = Signal(bool(0))

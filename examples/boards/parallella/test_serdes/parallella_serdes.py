@@ -80,7 +80,7 @@ def build(args):
     # @todo: use parallella board, use an ISE support board for now ...
     brd = get_board('parallella')
     # @todo: temporary for existing board
-    # brd.add_reset('reset', active=1, async=True, pins=('N20',))
+    # brd.add_reset('reset', active=1, isasync=True, pins=('N20',))
     brd.add_port_name('serial_tx_p', 'gpio_p', slice(4, 8))
     brd.add_port_name('serial_tx_n', 'gpio_n', slice(4, 8))
     brd.add_port_name('serial_rx_p', 'gpio_p', slice(8, 12))

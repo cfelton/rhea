@@ -15,7 +15,7 @@ from rhea.utils.test import run_testbench
 def test_adc128s022():
     
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=False)
+    reset = Reset(0, active=0, isasync=False)
     glbl = Global(clock, reset)
     fifobus = FIFOBus(width=16)
     spibus = SPIBus()

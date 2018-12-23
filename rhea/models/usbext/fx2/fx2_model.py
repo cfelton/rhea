@@ -139,7 +139,7 @@ class Fx2Model(threading.Thread):
         fx2 = Bus()
         fx2.IFCLK = Signal(bool(1))
         (fx2.SLWR, fx2.SLRD, fx2.SLOE) = [Signal(bool(dbl)) for _ in range(3)]
-        fx2.RST = ResetSignal(bool(1), active=0, async=True)
+        fx2.RST = ResetSignal(bool(1), active=0, isasync=True)
         fx2.ADDR = Signal(intbv(0)[2:])
         fx2.FDI, fx2.FDO = [Signal(intbv(0)[8:]) for _ in (1, 2)]
         (fx2.FLAGA, fx2.FLAGB,

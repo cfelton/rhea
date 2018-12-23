@@ -70,7 +70,7 @@ def xula2_blinky_host(clock, reset, led, bcm14_txd, bcm15_rxd):
 def build(args):
     brd = get_board('xula2_stickit_mb')
     brd.add_port_name('led', 'pm2', slice(0, 8))
-    brd.add_reset('reset', active=0, async=True, pins=('H2',))
+    brd.add_reset('reset', active=0, isasync=True, pins=('H2',))
     flow = brd.get_flow(top=xula2_blinky_host)
     flow.run()
     info = flow.get_utilization()

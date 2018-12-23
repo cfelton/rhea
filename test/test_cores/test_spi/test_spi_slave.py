@@ -14,7 +14,7 @@ from rhea.utils.test import run_testbench, tb_default_args, tb_args
 def test_spi_slave(args=None):
     args = tb_default_args(args)
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
     spibus, fifobus = SPIBus(), FIFOBus()
 

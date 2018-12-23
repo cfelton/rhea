@@ -28,7 +28,7 @@ def test_sdram(args=None):
     
     # internal clock
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=False)
+    reset = Reset(0, active=0, isasync=False)
 
     # sdram clock
     clock_sdram = Clock(0, frequency=100e6)

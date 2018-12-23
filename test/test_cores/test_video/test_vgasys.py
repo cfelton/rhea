@@ -36,7 +36,7 @@ def test_vgasys(args=None):
     args = tb_default_args(args)
 
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=False)
+    reset = Reset(0, active=0, isasync=False)
     vselect = Signal(bool(0))
 
     # interface to the VGA driver and emulated display

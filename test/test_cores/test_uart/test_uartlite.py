@@ -20,7 +20,7 @@ def test_uart_model(args=None):
     # @todo: get numbytes from args
     numbytes = 7
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=True)
+    reset = Reset(0, active=0, isasync=True)
     glbl = Global(clock, reset)
     si, so = Signal(bool(1)), Signal(bool(1))
     uartmdl = UARTModel()
@@ -69,7 +69,7 @@ def test_uart(args=None):
     # @todo: get numbytes from args
     numbytes = 13
     clock = Clock(0, frequency=12e6)
-    reset = Reset(0, active=0, async=True)
+    reset = Reset(0, active=0, isasync=True)
     glbl = Global(clock, reset)
     mdlsi, mdlso = Signal(bool(1)), Signal(bool(1))
     uartmdl = UARTModel()

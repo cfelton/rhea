@@ -14,7 +14,7 @@ The following is the list of the functions and objects in the rhea
 top-level namespace.  See the information below for more details.
 
    #. rhea.Clock(init_val, frequency)
-   #. rhea.Reset(init_val, active, async)
+   #. rhea.Reset(init_val, active, isasync)
    #. rhea.Global()
    #. rhea.Constants(**named_constants)
    #. rhea.Signals(sigtype, num_sigs)

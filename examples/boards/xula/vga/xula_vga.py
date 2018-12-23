@@ -38,7 +38,7 @@ def xula_vga(
     """
     # stub out reset if needed
     if reset is None:
-        reset = ResetSignal(0, active=0, async=False)
+        reset = ResetSignal(0, active=0, isasync=False)
 
         @always(clock.posedge)
         def reset_stub():
@@ -75,7 +75,7 @@ def convert(color_depth=(10, 10, 10,)):
     """ convert the vgasys to verilog
     """
     clock = Clock(0, frequency=50e6)
-    reset = Reset(0, active=0, async=False)
+    reset = Reset(0, active=0, isasync=False)
     vselect = Signal(bool(0))
 
     hsync = Signal(bool(0))

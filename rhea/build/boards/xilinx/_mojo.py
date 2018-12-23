@@ -27,7 +27,7 @@ class Mojo(FPGA):
 
     default_resets = {
         # rst_n in documentation
-        'reset': dict(active=0, async=True, pins=(38,),
+        'reset': dict(active=0, isasync=True, pins=(38,),
                       iostandard='LVTTL')
     }
     

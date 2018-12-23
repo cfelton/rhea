@@ -15,7 +15,7 @@ class XUPV2P(FPGA):
     }
     
     default_resets = {
-        'reset': dict(active=0, async=True, pins=('AH5',)),    
+        'reset': dict(active=0, isasync=True, pins=('AH5',)),
     }
     
     default_ports = {

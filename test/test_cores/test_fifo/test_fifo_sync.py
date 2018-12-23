@@ -31,7 +31,7 @@ def test_fifo_sync(args=None):
         assert hasattr(args, 'size')
     args = tb_default_args(args)
 
-    reset = ResetSignal(0, active=1, async=True)
+    reset = ResetSignal(0, active=1, isasync=True)
     clock = Clock(0, frequency=50e6)
     glbl = Global(clock, reset)
     fbus = FIFOBus(width=args.width)
@@ -112,7 +112,7 @@ def test_fifo_sync_random():
 @myhdl.block
 def bench_convserion_fifo_sync():
     args = Namespace(width=8, size=16, name='test')
-    reset = ResetSignal(0, active=1, async=True)
+    reset = ResetSignal(0, active=1, isasync=True)
     clock = Signal(bool(0))
     glbl = Global(clock, reset)
     fbus = FIFOBus(width=args.width)

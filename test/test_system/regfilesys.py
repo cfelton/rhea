@@ -56,7 +56,7 @@ def memmap_component(glbl, csrbus, cio, user_regfile=None):
     else:
         regfile = user_regfile
         
-    regfile_inst = csrbus.add(glbl, regfile, name='TESTREG')
+    regfile_inst = csrbus.add(glbl, regfile, peripheral_name='TESTREG')
 
     @always_comb
     def beh_assign():

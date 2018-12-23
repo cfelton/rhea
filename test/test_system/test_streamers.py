@@ -113,7 +113,7 @@ def testbench_streamer(args=None):
         args.bustype = 'barebone'
 
     clock = Clock(0, frequency=100e6)
-    reset = Reset(0, active=1, async=False)
+    reset = Reset(0, active=1, isasync=False)
     glbl = Global(clock, reset)
 
     # @todo: support all stream types ...
